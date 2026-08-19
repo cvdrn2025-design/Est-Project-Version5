@@ -7,15 +7,33 @@ let masterData = {
     { name: "Pasir Pasang / m3", price: 220000 },
     { name: "Pasir Beton / m3", price: 250000 },
     { name: "Batu Pecah / Split 2/3 m3", price: 280000 },
+    { name: "Batu Belah/Kali / m3", price: 240000 },
     { name: "Bata Merah / bh", price: 1000 },
     { name: "Bata Ringan (Hebel) / m3", price: 650000 },
     { name: "Besi Beton Polos / kg", price: 14000 },
     { name: "Kawat Beton / kg", price: 22000 },
     { name: "Cat Tembok Interior / kg", price: 45000 },
+    { name: "Plamir Tembok / kg", price: 18000 },
+    { name: "Cat Dasar / Sealer / kg", price: 25000 },
     { name: "Pipa PVC 3/4 inch / btg", price: 35000 },
     { name: "Pipa PVC 4 inch / btg", price: 120000 },
     { name: "Kabel NYM 2x1.5mm / m", price: 12000 },
-    { name: "Rumput Gajah Mini / m2", price: 35000 }
+    { name: "Pipa Conduit 20mm / btg", price: 8000 },
+    { name: "Inbow Doos & Aksesoris / set", price: 5000 },
+    { name: "Fitting & Lem Pipa / ls", price: 5000 },
+    { name: "Rumput Gajah Mini / m2", price: 35000 },
+    { name: "Pupuk Kandang / kg", price: 5000 },
+    { name: "Kanal C Baja Ringan 0.75mm / m", price: 75000 },
+    { name: "Reng Baja Ringan 0.45mm / m", price: 35000 },
+    { name: "Roof Screw / Baut Atap / bh", price: 500 },
+    // Material Tambahan untuk Pekerjaan Persiapan
+    { name: "Kayu Kaso 5/7 / m3", price: 3200000 },
+    { name: "Kayu Usuk 5/7 / m3", price: 3200000 },
+    { name: "Papan Kayu 3/20 / m3", price: 3500000 },
+    { name: "Paku 2\" - 5\" / kg", price: 20000 },
+    { name: "Seng Gelombang / lbr", price: 65000 },
+    { name: "Triplek 4mm / lbr", price: 85000 },
+    { name: "Kloset Jongkok / bh", price: 150000 }
   ],
   alat: [
     { name: "Molen Beton / hari", price: 150000 },
@@ -63,6 +81,99 @@ let ahsLibraryData = [
       { type: "upah", name: "Tukang Kayu", koef: 0.1, price: 140000 },
       { type: "upah", name: "Kepala Tukang", koef: 0.01, price: 160000 },
       { type: "upah", name: "Mandor", koef: 0.005, price: 175000 }
+    ]
+  },
+  {
+    code: "A.2.2.1.5",
+    title: "1 m2 Pembuatan Kantor Sementara (Direksi Keet) Lantai Plesteran",
+    category: "Pekerjaan Persiapan",
+    unit: "m2",
+    details: [
+      { type: "bahan", name: "Kayu Kaso 5/7", koef: 0.18, price: 3200000 },
+      { type: "bahan", name: "Paku 2\" - 5\"", koef: 0.8, price: 20000 },
+      { type: "bahan", name: "Papan Kayu 3/20", koef: 0.08, price: 3500000 },
+      { type: "bahan", name: "Semen Portland (50kg)", koef: 0.7, price: 75000 },
+      { type: "bahan", name: "Pasir Pasang / m3", koef: 0.15, price: 220000 },
+      { type: "bahan", name: "Seng Gelombang", koef: 1.5, price: 65000 },
+      { type: "bahan", name: "Triplek 4mm", koef: 1.35, price: 85000 },
+      { type: "upah", name: "Pekerja", koef: 2.0, price: 110000 },
+      { type: "upah", name: "Tukang Kayu", koef: 2.0, price: 140000 },
+      { type: "upah", name: "Kepala Tukang", koef: 0.2, price: 160000 },
+      { type: "upah", name: "Mandor", koef: 0.05, price: 175000 }
+    ]
+  },
+  {
+    code: "A.2.2.1.6",
+    title: "1 m2 Pembuatan Bedeng / Rumah Pekerja",
+    category: "Pekerjaan Persiapan",
+    unit: "m2",
+    details: [
+      { type: "bahan", name: "Kayu Kaso 5/7", koef: 0.12, price: 3200000 },
+      { type: "bahan", name: "Paku 2\" - 5\"", koef: 0.5, price: 20000 },
+      { type: "bahan", name: "Papan Kayu 3/20", koef: 0.05, price: 3500000 },
+      { type: "bahan", name: "Seng Gelombang", koef: 1.2, price: 65000 },
+      { type: "bahan", name: "Triplek 4mm", koef: 0.8, price: 85000 },
+      { type: "upah", name: "Pekerja", koef: 1.0, price: 110000 },
+      { type: "upah", name: "Tukang Kayu", koef: 1.0, price: 140000 },
+      { type: "upah", name: "Kepala Tukang", koef: 0.1, price: 160000 },
+      { type: "upah", name: "Mandor", koef: 0.05, price: 175000 }
+    ]
+  },
+  {
+    code: "A.2.2.1.7",
+    title: "1 m2 Pembuatan Gudang Semen dan Peralatan",
+    category: "Pekerjaan Persiapan",
+    unit: "m2",
+    details: [
+      { type: "bahan", name: "Kayu Kaso 5/7", koef: 0.14, price: 3200000 },
+      { type: "bahan", name: "Paku 2\" - 5\"", koef: 0.6, price: 20000 },
+      { type: "bahan", name: "Semen Portland (50kg)", koef: 0.3, price: 75000 },
+      { type: "bahan", name: "Pasir Pasang / m3", koef: 0.08, price: 220000 },
+      { type: "bahan", name: "Seng Gelombang", koef: 1.3, price: 65000 },
+      { type: "bahan", name: "Triplek 4mm", koef: 1.0, price: 85000 },
+      { type: "upah", name: "Pekerja", koef: 1.2, price: 110000 },
+      { type: "upah", name: "Tukang Kayu", koef: 1.2, price: 140000 },
+      { type: "upah", name: "Kepala Tukang", koef: 0.12, price: 160000 },
+      { type: "upah", name: "Mandor", koef: 0.06, price: 175000 }
+    ]
+  },
+  {
+    code: "A.2.2.1.8",
+    title: "1 m' Pembuatan Pagar Sementara Seng Gelombang Tinggi 2 m",
+    category: "Pekerjaan Persiapan",
+    unit: "m1",
+    details: [
+      { type: "bahan", name: "Kayu Kaso 5/7", koef: 0.031, price: 3200000 },
+      { type: "bahan", name: "Seng Gelombang", koef: 1.3, price: 65000 },
+      { type: "bahan", name: "Paku 2\" - 5\"", koef: 0.15, price: 20000 },
+      { type: "bahan", name: "Semen Portland (50kg)", koef: 0.1, price: 75000 },
+      { type: "bahan", name: "Pasir Beton / m3", koef: 0.005, price: 250000 },
+      { type: "bahan", name: "Batu Pecah / Split 2/3 m3", koef: 0.009, price: 280000 },
+      { type: "upah", name: "Pekerja", koef: 0.25, price: 110000 },
+      { type: "upah", name: "Tukang Kayu", koef: 0.125, price: 140000 },
+      { type: "upah", name: "Tukang Batu", koef: 0.125, price: 140000 },
+      { type: "upah", name: "Kepala Tukang", koef: 0.025, price: 160000 },
+      { type: "upah", name: "Mandor", koef: 0.008, price: 175000 }
+    ]
+  },
+  {
+    code: "A.2.2.1.9",
+    title: "1 unit Pembuatan Toilet / WC Sementara",
+    category: "Pekerjaan Persiapan",
+    unit: "unit",
+    details: [
+      { type: "bahan", name: "Kloset Jongkok", koef: 1, price: 150000 },
+      { type: "bahan", name: "Pipa PVC 4 inch / btg", koef: 2, price: 120000 },
+      { type: "bahan", name: "Pipa PVC 3/4 inch / btg", koef: 1, price: 35000 },
+      { type: "bahan", name: "Semen Portland (50kg)", koef: 1.2, price: 75000 },
+      { type: "bahan", name: "Pasir Pasang / m3", koef: 0.2, price: 220000 },
+      { type: "bahan", name: "Bata Merah / bh", koef: 150, price: 1000 },
+      { type: "bahan", name: "Seng Gelombang", koef: 4, price: 65000 },
+      { type: "bahan", name: "Kayu Kaso 5/7", koef: 0.15, price: 3200000 },
+      { type: "upah", name: "Pekerja", koef: 2.5, price: 110000 },
+      { type: "upah", name: "Tukang Batu", koef: 1.5, price: 140000 },
+      { type: "upah", name: "Tukang Kayu", koef: 1.0, price: 140000 },
+      { type: "upah", name: "Mandor", koef: 0.1, price: 175000 }
     ]
   },
 
@@ -300,16 +411,12 @@ function filterAHSList() {
   }
 
   ahsLibraryData.forEach((ahs) => {
-    // Pengambilan data aman (mencegah crash jika properti tak terdefinisi)
     const titleText = (ahs.title || ahs.name || ahs.nama || ahs.deskripsi || ahs.code || ahs.kode || '').toString();
     const categoryText = (ahs.category || ahs.kategori || '').toString();
     const codeText = (ahs.code || ahs.kode || 'AHS').toString();
     const unitText = (ahs.unit || ahs.satuan || 'm2').toString();
 
-    // Validasi Kategori
     const matchCat = (catFilter === 'ALL' || categoryText.toLowerCase() === catFilter.toLowerCase() || categoryText.includes(catFilter));
-    
-    // Validasi Pencarian
     const matchSearch = !searchVal || titleText.toLowerCase().includes(searchVal) || codeText.toLowerCase().includes(searchVal);
 
     if (matchCat && matchSearch) {
