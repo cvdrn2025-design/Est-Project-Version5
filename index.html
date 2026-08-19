@@ -3,109 +3,299 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SiCerMat - Estimasi RAB</title>
+  <title>SiCerMat - Aplikasi Cepat Akurat untuk Estimator</title>
 
-  <!-- PWA Metadata & Manifest -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
-  <link rel="apple-touch-icon" href="icon-192.png">
+  <!-- External Libraries CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  
   <style>
-    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .card { border-radius: 16px; border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 15px; }
-    .btn-custom { font-weight: 600; padding: 10px; border-radius: 8px; }
-    .logo-container { padding: 20px 0; text-align: center; }
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --warning-color: #eab308;
+      --warning-hover: #ca8a04;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #1e293b;
+      --border-color: #e2e8f0;
+      --danger-color: #ef4444;
+      --danger-hover: #dc2626;
+      --success-color: #22c55e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Header Logo */
+    .app-logo-header { display: flex; justify-content: center; align-items: center; padding: 10px 0; margin-bottom: 5px; }
+    .app-logo-img { max-width: 280px; height: auto; object-fit: contain; display: block; }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid var(--border-color); }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.9rem; font-weight: 600; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    .form-control:focus { border-color: var(--primary-color); }
+    .form-control-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
+
+    .date-save-row { display: flex; gap: 10px; align-items: center; }
+    .date-save-row input[type="date"] { flex: 1; }
+
+    .btn-warning { background-color: var(--warning-color); color: #ffffff; border: none; font-weight: 700; white-space: nowrap; height: 100%; }
+    .btn-warning:hover { background-color: var(--warning-hover); }
+
+    .btn { padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-sm { padding: 4px 8px; font-size: 0.78rem; border-radius: 6px; }
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+    .btn-outline:hover { background-color: #f1f5f9; }
+    .btn-danger-outline { background-color: #fef2f2; border: 1px solid #fecaca; color: var(--danger-color); }
+    .btn-danger-outline:hover { background-color: #fee2e2; }
+    
+    .button-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .button-group-row { display: flex; gap: 10px; }
+    .button-group-row .btn { flex: 1; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
+    th { background-color: #f1f5f9; font-weight: 600; }
+
+    /* Breakdown AHS Table Special Styles */
+    .table-ahs-detail th { background-color: #e2e8f0; font-size: 0.75rem; }
+    .table-ahs-detail td { font-size: 0.78rem; }
+
+    .summary-box { background: #f8fafc; border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
+    .summary-row.grand-total { font-size: 1.15rem; font-weight: bold; border-top: 2px solid var(--border-color); margin-top: 8px; padding-top: 10px; color: var(--primary-color); }
+
+    /* Panel Harga Dasar Header Controls */
+    .master-header-controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .master-title-row { display: flex; justify-content: space-between; align-items: center; }
+
+    /* Modals */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; width: 92%; max-width: 1000px; max-height: 85vh; border-radius: 12px; padding: 20px; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
+
+    .category-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #e0f2fe; color: #0369a1; margin-top: 4px; }
+
+    @media print { .btn, select, .button-group-row, .modal { display: none !important; } }
   </style>
 </head>
 <body>
 
-  <!-- Logo Header -->
-  <div class="logo-container">
-    <img src="./icon.png" alt="SiCerMat Logo" width="120">
-  </div>
-
-  <div class="container pb-5">
+  <div class="container">
     
-    <!-- Card 1: Proyek Tersimpan -->
-    <div class="card p-3">
-      <h6 class="fw-bold mb-2">📁 Proyek Tersimpan</h6>
-      <select id="select-proyek" class="form-select mb-3">
-        <option selected>Pilih proyek...</option>
-      </select>
-      <div class="d-grid gap-2">
-        <button id="btn-proyek-baru" class="btn btn-primary btn-custom">➕ Proyek Baru</button>
-        <button id="btn-ganti-nama" class="btn btn-secondary btn-custom">✏️ Ganti Nama</button>
-        <button id="btn-hapus-proyek" class="btn btn-outline-danger btn-custom">🗑️ Hapus Proyek</button>
+    <!-- Logo Gambar Utama -->
+    <div class="app-logo-header">
+      <img src="icon.png" alt="SiCerMat Logo" class="app-logo-img">
+    </div>
+
+    <!-- 1. Section Proyek Tersimpan -->
+    <div class="card">
+      <div class="form-group" style="margin-bottom: 10px;">
+        <label for="savedProjectsSelect">📂 <strong>Proyek Tersimpan</strong></label>
+        <select id="savedProjectsSelect" class="form-control" onchange="loadSelectedProject()"></select>
+      </div>
+
+      <div class="button-stack">
+        <button type="button" class="btn btn-outline" style="width: 100%;" onclick="createNewProject()">➕ Proyek Baru</button>
+        <button type="button" class="btn btn-outline" onclick="renameProject()">✏️ Ganti Nama</button>
+        <button type="button" class="btn btn-danger-outline" onclick="deleteProject()">🗑️ Hapus Proyek</button>
       </div>
     </div>
 
-    <!-- Card 2: Form Detail Proyek -->
-    <div class="card p-3">
-      <div class="mb-3">
-        <label class="form-label fw-bold small">📝 Nama Proyek</label>
-        <input type="text" id="input-nama-proyek" class="form-control" placeholder="Masukkan nama proyek...">
+    <!-- 2. Section Detail Proyek -->
+    <div class="card">
+      <div class="form-group">
+        <label for="projectName">📋 <strong>Nama Proyek</strong></label>
+        <input type="text" id="projectName" class="form-control" value="" placeholder="Masukkan nama proyek...">
       </div>
-      <div class="mb-3">
-        <label class="form-label fw-bold small">🏷️ Jenis Proyek</label>
-        <select id="select-jenis-proyek" class="form-select">
+
+      <div class="form-group">
+        <label for="projectType">🏷️ <strong>Jenis Proyek</strong></label>
+        <select id="projectType" class="form-control">
           <option value="Konstruksi">Konstruksi</option>
           <option value="Renovasi">Renovasi</option>
+          <option value="Lainnya">Lainnya</option>
         </select>
       </div>
-      <div class="mb-3">
-        <label class="form-label fw-bold small">📅 Tanggal</label>
-        <input type="date" id="input-tanggal" class="form-control">
+
+      <div class="form-group">
+        <label for="projectDate">📅 <strong>Tanggal</strong></label>
+        <div class="date-save-row">
+          <input type="date" id="projectDate" class="form-control">
+          <button type="button" id="btnSaveProject" class="btn btn-warning" onclick="saveCurrentProject()">💾 Simpan Proyek</button>
+        </div>
       </div>
-      <button id="btn-simpan-proyek" class="btn btn-warning w-100 fw-bold">💾 Simpan Proyek</button>
     </div>
 
-    <!-- Card 3: Action Buttons -->
-    <div class="row g-2">
-      <div class="col-4">
-        <button id="btn-buka-library" class="btn btn-primary w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
-          📚 <br> Buka Library
-        </button>
+    <!-- 3. Section Toolbar & AHS Library Trigger -->
+    <div class="card">
+      <div class="button-group-row" style="flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="openAHSModal(); filterAHSList();">📚 Buka Library AHS Standard</button>
+        <button class="btn btn-outline" onclick="addItemRow()">➕ Tambah Item Manual</button>
+        <button class="btn btn-outline" onclick="exportExcel()">📊 Export Excel</button>
+        <button class="btn btn-outline" onclick="exportPDF()">📄 Export PDF</button>
       </div>
-      <div class="col-4">
-        <button id="btn-tambah-item" class="btn btn-light border w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
-          ➕ <br> Tambah Item
-        </button>
+    </div>
+
+    <!-- 4. Section Daftar Item Pekerjaan / Material -->
+    <div class="card">
+      <h3>📌 Daftar Item Pekerjaan / Material</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 35%;">Deskripsi</th>
+              <th style="width: 15%;">Kuantitas</th>
+              <th style="width: 15%;">Satuan</th>
+              <th style="width: 15%;">Harga Satuan (Rp)</th>
+              <th style="width: 15%;">Total (Rp)</th>
+              <th style="width: 5%;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="itemList"></tbody>
+        </table>
       </div>
-      <div class="col-4">
-        <button id="btn-export-excel" class="btn btn-success w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
-          📊 <br> Export
-        </button>
+
+      <!-- Ringkasan Rekapitulasi -->
+      <div class="summary-box" style="margin-top: 20px;">
+        <div class="summary-row"><span>Subtotal Item:</span><span id="subtotalVal">Rp 0</span></div>
+        <div class="summary-row"><span>Biaya Tambahan (%):</span><input type="number" id="overheadPct" value="0" style="width: 70px; text-align: right;" oninput="calculateTotals()"></div>
+        <div class="summary-row"><span>Pajak PPN (%):</span><input type="number" id="taxPct" value="11" style="width: 70px; text-align: right;" oninput="calculateTotals()"></div>
+        <div class="summary-row"><span>Margin Keuntungan (%):</span><input type="number" id="profitPct" value="10" style="width: 70px; text-align: right;" oninput="calculateTotals()"></div>
+        <div class="summary-row grand-total"><span>Grand Total:</span><span id="grandTotalVal">Rp 0</span></div>
+      </div>
+    </div>
+
+    <!-- 5. Section Panel Harga Dasar Master -->
+    <div class="card">
+      <h3>🏷️ Panel Harga Dasar (Bahan, Alat, Upah)</h3>
+      <div class="grid-3">
+        
+        <!-- Kolom Bahan -->
+        <div>
+          <div class="master-header-controls">
+            <div class="master-title-row">
+              <h4>📦 Bahan</h4>
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('bahan')">+ Item Baru</button>
+            </div>
+            <input type="text" id="searchBahan" class="form-control form-control-sm" placeholder="🔍 Cari bahan..." onkeyup="renderPriceTable('bahan')">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 55%;">Nama</th>
+                  <th style="width: 45%;">Harga (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="materialPriceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Kolom Alat -->
+        <div>
+          <div class="master-header-controls">
+            <div class="master-title-row">
+              <h4>🛠️ Alat</h4>
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('alat')">+ Item Baru</button>
+            </div>
+            <input type="text" id="searchAlat" class="form-control form-control-sm" placeholder="🔍 Cari alat..." onkeyup="renderPriceTable('alat')">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 55%;">Nama</th>
+                  <th style="width: 45%;">Harga (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="equipmentPriceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Kolom Upah -->
+        <div>
+          <div class="master-header-controls">
+            <div class="master-title-row">
+              <h4>👷 Upah</h4>
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('upah')">+ Item Baru</button>
+            </div>
+            <input type="text" id="searchUpah" class="form-control form-control-sm" placeholder="🔍 Cari upah..." onkeyup="renderPriceTable('upah')">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 55%;">Nama</th>
+                  <th style="width: 45%;">Harga (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="laborPriceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
       </div>
     </div>
 
   </div>
 
-  <!-- Bootstrap 5 Bundle JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- MODAL: LIBRARY AHS -->
+  <div id="ahsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📚 Standard AHS Library (Analisa Harga Satuan)</h3>
+        <button class="btn btn-outline" onclick="closeAHSModal()">✖ Close</button>
+      </div>
+      
+      <!-- Filter Kategori & Pencarian AHS Modal -->
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <select id="ahsCategoryFilter" class="form-control" onchange="filterAHSList()">
+          <option value="ALL">🚩 Semua Kategori</option>
+          <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+          <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+          <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+          <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+          <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+          <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
+          <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+          <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+          <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+        </select>
 
-  <!-- Script Logika -->
-  <script>
-    // Contoh untuk tombol simpan
-    document.getElementById('btn-simpan-proyek').addEventListener('click', function() {
-        const nama = document.getElementById('input-nama-proyek').value;
-        if(nama) {
-            alert('Proyek "' + nama + '" telah disimpan!');
-        } else {
-            alert('Mohon isi nama proyek.');
-        }
-    });
+        <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama atau kode AHS..." oninput="filterAHSList()">
+      </div>
 
-    // Pendaftaran Service Worker
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .catch(err => console.log('Service Worker Error', err));
-      });
-    }
-  </script>
+      <div class="table-container" style="max-height: 550px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Kode / Kategori</th>
+              <th style="width: 60%;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
+              <th style="width: 25%; text-align: center;">Aksi & Harga Total</th>
+            </tr>
+          </thead>
+          <tbody id="ahsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript External -->
+  <script src="js/master-data.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
 
