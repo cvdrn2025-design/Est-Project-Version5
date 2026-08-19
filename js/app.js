@@ -111,14 +111,6 @@ function closeAHSModal() {
   document.getElementById('ahsModal').style.display = 'none';
 }
 
-function filterAHSList() {
-  // Dipanggil dari master-data.js jika ada, atau fallback sederhana
-  const tbody = document.getElementById('ahsTableBody');
-  if (tbody && tbody.children.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px;">Library AHS Siap Digunakan.</td></tr>';
-  }
-}
-
 // --- TABEL ITEM & KALKULASI REKAP ---
 function addItemRow(desc = '', qty = 1, unit = 'm2', price = 0) {
   const tbody = document.getElementById('itemList');
@@ -158,19 +150,6 @@ function calculateTotals() {
 
   document.getElementById('subtotalVal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
   document.getElementById('grandTotalVal').textContent = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
-}
-
-// --- PANEL HARGA DASAR FALLBACK ---
-function addMasterItem(type) {
-  const name = prompt('Masukkan nama ' + type + ' baru:');
-  const price = prompt('Masukkan harga satuan (Rp):');
-  if (name && price) {
-    alert(type.toUpperCase() + ' ' + name + ' berhasil ditambahkan!');
-  }
-}
-
-function renderPriceTable(type) {
-  // Menjaga agar tidak error jika dipanggil
 }
 
 // --- EXPORT ---
