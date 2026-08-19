@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiCerMat - Aplikasi Cepat Akurat untuk Estimator</title>
+
+  <!-- External Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+  <style>
+    :root {
+      --primary-color: #2563eb;
+      --primary-hover: #1d4ed8;
+      --warning-color: #eab308;
+      --warning-hover: #ca8a04;
+      --bg-color: #f8fafc;
+      --card-bg: #ffffff;
+      --text-color: #1e293b;
+      --border-color: #e2e8f0;
+      --danger-color: #ef4444;
+      --danger-hover: #dc2626;
+      --success-color: #22c55e;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-color); padding: 20px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 1100px; display: flex; flex-direction: column; gap: 20px; }
+
+    /* Header Logo */
+    .app-logo-header { display: flex; justify-content: center; align-items: center; padding: 10px 0; margin-bottom: 5px; }
+    .app-logo-img { max-width: 280px; height: auto; object-fit: contain; display: block; }
+
+    .card { background: var(--card-bg); border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); border: 1px solid var(--border-color); }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; gap: 6px; }
+    .form-group label { font-size: 0.9rem; font-weight: 600; }
+    .form-control { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    .form-control:focus { border-color: var(--primary-color); }
+    .form-control-sm { padding: 6px 10px; font-size: 0.85rem; border-radius: 6px; }
+
+    .date-save-row { display: flex; gap: 10px; align-items: center; }
+    .date-save-row input[type="date"] { flex: 1; }
+
+    .btn-warning { background-color: var(--warning-color); color: #ffffff; border: none; font-weight: 700; white-space: nowrap; height: 100%; }
+    .btn-warning:hover { background-color: var(--warning-hover); }
+
+    .btn { padding: 8px 14px; border-radius: 8px; font-size: 0.88rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-sm { padding: 4px 8px; font-size: 0.78rem; border-radius: 6px; }
+    .btn-primary { background-color: var(--primary-color); color: white; }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+    .btn-outline { background-color: transparent; border: 1px solid var(--border-color); color: var(--text-color); }
+    .btn-outline:hover { background-color: #f1f5f9; }
+    .btn-danger-outline { background-color: #fef2f2; border: 1px solid #fecaca; color: var(--danger-color); }
+    .btn-danger-outline:hover { background-color: #fee2e2; }
+    
+    .button-stack { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+    .button-group-row { display: flex; gap: 10px; }
+    .button-group-row .btn { flex: 1; }
+
+    .grid-3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; margin-top: 15px; }
+
+    /* Tables */
+    .table-container { overflow-x: auto; margin-top: 10px; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.88rem; }
+    th { background-color: #f1f5f9; font-weight: 600; }
+
+    /* Breakdown AHS Table Special Styles */
+    .table-ahs-detail th { background-color: #e2e8f0; font-size: 0.75rem; }
+    .table-ahs-detail td { font-size: 0.78rem; }
+
+    .summary-box { background: #f8fafc; border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); }
+    .summary-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 0.95rem; }
+    .summary-row.grand-total { font-size: 1.15rem; font-weight: bold; border-top: 2px solid var(--border-color); margin-top: 8px; padding-top: 10px; color: var(--primary-color); }
+
+    /* Panel Harga Dasar Header Controls */
+    .master-header-controls { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+    .master-title-row { display: flex; justify-content: space-between; align-items: center; }
+
+    /* Modals */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; width: 92%; max-width: 1000px; max-height: 85vh; border-radius: 12px; padding: 20px; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 10px; margin-bottom: 15px; }
+
+    .category-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: #e0f2fe; color: #0369a1; margin-top: 4px; }
+
+    @media print { .btn, select, .button-group-row, .modal { display: none !important; } }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Logo Gambar Utama -->
+    <div class="app-logo-header">
+      <img src="1786147478877.png" alt="SiCerMat Logo" class="app-logo-img">
+    </div>
+
+    <!-- 1. Section Proyek Tersimpan -->
+    <div class="card">
+      <div class="form-group" style="margin-bottom: 10px;">
+        <label for="savedProjectsSelect">📂 <strong>Proyek Tersimpan</strong></label>
+        <select id="savedProjectsSelect" class="form-control" onchange="loadSelectedProject()"></select>
+      </div>
+
+      <div class="button-stack">
+        <button type="button" class="btn btn-outline" style="width: 100%;" onclick="createNewProject()">➕ Proyek Baru</button>
+        <button type="button" class="btn btn-outline" onclick="renameProject()">✏️ Ganti Nama</button>
+        <button type="button" class="btn btn-danger-outline" onclick="deleteProject()">🗑️ Hapus Proyek</button>
+      </div>
+    </div>
+
+    <!-- 2. Section Detail Proyek -->
+    <div class="card">
+      <div class="form-group">
+        <label for="projectName">📋 <strong>Nama Proyek</strong></label>
+        <input type="text" id="projectName" class="form-control" value="Uciviff">
+      </div>
+
+      <div class="form-group">
+        <label for="projectType">🏷️ <strong>Jenis Proyek</strong></label>
+        <select id="projectType" class="form-control">
+          <option value="Konstruksi">Konstruksi</option>
+          <option value="Renovasi">Renovasi</option>
+          <option value="Lainnya">Lainnya</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="projectDate">📅 <strong>Tanggal</strong></label>
+        <div class="date-save-row">
+          <input type="date" id="projectDate" class="form-control">
+          <button type="button" id="btnSaveProject" class="btn btn-warning" onclick="saveCurrentProject()">💾 Simpan Proyek</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. Section Toolbar & AHS Library Trigger -->
+    <div class="card">
+      <div class="button-group-row" style="flex-wrap: wrap;">
+        <button class="btn btn-primary" onclick="openAHSModal()">📚 Buka Library AHS Standard</button>
+        <button class="btn btn-outline" onclick="addItemRow()">➕ Tambah Item Manual</button>
+        <button class="btn btn-outline" onclick="exportExcel()">📊 Export Excel</button>
+        <button class="btn btn-outline" onclick="exportPDF()">📄 Export PDF</button>
+      </div>
+    </div>
+
+    <!-- 4. Section Daftar Item Pekerjaan / Material -->
+    <div class="card">
+      <h3>📌 Daftar Item Pekerjaan / Material</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 35%;">Deskripsi</th>
+              <th style="width: 15%;">Kuantitas</th>
+              <th style="width: 15%;">Satuan</th>
+              <th style="width: 15%;">Harga Satuan (Rp)</th>
+              <th style="width: 15%;">Total (Rp)</th>
+              <th style="width: 5%;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="itemList"></tbody>
+        </table>
+      </div>
+
+      <!-- Ringkasan Rekapitulasi -->
+      <div class="summary-box" style="margin-top: 20px;">
+        <div class="summary-row"><span>Subtotal Item:</span><span id="subtotalVal">Rp 0</span></div>
+        <div class="summary-row"><span>Biaya Tambahan (%):</span><input type="number" id="overheadPct" value="0" style="width: 70px; text-align: right;" oninput="calculateTotals()"></div>
+        <div class="summary-row"><span>Pajak PPN (%):</span><input type="number" id="taxPct" value="11" style="width: 70px; text-align: right;" oninput="calculateTotals()"></div>
+        <div class="summary-row"><span>Margin Keuntungan (%):</span><input type="number" id="profitPct" value="10" style="width: 70px; text-align: right;" oninput="calculateTotals()"></div>
+        <div class="summary-row grand-total"><span>Grand Total:</span><span id="grandTotalVal">Rp 0</span></div>
+      </div>
+    </div>
+
+    <!-- 5. Section Panel Harga Dasar Master -->
+    <div class="card">
+      <h3>🏷️ Panel Harga Dasar (Bahan, Alat, Upah)</h3>
+      <div class="grid-3">
+        
+        <!-- Kolom Bahan -->
+        <div>
+          <div class="master-header-controls">
+            <div class="master-title-row">
+              <h4>📦 Bahan</h4>
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('bahan')">+ Item Baru</button>
+            </div>
+            <input type="text" id="searchBahan" class="form-control form-control-sm" placeholder="🔍 Cari bahan..." onkeyup="renderPriceTable('bahan')">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 55%;">Nama</th>
+                  <th style="width: 45%;">Harga (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="materialPriceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Kolom Alat -->
+        <div>
+          <div class="master-header-controls">
+            <div class="master-title-row">
+              <h4>🛠️ Alat</h4>
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('alat')">+ Item Baru</button>
+            </div>
+            <input type="text" id="searchAlat" class="form-control form-control-sm" placeholder="🔍 Cari alat..." onkeyup="renderPriceTable('alat')">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 55%;">Nama</th>
+                  <th style="width: 45%;">Harga (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="equipmentPriceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Kolom Upah -->
+        <div>
+          <div class="master-header-controls">
+            <div class="master-title-row">
+              <h4>👷 Upah</h4>
+              <button class="btn btn-primary btn-sm" onclick="addMasterItem('upah')">+ Item Baru</button>
+            </div>
+            <input type="text" id="searchUpah" class="form-control form-control-sm" placeholder="🔍 Cari upah..." onkeyup="renderPriceTable('upah')">
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 55%;">Nama</th>
+                  <th style="width: 45%;">Harga (Rp)</th>
+                </tr>
+              </thead>
+              <tbody id="laborPriceTable"></tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL: LIBRARY AHS -->
+  <div id="ahsModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>📚 Standard AHS Library (Analisa Harga Satuan)</h3>
+        <button class="btn btn-outline" onclick="closeAHSModal()">✖ Close</button>
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <select id="ahsCategoryFilter" class="form-control" style="flex: 1; min-width: 200px;" onchange="filterAHSList()">
+          <option value="ALL">📂 Semua Kategori Pekerjaan</option>
+          <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+          <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+          <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+          <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+          <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+          <option value="Pekerjaan Finishing/Arsitektural">Pekerjaan Finishing/Arsitektural</option>
+          <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+          <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+          <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+        </select>
+        <input type="text" id="ahsSearch" class="form-control" style="flex: 2; min-width: 200px;" placeholder="Cari nama pekerjaan..." onkeyup="filterAHSList()">
+      </div>
+      
+      <div class="table-container" style="max-height: 550px; overflow-y: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+          <thead>
+            <tr>
+              <th style="width: 15%;">Kode / Kategori</th>
+              <th style="width: 60%;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
+              <th style="width: 25%; text-align: center;">Aksi & Harga Total</th>
+            </tr>
+          </thead>
+          <tbody id="ahsTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- DATA MASTER & ANALISA HARGA SATUAN LENGKAP ---
+    const defaultMasterPrices = {
+      bahan: [
+        { name: "Semen Portland (50kg)", price: 75000 },
+        { name: "Pasir Pasang / m3", price: 220000 },
+        { name: "Pasir Urug / m3", price: 190000 },
+        { name: "Pasir Beton / m3", price: 240000 },
+        { name: "Kerikil / Split (Maks 30mm) / m3", price: 260000 },
+        { name: "Air / liter", price: 50 },
+        { name: "Tanah Urug / m3", price: 130000 },
+        { name: "Bentonite / kg", price: 4500 },
+        { name: "Batu Belah 15/20 cm / m3", price: 250000 },
+        
+        // Material Pekerjaan Beton & Pembesian Tambahan
+        { name: "Besi Beton Polos / kg", price: 14500 },
+        { name: "Besi Beton Ulir (Deformed Bar) / kg", price: 15500 },
+        { name: "Kawat Beton / Kawat Bendrat / kg", price: 22000 },
+        { name: "Wiremesh M6 Roll / m2", price: 42000 },
+        { name: "Wiremesh M8 Lembar / m2", price: 68000 },
+        { name: "Wiremesh M10 Lembar / m2", price: 105000 },
+        { name: "Bondek / Bondex (t=0.75mm) / m2", price: 125000 },
+        { name: "Sekrup Drilling / Self Drilling Screw / buah", price: 500 },
+        { name: "End Stop Bondek / m", price: 15000 },
+
+        { name: "Kayu 5/7 (Kaso) / m3", price: 2800000 },
+        { name: "Kayu Gelam 8-10 cm / batang", price: 25000 },
+        { name: "Plywood / Multiplek 9mm / lembar", price: 125000 },
+        { name: "Seng Gelombang / lembar", price: 65000 },
+        { name: "Seng Plat / m", price: 35000 },
+        { name: "Paku Biasa (2\"-5\") / kg", price: 20000 },
+        { name: "Klosed Jongkok / buah", price: 250000 },
+        
+        // Material Tiang Pancang Mini Pile
+        { name: "Tiang Pancang Mini Pile Segitiga 20cm (K-450) / m", price: 125000 },
+        { name: "Tiang Pancang Mini Pile Segitiga 25cm (K-450) / m", price: 155000 },
+        { name: "Tiang Pancang Mini Pile Segi 4 30cm (K-450) / m", price: 210000 },
+        { name: "Tiang Pancang Mini Pile Segi 4 40cm (K-450) / m", price: 310000 },
+        { name: "Kawat Las / kg", price: 30000 },
+
+        // Material Beton Ready Mix
+        { name: "Beton Ready Mix K-100 / m3", price: 750000 },
+        { name: "Beton Ready Mix K-200 / m3", price: 820000 },
+        { name: "Beton Ready Mix K-300 / m3", price: 920000 },
+        { name: "Beton Ready Mix K-400 / m3", price: 1050000 },
+        { name: "Beton Ready Mix K-500 / m3", price: 1200000 },
+
+        // Material Pekerjaan Atap
+        { name: "Genteng Keramik / buah", price: 12000 },
+        { name: "Genteng Beton / buah", price: 9000 },
+        { name: "Nok Genteng Keramik / buah", price: 25000 },
+        { name: "Atap Spandek (t=0.30mm) / m2", price: 65000 },
+        { name: "Rangka Baja Ringan (Galvalum C75) / m2", price: 135000 },
+        { name: "Kayu Balok Kaso 5/7 (Meranti) / m3", price: 3200000 },
+        { name: "Kayu Reng 2/3 (Meranti) / m3", price: 3400000 },
+        { name: "Paku Atap / Sekrup Roof / kg", price: 30000 },
+
+        // Material Finishing / Arsitektural
+        { name: "Bata Merah / buah", price: 1000 },
+        { name: "Bata Ringan / Hebel (10cm) / m3", price: 720000 },
+        { name: "Semen Mortar / kg", price: 3500 },
+        { name: "Cat Tembok Dinding Dalam / kg", price: 32000 },
+        { name: "Cat Tembok Dinding Luar (Exterior) / kg", price: 55000 },
+        { name: "Plamur Tembok / kg", price: 18000 },
+        { name: "Keramik 40x40 cm / m2", price: 65000 },
+        { name: "Keramik 60x60 cm / m2", price: 110000 },
+        { name: "Papan Gypsum 9mm / lembar", price: 70000 },
+        { name: "Rangka Hollow Galvanis 4x4 / batang", price: 30000 },
+
+        // Material Mekanikal & Elektrikal
+        { name: "Kabel NYM 2x1.5 mm / m", price: 9500 },
+        { name: "Kabel NYM 3x2.5 mm / m", price: 14500 },
+        { name: "Saklar Tunggal / buah", price: 18000 },
+        { name: "Saklar Ganda / buah", price: 22000 },
+        { name: "Stop Kontak / buah", price: 20000 },
+        { name: "Lampu LED 10W / buah", price: 35000 },
+        { name: "Box MCB 4 Group / buah", price: 45000 },
+        { name: "MCB 10A/16A / buah", price: 55000 },
+        { name: "Pipa Conduit 20mm / batang", price: 12000 },
+
+        // Material Plumbing
+        { name: "Pipa PVC 1/2 inch / batang", price: 28000 },
+        { name: "Pipa PVC 3/4 inch / batang", price: 35000 },
+        { name: "Pipa PVC 3 inch / batang", price: 115000 },
+        { name: "Pipa PVC 4 inch / batang", price: 165000 },
+        { name: "Kloset Duduk / unit", price: 1250000 },
+        { name: "Kran Air 1/2 inch / buah", price: 35000 },
+        { name: "Pompa Air Jetpump / unit", price: 1850000 },
+        { name: "Lem Pipa PVC / tube", price: 15000 },
+
+        // Material Landscape
+        { name: "Rumput Gajah Mini / m2", price: 25000 },
+        { name: "Rumput Jepang / m2", price: 30000 },
+        { name: "Pohon Palem Sadeng / pohon", price: 250000 },
+        { name: "Tanah Subur / Humus / m3", price: 150000 },
+        { name: "Pupuk Kandang / kg", price: 2500 }
+      ],
+      alat: [
+        { name: "Sewa Mesin Bore Pile Wash Boring / jam", price: 180000 },
+        { name: "Sewa Mesin Bore Pile Dry Boring / jam", price: 150000 },
+        { name: "Sewa Pile Driver / Drop Hammer / m", price: 45000 },
+        { name: "Sewa Hydraulic Static Pile Driver (HSPD) / m", price: 65000 },
+        { name: "Sewa Mesin Las / jam", price: 35000 },
+        { name: "Sewa Mesin Bar Cutter / Bar Bender / hari", price: 120000 },
+        { name: "Sewa Pompa Air Submersible / jam", price: 35000 },
+        { name: "Sewa Concrete Mixer / hari", price: 250000 },
+        { name: "Sewa Concrete Pump / m3", price: 65000 },
+        { name: "Sewa Excavator / jam", price: 350000 },
+        { name: "Sewa Stamper / Kuda-kuda / hari", price: 200000 },
+        { name: "Sewa Vibratory Roller / jam", price: 280000 },
+        { name: "Sewa Tripod / Pancang Manual / hari", price: 150000 },
+        { name: "Sewa Scaffolding / set / bulan", price: 35000 },
+        { name: "Sewa Mesin Pemotong Keramik / hari", price: 50000 }
+      ],
+      upah: [
+        { name: "Pekerja / OH", price: 110000 },
+        { name: "Tukang / Operator Borepile / OH", price: 150000 },
+        { name: "Operator Pancang / OH", price: 160000 },
+        { name: "Tukang Las / OH", price: 140000 },
+        { name: "Tukang Besi / OH", price: 140000 },
+        { name: "Tukang Batu / OH", price: 140000 },
+        { name: "Tukang Cat / OH", price: 140000 },
+        { name: "Tukang Kayu / OH", price: 140000 },
+        { name: "Tukang Listrik / OH", price: 150000 },
+        { name: "Tukang Pipa / OH", price: 145000 },
+        { name: "Tukang Kebun / OH", price: 120000 },
+        { name: "Kepala Tukang / OH", price: 160000 },
+        { name: "Mandor / OH", price: 180000 }
+      ]
+    };
+
+    const ahsLibraryDetailed = [
+      // KATEGORI: PEKERJAAN PERSIAPAN
+      {
+        code: "AHS.P.01",
+        category: "Pekerjaan Persiapan",
+        name: "Pembuatan Direksi Keet",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 2.000, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 2.000, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.200, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.100, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Kayu Kaso 5/7", coef: 0.180, unit: "m3", price: 2800000 },
+            { name: "Plywood 9mm", coef: 0.350, unit: "lembar", price: 125000 },
+            { name: "Seng Gelombang", coef: 1.500, unit: "lembar", price: 65000 },
+            { name: "Paku Biasa", coef: 0.800, unit: "kg", price: 20000 },
+            { name: "Semen Portland (50kg)", coef: 0.350, unit: "sak", price: 75000 },
+            { name: "Pasir Beton", coef: 0.050, unit: "m3", price: 240000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.P.02",
+        category: "Pekerjaan Persiapan",
+        name: "Pembuatan Bedeng Pekerja",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 1.250, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 1.500, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.150, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.060, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Kayu Kaso 5/7", coef: 0.120, unit: "m3", price: 2800000 },
+            { name: "Plywood 9mm", coef: 0.250, unit: "lembar", price: 125000 },
+            { name: "Seng Gelombang", coef: 1.200, unit: "lembar", price: 65000 },
+            { name: "Paku Biasa", coef: 0.600, unit: "kg", price: 20000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN TANAH
+      {
+        code: "AHS.T.01",
+        category: "Pekerjaan Tanah",
+        name: "Galian Tanah Biasa Dalam s/d 1m (Manual)",
+        unit: "m3",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.750, unit: "OH", price: 110000 },
+            { name: "Mandor", coef: 0.025, unit: "OH", price: 180000 }
+          ],
+          bahan: [],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN PONDASI
+      {
+        code: "AHS.S.01",
+        category: "Pekerjaan Pondasi",
+        name: "Pemasangan Batu Kosong (Aanstamping)",
+        unit: "m3",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.780, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.390, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.039, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.039, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Batu Belah 15/20 cm", coef: 1.200, unit: "m3", price: 250000 },
+            { name: "Pasir Urug", coef: 0.432, unit: "m3", price: 190000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN BETON
+      {
+        code: "AHS.B.01",
+        category: "Pekerjaan Beton",
+        name: "Beton Site Mix K-100 (Manual / Molen)",
+        unit: "m3",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 1.650, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.275, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.028, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.083, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Semen Portland (50kg)", coef: 4.940, unit: "sak", price: 75000 },
+            { name: "Pasir Beton", coef: 0.620, unit: "m3", price: 240000 },
+            { name: "Kerikil / Split (Maks 30mm)", coef: 0.740, unit: "m3", price: 260000 },
+            { name: "Air", coef: 215.000, unit: "liter", price: 50 }
+          ],
+          alat: [
+            { name: "Sewa Concrete Mixer", coef: 0.250, unit: "hari", price: 250000 }
+          ]
+        }
+      },
+      {
+        code: "AHS.B.02",
+        category: "Pekerjaan Beton",
+        name: "Pembesian Dinding / Sloop / Kolom / Balok dengan Besi Polos",
+        unit: "kg",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.007, unit: "OH", price: 110000 },
+            { name: "Tukang Besi", coef: 0.007, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.0007, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.0004, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Besi Beton Polos", coef: 1.050, unit: "kg", price: 14500 },
+            { name: "Kawat Beton / Kawat Bendrat", coef: 0.015, unit: "kg", price: 22000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.B.03",
+        category: "Pekerjaan Beton",
+        name: "Pembesian Dinding / Sloop / Kolom / Balok dengan Besi Ulir",
+        unit: "kg",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.007, unit: "OH", price: 110000 },
+            { name: "Tukang Besi", coef: 0.007, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.0007, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.0004, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Besi Beton Ulir (Deformed Bar)", coef: 1.050, unit: "kg", price: 15500 },
+            { name: "Kawat Beton / Kawat Bendrat", coef: 0.015, unit: "kg", price: 22000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.B.04",
+        category: "Pekerjaan Beton",
+        name: "Pemasangan Wiremesh M6 (Single Layer)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.025, unit: "OH", price: 110000 },
+            { name: "Tukang Besi", coef: 0.025, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.0025, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.0013, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Wiremesh M6 Roll", coef: 1.050, unit: "m2", price: 42000 },
+            { name: "Kawat Beton / Kawat Bendrat", coef: 0.050, unit: "kg", price: 22000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.B.05",
+        category: "Pekerjaan Beton",
+        name: "Pemasangan Wiremesh M8 (Single Layer)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.030, unit: "OH", price: 110000 },
+            { name: "Tukang Besi", coef: 0.030, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.003, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.0015, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Wiremesh M8 Lembar", coef: 1.050, unit: "m2", price: 68000 },
+            { name: "Kawat Beton / Kawat Bendrat", coef: 0.075, unit: "kg", price: 22000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.B.06",
+        category: "Pekerjaan Beton",
+        name: "Pemasangan Bondek / Metal Deck Floor (t=0.75mm)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.100, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 0.050, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.005, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.005, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Bondek / Bondex (t=0.75mm)", coef: 1.050, unit: "m2", price: 125000 },
+            { name: "Sekrup Drilling / Self Drilling Screw", coef: 4.000, unit: "buah", price: 500 },
+            { name: "End Stop Bondek", coef: 0.100, unit: "m", price: 15000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN ATAP
+      {
+        code: "AHS.ATP.01",
+        category: "Pekerjaan Atap",
+        name: "Pemasangan Rangka Atap Baja Ringan (Zincalume/Galvalum)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.150, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 0.150, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.015, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.008, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Rangka Baja Ringan (Galvalum C75)", coef: 1.100, unit: "m2", price: 135000 },
+            { name: "Paku Atap / Sekrup Roof", coef: 0.200, unit: "kg", price: 30000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.ATP.02",
+        category: "Pekerjaan Atap",
+        name: "Pemasangan Atap Genteng Keramik",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.200, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 0.100, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.010, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.010, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Genteng Keramik", coef: 14.000, unit: "buah", price: 12000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.ATP.03",
+        category: "Pekerjaan Atap",
+        name: "Pemasangan Nok / Bumbungan Genteng Keramik",
+        unit: "m",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.400, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.200, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.020, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.020, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Nok Genteng Keramik", coef: 3.500, unit: "buah", price: 25000 },
+            { name: "Semen Portland (50kg)", coef: 0.160, unit: "sak", price: 75000 },
+            { name: "Pasir Pasang", coef: 0.032, unit: "m3", price: 220000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.ATP.04",
+        category: "Pekerjaan Atap",
+        name: "Pemasangan Atap Spandek Gelombang (t=0.30mm)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.120, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 0.060, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.006, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.006, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Atap Spandek (t=0.30mm)", coef: 1.050, unit: "m2", price: 65000 },
+            { name: "Paku Atap / Sekrup Roof", coef: 0.150, unit: "kg", price: 30000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN FINISHING / ARSITEKTURAL
+      {
+        code: "AHS.FIN.01",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Pemasangan Dinding Bata Merah (1SP : 4PP) t=1/2 Bata",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.300, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.100, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.010, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.015, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Bata Merah", coef: 70.000, unit: "buah", price: 1000 },
+            { name: "Semen Portland (50kg)", coef: 0.230, unit: "sak", price: 75000 },
+            { name: "Pasir Pasang", coef: 0.043, unit: "m3", price: 220000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.FIN.02",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Pemasangan Dinding Bata Ringan / Hebel t=10cm",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.200, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.080, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.008, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.010, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Bata Ringan / Hebel (10cm)", coef: 0.100, unit: "m3", price: 720000 },
+            { name: "Semen Mortar", coef: 4.000, unit: "kg", price: 3500 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.FIN.03",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Plesteran Dinding 1SP : 4PP Tebal 15mm",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.300, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.150, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.015, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.015, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Semen Portland (50kg)", coef: 0.125, unit: "sak", price: 75000 },
+            { name: "Pasir Pasang", coef: 0.024, unit: "m3", price: 220000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.FIN.04",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Acian Dinding Datar",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.200, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.100, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.010, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.010, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Semen Portland (50kg)", coef: 0.065, unit: "sak", price: 75000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.FIN.05",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Pengecatan Tembok Baru Interior (1 lapis plamur, 2 lapis cat)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.070, unit: "OH", price: 110000 },
+            { name: "Tukang Cat", coef: 0.063, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.0063, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.0035, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Plamur Tembok", coef: 0.100, unit: "kg", price: 18000 },
+            { name: "Cat Tembok Dinding Dalam", coef: 0.260, unit: "kg", price: 32000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.FIN.06",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Pemasangan Lantai Keramik 60x60 cm",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.270, unit: "OH", price: 110000 },
+            { name: "Tukang Batu", coef: 0.135, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.0135, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.0135, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Keramik 60x60 cm", coef: 1.050, unit: "m2", price: 110000 },
+            { name: "Semen Portland (50kg)", coef: 0.200, unit: "sak", price: 75000 },
+            { name: "Pasir Pasang", coef: 0.045, unit: "m3", price: 220000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.FIN.07",
+        category: "Pekerjaan Finishing/Arsitektural",
+        name: "Pemasangan Plafon Gypsum Board 9mm + Rangka Hollow",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.200, unit: "OH", price: 110000 },
+            { name: "Tukang Kayu", coef: 0.350, unit: "OH", price: 140000 },
+            { name: "Kepala Tukang", coef: 0.035, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.010, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Papan Gypsum 9mm", coef: 0.364, unit: "lembar", price: 70000 },
+            { name: "Rangka Hollow Galvanis 4x4", coef: 1.200, unit: "batang", price: 30000 },
+            { name: "Paku Biasa", coef: 0.110, unit: "kg", price: 20000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN MEKANIKAL & ELEKTRIKAL (ME)
+      {
+        code: "AHS.ME.01",
+        category: "Pekerjaan Mekanikal & Elektrikal",
+        name: "Pemasangan Titik Lampu Utama (Kabel NYM 2x1.5mm + Conduit)",
+        unit: "titik",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.200, unit: "OH", price: 110000 },
+            { name: "Tukang Listrik", coef: 0.400, unit: "OH", price: 150000 },
+            { name: "Mandor", coef: 0.020, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Kabel NYM 2x1.5 mm", coef: 8.000, unit: "m", price: 9500 },
+            { name: "Pipa Conduit 20mm", coef: 2.000, unit: "batang", price: 12000 },
+            { name: "Lampu LED 10W", coef: 1.000, unit: "buah", price: 35000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.ME.02",
+        category: "Pekerjaan Mekanikal & Elektrikal",
+        name: "Pemasangan Titik Stop Kontak (Kabel NYM 3x2.5mm)",
+        unit: "titik",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.200, unit: "OH", price: 110000 },
+            { name: "Tukang Listrik", coef: 0.450, unit: "OH", price: 150000 },
+            { name: "Mandor", coef: 0.020, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Kabel NYM 3x2.5 mm", coef: 10.000, unit: "m", price: 14500 },
+            { name: "Stop Kontak", coef: 1.000, unit: "buah", price: 20000 },
+            { name: "Pipa Conduit 20mm", coef: 2.500, unit: "batang", price: 12000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.ME.03",
+        category: "Pekerjaan Mekanikal & Elektrikal",
+        name: "Pemasangan Box Panel MCB 4 Group",
+        unit: "unit",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.300, unit: "OH", price: 110000 },
+            { name: "Tukang Listrik", coef: 0.600, unit: "OH", price: 150000 },
+            { name: "Mandor", coef: 0.030, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Box MCB 4 Group", coef: 1.000, unit: "buah", price: 45000 },
+            { name: "MCB 10A/16A", coef: 4.000, unit: "buah", price: 55000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN PLUMBING
+      {
+        code: "AHS.PLM.01",
+        category: "Pekerjaan Plumbing",
+        name: "Pemasangan Pipa Air Bersih PVC 1/2 inch",
+        unit: "m",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.050, unit: "OH", price: 110000 },
+            { name: "Tukang Pipa", coef: 0.100, unit: "OH", price: 145000 },
+            { name: "Mandor", coef: 0.005, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Pipa PVC 1/2 inch", coef: 0.300, unit: "batang", price: 28000 },
+            { name: "Lem Pipa PVC", coef: 0.050, unit: "tube", price: 15000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.PLM.02",
+        category: "Pekerjaan Plumbing",
+        name: "Pemasangan Pipa Air Kotor PVC 4 inch",
+        unit: "m",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.100, unit: "OH", price: 110000 },
+            { name: "Tukang Pipa", coef: 0.200, unit: "OH", price: 145000 },
+            { name: "Mandor", coef: 0.010, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Pipa PVC 4 inch", coef: 0.280, unit: "batang", price: 165000 },
+            { name: "Lem Pipa PVC", coef: 0.100, unit: "tube", price: 15000 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.PLM.03",
+        category: "Pekerjaan Plumbing",
+        name: "Pemasangan Kloset Duduk Standard",
+        unit: "unit",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 1.000, unit: "OH", price: 110000 },
+            { name: "Tukang Pipa", coef: 1.500, unit: "OH", price: 145000 },
+            { name: "Kepala Tukang", coef: 0.150, unit: "OH", price: 160000 },
+            { name: "Mandor", coef: 0.050, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Kloset Duduk", coef: 1.000, unit: "unit", price: 1250000 },
+            { name: "Semen Portland (50kg)", coef: 0.200, unit: "sak", price: 75000 },
+            { name: "Pasir Pasang", coef: 0.020, unit: "m3", price: 220000 }
+          ],
+          alat: []
+        }
+      },
+
+      // KATEGORI: PEKERJAAN LANDSCAPE
+      {
+        code: "AHS.LND.01",
+        category: "Pekerjaan Landscape",
+        name: "Penanaman Rumput Gajah Mini (Termasuk Tanah Humus & Pupuk)",
+        unit: "m2",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.250, unit: "OH", price: 110000 },
+            { name: "Tukang Kebun", coef: 0.150, unit: "OH", price: 120000 },
+            { name: "Mandor", coef: 0.020, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Rumput Gajah Mini", coef: 1.050, unit: "m2", price: 25000 },
+            { name: "Tanah Subur / Humus", coef: 0.050, unit: "m3", price: 150000 },
+            { name: "Pupuk Kandang", coef: 1.500, unit: "kg", price: 2500 }
+          ],
+          alat: []
+        }
+      },
+      {
+        code: "AHS.LND.02",
+        category: "Pekerjaan Landscape",
+        name: "Penanaman Pohon Pelindung / Palem Sadeng",
+        unit: "pohon",
+        details: {
+          upah: [
+            { name: "Pekerja", coef: 0.500, unit: "OH", price: 110000 },
+            { name: "Tukang Kebun", coef: 0.500, unit: "OH", price: 120000 },
+            { name: "Mandor", coef: 0.050, unit: "OH", price: 180000 }
+          ],
+          bahan: [
+            { name: "Pohon Palem Sadeng", coef: 1.000, unit: "pohon", price: 250000 },
+            { name: "Tanah Subur / Humus", coef: 0.200, unit: "m3", price: 150000 },
+            { name: "Pupuk Kandang", coef: 5.000, unit: "kg", price: 2500 }
+          ],
+          alat: []
+        }
+      }
+    ];
+
+    let currentItems = [{ desc: "Galian Tanah Biasa Dalam s/d 1m (Manual)", qty: 10, unit: "m3", price: 87000 }];
+    let projectsStore = {};
+
+    window.onload = function() {
+      document.getElementById('projectDate').valueAsDate = new Date();
+      loadAllPriceTables();
+      renderAHSTable();
+      
+      const saved = localStorage.getItem('sicermat_projects');
+      if (saved) projectsStore = JSON.parse(saved);
+      else projectsStore = { "Uciviff": { type: "Konstruksi", date: "2026-08-14", items: currentItems } };
+      
+      refreshProjectDropdown();
+      renderItems();
+    };
+
+    /* Rendering & Filter Panel Harga Dasar dengan Kolom Input Harga */
+    function renderPriceTable(category) {
+      let targetElId = category === 'bahan' ? 'materialPriceTable' : category === 'alat' ? 'equipmentPriceTable' : 'laborPriceTable';
+      let searchInputId = category === 'bahan' ? 'searchBahan' : category === 'alat' ? 'searchAlat' : 'searchUpah';
+      
+      let query = document.getElementById(searchInputId) ? document.getElementById(searchInputId).value.toLowerCase() : '';
+      let tbody = document.getElementById(targetElId);
+      tbody.innerHTML = '';
+
+      let found = false;
+
+      defaultMasterPrices[category].forEach((item, originalIndex) => {
+        if (item.name.toLowerCase().includes(query)) {
+          found = true;
+          let tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td style="vertical-align: middle;">${item.name}</td>
+            <td>
+              <input type="number" class="form-control form-control-sm" value="${item.price}" 
+                     style="text-align: right;" 
+                     onchange="updateMasterPrice('${category}', ${originalIndex}, this.value)">
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      if (!found) {
+        tbody.innerHTML = `<tr><td colspan="2" style="text-align:center; color:#94a3b8;">Data tidak ditemukan</td></tr>`;
+      }
+    }
+
+    /* Update nilai harga saat diubah pada input */
+    function updateMasterPrice(category, index, newValue) {
+      let parsed = parseFloat(newValue);
+      if (!isNaN(parsed) && parsed >= 0) {
+        defaultMasterPrices[category][index].price = parsed;
+      }
+    }
+
+    function loadAllPriceTables() {
+      renderPriceTable('bahan');
+      renderPriceTable('alat');
+      renderPriceTable('upah');
+    }
+
+    /* Fungsi Tambah Item Master Baru */
+    function addMasterItem(category) {
+      let catName = category.toUpperCase();
+      let name = prompt(`Masukkan nama ${catName} baru:`);
+      if (!name) return;
+
+      let priceStr = prompt(`Masukkan harga untuk ${name} (Rp):`);
+      let price = parseFloat(priceStr);
+
+      if (isNaN(price) || price < 0) {
+        alert("Harga tidak valid!");
+        return;
+      }
+
+      defaultMasterPrices[category].push({ name: name, price: price });
+      renderPriceTable(category);
+    }
+
+    function calculateAHSTotalRate(item) {
+      let total = 0;
+      ['upah', 'bahan', 'alat'].forEach(cat => {
+        if(item.details[cat]) {
+          item.details[cat].forEach(row => { total += (row.coef * row.price); });
+        }
+      });
+      return Math.round(total);
+    }
+
+    /* Render Tabel Library AHS */
+    function renderAHSTable(search = '', category = 'ALL') {
+      const tbody = document.getElementById('ahsTableBody');
+      tbody.innerHTML = '';
+      
+      ahsLibraryDetailed.forEach((item, originalIndex) => {
+        if ((category === 'ALL' || item.category === category) && item.name.toLowerCase().includes(search.toLowerCase())) {
+          let rate = calculateAHSTotalRate(item);
+          
+          let detailHtml = `<table class="table-ahs-detail" style="width:100%; margin-top:8px; border:1px solid #cbd5e1; border-radius:6px; background:#fafafa;">
+            <thead>
+              <tr style="background:#e2e8f0;">
+                <th style="padding:4px 8px;">Komponen</th>
+                <th style="padding:4px 8px;">Koef</th>
+                <th style="padding:4px 8px;">Satuan</th>
+                <th style="padding:4px 8px;">Harga Satuan</th>
+                <th style="padding:4px 8px;">Jumlah</th>
+              </tr>
+            </thead>
+            <tbody>`;
+
+          const renderCategoryRows = (catName, items) => {
+            if (!items || items.length === 0) return '';
+            let rows = `<tr style="background:#f1f5f9; font-weight:bold;"><td colspan="5" style="padding:3px 8px; color:var(--primary-color);">${catName}</td></tr>`;
+            items.forEach(row => {
+              let sum = row.coef * row.price;
+              rows += `
+                <tr>
+                  <td style="padding:3px 8px 3px 16px;">${row.name}</td>
+                  <td style="padding:3px 8px;">${row.coef}</td>
+                  <td style="padding:3px 8px;">${row.unit}</td>
+                  <td style="padding:3px 8px;">Rp ${row.price.toLocaleString('id-ID')}</td>
+                  <td style="padding:3px 8px;">Rp ${Math.round(sum).toLocaleString('id-ID')}</td>
+                </tr>`;
+            });
+            return rows;
+          };
+
+          detailHtml += renderCategoryRows('👷 Tenaga Kerja / Upah', item.details.upah);
+          detailHtml += renderCategoryRows('📦 Bahan / Material', item.details.bahan);
+          detailHtml += renderCategoryRows('🛠️ Peralatan', item.details.alat);
+          detailHtml += `</tbody></table>`;
+
+          let tr = document.createElement('tr');
+          tr.style.borderBottom = '2px solid #cbd5e1';
+          tr.innerHTML = `
+            <td style="vertical-align:top; padding-top:12px;">
+              <strong>${item.code}</strong><br>
+              <span class="category-badge">${item.category}</span>
+            </td>
+            <td style="vertical-align:top; padding-top:12px;">
+              <div style="font-size: 1rem; font-weight:700; color:#0f172a;">${item.name} (per 1 ${item.unit})</div>
+              ${detailHtml}
+            </td>
+            <td style="vertical-align:top; text-align:center; padding-top:12px;">
+              <div style="font-size: 1.05rem; font-weight:bold; color:var(--primary-color); margin-bottom:8px;">
+                Rp ${rate.toLocaleString('id-ID')} / ${item.unit}
+              </div>
+              <button class="btn btn-primary" style="width:100%; white-space: normal;" onclick="addAHSItemByIndex(${originalIndex})">
+                ➕ Tambahkan ke RAB
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      if (tbody.children.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding: 20px; color:#64748b;">Tidak ada data analisa yang sesuai.</td></tr>`;
+      }
+    }
+
+    function addAHSItemByIndex(index) {
+      const item = ahsLibraryDetailed[index];
+      if (item) {
+        let rate = calculateAHSTotalRate(item);
+        currentItems.push({ desc: item.name, qty: 1, unit: item.unit, price: rate });
+        renderItems();
+        closeAHSModal();
+      }
+    }
+
+    function refreshProjectDropdown() {
+      const select = document.getElementById('savedProjectsSelect');
+      select.innerHTML = '';
+      for (let pName in projectsStore) {
+        let opt = document.createElement('option');
+        opt.value = pName; opt.innerText = pName;
+        select.appendChild(opt);
+      }
+    }
+
+    function saveCurrentProject() {
+      const pName = document.getElementById('projectName').value.trim();
+      if (!pName) return alert("Nama proyek tidak boleh kosong!");
+      projectsStore[pName] = { type: document.getElementById('projectType').value, date: document.getElementById('projectDate').value, items: currentItems };
+      localStorage.setItem('sicermat_projects', JSON.stringify(projectsStore));
+      refreshProjectDropdown();
+      alert(`✅ Proyek "${pName}" berhasil disimpan!`);
+    }
+
+    function loadSelectedProject() {
+      const pName = document.getElementById('savedProjectsSelect').value;
+      if (projectsStore[pName]) {
+        document.getElementById('projectName').value = pName;
+        document.getElementById('projectType').value = projectsStore[pName].type;
+        document.getElementById('projectDate').value = projectsStore[pName].date;
+        currentItems = projectsStore[pName].items || [];
+        renderItems();
+      }
+    }
+
+    function createNewProject() {
+      document.getElementById('projectName').value = "Proyek Baru";
+      currentItems = []; renderItems();
+    }
+
+    function renameProject() {
+      const oldName = document.getElementById('savedProjectsSelect').value;
+      const newName = prompt("Masukkan nama baru:", oldName);
+      if (newName && newName !== oldName) {
+        projectsStore[newName] = projectsStore[oldName];
+        delete projectsStore[oldName];
+        localStorage.setItem('sicermat_projects', JSON.stringify(projectsStore));
+        refreshProjectDropdown();
+      }
+    }
+
+    function deleteProject() {
+      const pName = document.getElementById('savedProjectsSelect').value;
+      if (confirm(`Hapus "${pName}"?`)) {
+        delete projectsStore[pName];
+        localStorage.setItem('sicermat_projects', JSON.stringify(projectsStore));
+        refreshProjectDropdown();
+        createNewProject();
+      }
+    }
+
+    function renderItems() {
+      const tbody = document.getElementById('itemList');
+      tbody.innerHTML = '';
+      currentItems.forEach((item, index) => {
+        let total = item.qty * item.price;
+        let tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td><input type="text" class="form-control" value="${item.desc}" onchange="updateItem(${index}, 'desc', this.value)"></td>
+          <td><input type="number" class="form-control" value="${item.qty}" onchange="updateItem(${index}, 'qty', this.value)"></td>
+          <td><input type="text" class="form-control" value="${item.unit}" onchange="updateItem(${index}, 'unit', this.value)"></td>
+          <td><input type="number" class="form-control" value="${item.price}" onchange="updateItem(${index}, 'price', this.value)"></td>
+          <td style="font-weight:600;">Rp ${total.toLocaleString('id-ID')}</td>
+          <td><button class="btn btn-danger-outline" onclick="deleteItem(${index})">❌</button></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      calculateTotals();
+    }
+
+    function updateItem(index, key, value) {
+      if (key === 'qty' || key === 'price') value = parseFloat(value) || 0;
+      currentItems[index][key] = value;
+      renderItems();
+    }
+
+    function addItemRow() { currentItems.push({ desc: "Pekerjaan Baru", qty: 1, unit: "m2", price: 0 }); renderItems(); }
+    function deleteItem(index) { currentItems.splice(index, 1); renderItems(); }
+
+    function calculateTotals() {
+      let subtotal = currentItems.reduce((acc, item) => acc + (item.qty * item.price), 0);
+      let overheadPct = parseFloat(document.getElementById('overheadPct').value) || 0;
+      let taxPct = parseFloat(document.getElementById('taxPct').value) || 0;
+      let profitPct = parseFloat(document.getElementById('profitPct').value) || 0;
+
+      let overheadVal = subtotal * (overheadPct / 100);
+      let profitVal = (subtotal + overheadVal) * (profitPct / 100);
+      let taxVal = (subtotal + overheadVal + profitVal) * (taxPct / 100);
+      let grandTotal = subtotal + overheadVal + profitVal + taxVal;
+
+      document.getElementById('subtotalVal').innerText = 'Rp ' + subtotal.toLocaleString('id-ID');
+      document.getElementById('grandTotalVal').innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
+    }
+
+    function openAHSModal() { document.getElementById('ahsModal').style.display = 'flex'; }
+    function closeAHSModal() { document.getElementById('ahsModal').style.display = 'none'; }
+
+    function filterAHSList() {
+      renderAHSTable(document.getElementById('ahsSearch').value, document.getElementById('ahsCategoryFilter').value);
+    }
+
+    function exportExcel() {
+      let data = currentItems.map(i => ({ "Deskripsi": i.desc, "Kuantitas": i.qty, "Satuan": i.unit, "Harga Satuan (Rp)": i.price, "Total (Rp)": i.qty * i.price }));
+      let ws = XLSX.utils.json_to_sheet(data);
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "RAB");
+      XLSX.writeFile(wb, `${document.getElementById('projectName').value}_RAB.xlsx`);
+    }
+
+    function exportPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text(`Rencana Anggaran Biaya - ${document.getElementById('projectName').value}`, 14, 15);
+      let rows = currentItems.map(i => [i.desc, i.qty, i.unit, `Rp ${i.price.toLocaleString('id-ID')}`, `Rp ${(i.qty * i.price).toLocaleString('id-ID')}`]);
+      doc.autoTable({ head: [['Deskripsi', 'Qty', 'Satuan', 'Harga Satuan', 'Total']], body: rows, startY: 25 });
+      doc.save(`${document.getElementById('projectName').value}_RAB.pdf`);
+    }
+  </script>
+</body>
+</html>
+
