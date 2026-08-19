@@ -260,21 +260,23 @@
         <button class="btn btn-outline" onclick="closeAHSModal()">✖ Close</button>
       </div>
       
-      <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
-        <select id="ahsCategoryFilter" class="form-control" style="flex: 1; min-width: 200px;" onchange="filterAHSList()">
-          <option value="ALL">📂 Semua Kategori Pekerjaan</option>
-          <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
-          <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
-          <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
-          <option value="Pekerjaan Beton">Pekerjaan Beton</option>
-          <option value="Pekerjaan Atap">Pekerjaan Atap</option>
-          <option value="Pekerjaan Finishing/Arsitektural">Pekerjaan Finishing/Arsitektural</option>
-          <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
-          <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
-          <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
-        </select>
-        <input type="text" id="ahsSearch" class="form-control" style="flex: 2; min-width: 200px;" placeholder="Cari nama pekerjaan..." onkeyup="filterAHSList()">
-      </div>
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+  <select id="ahsCategoryFilter" class="form-control" onchange="filterAHSList()">
+    <option value="ALL">🚩 Semua Kategori</option>
+    <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+    <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+    <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+    <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+    <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+    <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
+    <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+    <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+    <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+  </select>
+
+  <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama atau kode AHS..." oninput="filterAHSList()">
+</div>
+
       
       <div class="table-container" style="max-height: 550px; overflow-y: auto;">
         <table style="width: 100%; border-collapse: collapse;">
