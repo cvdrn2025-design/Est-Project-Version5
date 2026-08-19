@@ -32,13 +32,13 @@
     <!-- Card 1: Proyek Tersimpan -->
     <div class="card p-3">
       <h6 class="fw-bold mb-2">📁 Proyek Tersimpan</h6>
-      <select class="form-select mb-3">
+      <select id="select-proyek" class="form-select mb-3">
         <option selected>Pilih proyek...</option>
       </select>
       <div class="d-grid gap-2">
-        <button class="btn btn-primary btn-custom">➕ Proyek Baru</button>
-        <button class="btn btn-secondary btn-custom">✏️ Ganti Nama</button>
-        <button class="btn btn-outline-danger btn-custom">🗑️ Hapus Proyek</button>
+        <button id="btn-proyek-baru" class="btn btn-primary btn-custom">➕ Proyek Baru</button>
+        <button id="btn-ganti-nama" class="btn btn-secondary btn-custom">✏️ Ganti Nama</button>
+        <button id="btn-hapus-proyek" class="btn btn-outline-danger btn-custom">🗑️ Hapus Proyek</button>
       </div>
     </div>
 
@@ -46,36 +46,36 @@
     <div class="card p-3">
       <div class="mb-3">
         <label class="form-label fw-bold small">📝 Nama Proyek</label>
-        <input type="text" class="form-control" placeholder="Masukkan nama proyek...">
+        <input type="text" id="input-nama-proyek" class="form-control" placeholder="Masukkan nama proyek...">
       </div>
       <div class="mb-3">
         <label class="form-label fw-bold small">🏷️ Jenis Proyek</label>
-        <select class="form-select">
-          <option>Konstruksi</option>
-          <option>Renovasi</option>
+        <select id="select-jenis-proyek" class="form-select">
+          <option value="Konstruksi">Konstruksi</option>
+          <option value="Renovasi">Renovasi</option>
         </select>
       </div>
       <div class="mb-3">
         <label class="form-label fw-bold small">📅 Tanggal</label>
-        <input type="date" class="form-control">
+        <input type="date" id="input-tanggal" class="form-control">
       </div>
-      <button class="btn btn-warning w-100 fw-bold">💾 Simpan Proyek</button>
+      <button id="btn-simpan-proyek" class="btn btn-warning w-100 fw-bold">💾 Simpan Proyek</button>
     </div>
 
     <!-- Card 3: Action Buttons -->
     <div class="row g-2">
       <div class="col-4">
-        <button class="btn btn-primary w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
+        <button id="btn-buka-library" class="btn btn-primary w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
           📚 <br> Buka Library
         </button>
       </div>
       <div class="col-4">
-        <button class="btn btn-light border w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
+        <button id="btn-tambah-item" class="btn btn-light border w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
           ➕ <br> Tambah Item
         </button>
       </div>
       <div class="col-4">
-        <button class="btn btn-success w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
+        <button id="btn-export-excel" class="btn btn-success w-100 h-100 py-3 d-flex flex-column align-items-center justify-content-center" style="font-size: 0.75rem;">
           📊 <br> Export
         </button>
       </div>
@@ -86,12 +86,22 @@
   <!-- Bootstrap 5 Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-  <!-- Register PWA Service Worker -->
+  <!-- Script Logika -->
   <script>
+    // Contoh untuk tombol simpan
+    document.getElementById('btn-simpan-proyek').addEventListener('click', function() {
+        const nama = document.getElementById('input-nama-proyek').value;
+        if(nama) {
+            alert('Proyek "' + nama + '" telah disimpan!');
+        } else {
+            alert('Mohon isi nama proyek.');
+        }
+    });
+
+    // Pendaftaran Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('Service Worker OK'))
           .catch(err => console.log('Service Worker Error', err));
       });
     }
