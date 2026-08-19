@@ -1,10 +1,10 @@
 {
   "name": "SiCerMat - Estimasi AHS & RAB",
   "short_name": "SiCerMat",
-  "description": "Aplikasi Perhitungan AHS dan RAB Konstruksi",
+  "description": "Aplikasi Perhitungan Analisa Harga Satuan dan RAB Konstruksi",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#f8fafc",
   "theme_color": "#2563eb",
   "icons": [
     {
