@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiCerMat - Aplikasi Estimasi AHS & RAB</title>
+
+  <!-- PWA Metadata & Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#2563eb">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    .category-badge { background-color: #e2e8f0; color: #334155; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+    .table-ahs-detail { font-size: 0.85rem; background-color: #f1f5f9; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
+    <div class="container">
+      <span class="navbar-brand mb-0 h1">📊 SiCerMat - Estimasi RAB & AHS</span>
+    </div>
+  </nav>
+
+  <div class="container mb-5">
+    <!-- Panel Tombol Utama -->
+    <div class="card p-3 mb-4">
+      <div class="row g-2">
+        <div class="col-md-4">
+          <button class="btn btn-primary w-100 py-2 fw-bold" onclick="openAHSModal()">
+            📚 Buka Library AHS Standard
+          </button>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-outline-secondary w-100 py-2 fw-bold" onclick="addManualRow()">
+            ➕ Tambah Item Manual
+          </button>
+        </div>
+        <div class="col-md-4">
+          <button class="btn btn-success w-100 py-2 fw-bold" onclick="alert('Fitur Export Excel siap dikembangkan!')">
+            📊 Export Excel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabel Rincian RAB -->
+    <div class="card p-4 mb-4">
+      <h5 class="card-title fw-bold text-dark mb-3">Rincian Anggaran Biaya (RAB) Proyek</h5>
+      <div class="table-responsive">
+        <table class="table table-bordered align-middle" id="rabTable">
+          <thead class="table-light">
+            <tr>
+              <th style="width: 40%;">Uraian Pekerjaan</th>
+              <th style="width: 15%;">Volume</th>
+              <th style="width: 10%;">Satuan</th>
+              <th style="width: 15%;">Harga Satuan (Rp)</th>
+              <th style="width: 15%;">Total Harga (Rp)</th>
+              <th style="width: 5%;">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rabTableBody">
+            <!-- Dynamic RAB rows added here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Calculation Summary -->
+      <div class="row justify-content-end mt-3">
+        <div class="col-md-4">
+          <div class="d-flex justify-content-between mb-2">
+            <span class="fw-bold">Subtotal:</span>
+            <span id="subtotalVal" class="fw-bold">Rp 0</span>
+          </div>
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span>Margin Keuntungan (%):</span>
+            <input type="number" id="profitMargin" class="form-control form-control-sm w-25 text-end" value="10" onchange="calculateGrandTotal()">
+          </div>
+          <hr>
+          <div class="d-flex justify-content-between align-items-center">
+            <h5 class="fw-bold text-primary mb-0">Grand Total:</h5>
+            <h5 id="grandTotalVal" class="fw-bold text-primary mb-0">Rp 0</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Library AHS -->
+    <div class="modal fade" id="ahsModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">📚 Standard AHS Library (Analisa Harga Satuan)</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!-- Filter & Search -->
+            <div class="row g-2 mb-3">
+              <div class="col-md-4">
+                <select id="ahsCategoryFilter" class="form-select" onchange="filterAHSList()">
+                  <option value="ALL">🚩 Semua Kategori</option>
+                  <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+                  <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+                  <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+                  <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+                  <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+                  <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
+                  <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+                  <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+                  <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+                </select>
+              </div>
+              <div class="col-md-8">
+                <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama pekerjaan atau kode AHS..." onkeyup="filterAHSList()">
+              </div>
+            </div>
+
+            <!-- Table Modal AHS -->
+            <div class="table-responsive">
+              <table class="table table-hover align-middle">
+                <thead class="table-light">
+                  <tr>
+                    <th style="width: 20%;">Kode / Kategori</th>
+                    <th style="width: 55%;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
+                    <th style="width: 25%; text-align: center;">Aksi & Harga Total</th>
+                  </tr>
+                </thead>
+                <tbody id="ahsTableBody">
+                  <!-- AHS list rendered dynamically -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Harga Dasar (Bahan, Alat, Upah) -->
+    <div class="card p-4">
+      <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar (Bahan, Alat, Upah)</h5>
+      <ul class="nav nav-tabs" id="masterTab" role="tablist">
+        <li class="nav-item"><button class="nav-link active" id="bahan-tab" data-bs-toggle="tab" data-bs-target="#bahan-panel" type="button">Bahan</button></li>
+        <li class="nav-item"><button class="nav-link" id="alat-tab" data-bs-toggle="tab" data-bs-target="#alat-panel" type="button">Alat</button></li>
+        <li class="nav-item"><button class="nav-link" id="upah-tab" data-bs-toggle="tab" data-bs-target="#upah-panel" type="button">Upah</button></li>
+      </ul>
+      
+      <div class="tab-content pt-3" id="masterTabContent">
+        <!-- Panel Bahan -->
+        <div class="tab-pane fade show active" id="bahan-panel">
+          <div class="d-flex justify-content-between mb-2">
+            <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
+            <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+          </div>
+          <table class="table table-sm table-bordered">
+            <thead><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
+            <tbody id="materialPriceTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Panel Alat -->
+        <div class="tab-pane fade" id="alat-panel">
+          <div class="d-flex justify-content-between mb-2">
+            <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
+            <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+          </div>
+          <table class="table table-sm table-bordered">
+            <thead><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
+            <tbody id="equipmentPriceTable"></tbody>
+          </table>
+        </div>
+
+        <!-- Panel Upah -->
+        <div class="tab-pane fade" id="upah-panel">
+          <div class="d-flex justify-content-between mb-2">
+            <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
+            <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+          </div>
+          <table class="table table-sm table-bordered">
+            <thead><tr><th>Tenaga Kerja</th><th>Harga Satuan (Rp)</th></tr></thead>
+            <tbody id="laborPriceTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Load File Master Data dari Folder js -->
+  <script src="js/master-data.js?v=1.2"></script>
+
+  <!-- Logic Script RAB Interaktif -->
+  <script>
+    let ahsModalInstance;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      ahsModalInstance = new bootstrap.Modal(document.getElementById('ahsModal'));
+      renderPriceTable('bahan');
+      renderPriceTable('alat');
+      renderPriceTable('upah');
+    });
+
+    function openAHSModal() {
+      filterAHSList();
+      ahsModalInstance.show();
+    }
+
+    function closeAHSModal() {
+      ahsModalInstance.hide();
+    }
+
+    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
+      const tbody = document.getElementById('rabTableBody');
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><input type="text" class="form-control form-control-sm" value="${title}"></td>
+        <td><input type="number" class="form-control form-control-sm text-end" value="${vol}" step="any" onchange="calculateRow(this)"></td>
+        <td><input type="text" class="form-control form-control-sm text-center" value="${unit}"></td>
+        <td><input type="number" class="form-control form-control-sm text-end" value="${price}" onchange="calculateRow(this)"></td>
+        <td class="text-end fw-bold row-total">Rp ${(vol * price).toLocaleString('id-ID')}</td>
+        <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteRow(this)">❌</button></td>
+      `;
+      tbody.appendChild(tr);
+      calculateGrandTotal();
+    }
+
+    function addManualRow() {
+      addItemRow('Pekerjaan Manual', 1, 'ls', 0);
+    }
+
+    function calculateRow(inputElem) {
+      const row = inputElem.closest('tr');
+      const inputs = row.querySelectorAll('input');
+      const vol = parseFloat(inputs[1].value) || 0;
+      const price = parseFloat(inputs[3].value) || 0;
+      const total = vol * price;
+      row.querySelector('.row-total').innerText = 'Rp ' + Math.round(total).toLocaleString('id-ID');
+      calculateGrandTotal();
+    }
+
+    function deleteRow(btn) {
+      btn.closest('tr').remove();
+      calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+      let subtotal = 0;
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const vol = parseFloat(inputs[1].value) || 0;
+        const price = parseFloat(inputs[3].value) || 0;
+        subtotal += vol * price;
+      });
+
+      const margin = parseFloat(document.getElementById('profitMargin').value) || 0;
+      const grandTotal = subtotal + (subtotal * (margin / 100));
+
+      document.getElementById('subtotalVal').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
+      document.getElementById('grandTotalVal').innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
+    }
+  </script>
+
+  <!-- Register PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('PWA Service Worker Berhasil Didaftarkan!'))
+          .catch(err => console.log('Gagal mendaftarkan Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
+
