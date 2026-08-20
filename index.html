@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SiCerMat - Aplikasi Estimasi AHS & RAB</title>
+  <title>SiCerMat - Estimasi RAB & AHS</title>
 
   <!-- PWA Metadata & Manifest -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#2563eb">
-  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -18,52 +18,91 @@
     .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
     .category-badge { background-color: #e2e8f0; color: #334155; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
     .table-ahs-detail { font-size: 0.85rem; background-color: #f1f5f9; border-radius: 6px; }
+    
+    /* Responsif Table Container */
+    .table-responsive-custom {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .table-responsive-custom table {
+      min-width: 680px; /* Menjaga lebar minimum tabel agar tidak gepeng di layar HP */
+    }
+
+    /* Scrollable Container untuk Panel Harga Dasar */
+    .master-table-container {
+      max-height: 240px;
+      overflow-y: auto;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-dark bg-primary mb-4 shadow-sm">
-    <div class="container">
-      <span class="navbar-brand mb-0 h1">📊 SiCerMat - Estimasi RAB & AHS</span>
+  <!-- Header / Navbar Clean dengan Logo icon.png -->
+  <nav class="navbar navbar-dark bg-primary mb-3 shadow-sm py-2">
+    <div class="container justify-content-center">
+      <a class="navbar-brand m-0 p-0" href="#">
+        <img src="icon.png" alt="Logo SiCerMat" style="max-height: 40px; width: auto; object-fit: contain;">
+      </a>
     </div>
   </nav>
 
   <div class="container mb-5">
-    <!-- Panel Tombol Utama -->
+    <!-- Panel Tombol Utama & Aksi Proyek -->
     <div class="card p-3 mb-4">
       <div class="row g-2">
-        <div class="col-md-4">
-          <button class="btn btn-primary w-100 py-2 fw-bold" onclick="openAHSModal()">
-            📚 Buka Library AHS Standard
+        <div class="col-6 col-md-2">
+          <button class="btn btn-outline-primary w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">
+            ➕ Proyek Baru
           </button>
         </div>
-        <div class="col-md-4">
-          <button class="btn btn-outline-secondary w-100 py-2 fw-bold" onclick="addManualRow()">
+        <div class="col-6 col-md-2">
+          <button class="btn btn-success w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">
+            💾 Save Proyek
+          </button>
+        </div>
+        <div class="col-6 col-md-2">
+          <button class="btn btn-info text-white w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">
+            📂 Open Proyek
+          </button>
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="openProjectExcel(event)">
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
+            📚 Library AHS Standard
+          </button>
+        </div>
+        <div class="col-12 col-md-3">
+          <button class="btn btn-secondary w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">
             ➕ Tambah Item Manual
-          </button>
-        </div>
-        <div class="col-md-4">
-          <button class="btn btn-success w-100 py-2 fw-bold" onclick="alert('Fitur Export Excel siap dikembangkan!')">
-            📊 Export Excel
           </button>
         </div>
       </div>
     </div>
 
-    <!-- Tabel Rincian RAB -->
-    <div class="card p-4 mb-4">
-      <h5 class="card-title fw-bold text-dark mb-3">Rincian Anggaran Biaya (RAB) Proyek</h5>
-      <div class="table-responsive">
+    <!-- Informasi & Tabel Rincian RAB -->
+    <div class="card p-3 p-md-4 mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+        <div>
+          <h5 class="fw-bold text-dark mb-1" id="displayProjectName">Proyek: Unnamed Project</h5>
+          <small class="text-muted">
+            Pemilik: <span id="displayProjectOwner" class="fw-semibold">-</span> | 
+            Lokasi: <span id="displayProjectLocation" class="fw-semibold">-</span>
+          </small>
+        </div>
+        <button class="btn btn-sm btn-outline-secondary mt-2 mt-md-0" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
+      </div>
+
+      <!-- Tabel Responsif -->
+      <div class="table-responsive table-responsive-custom">
         <table class="table table-bordered align-middle" id="rabTable">
           <thead class="table-light">
             <tr>
-              <th style="width: 40%;">Uraian Pekerjaan</th>
-              <th style="width: 15%;">Volume</th>
-              <th style="width: 10%;">Satuan</th>
-              <th style="width: 15%;">Harga Satuan (Rp)</th>
-              <th style="width: 15%;">Total Harga (Rp)</th>
-              <th style="width: 5%;">Aksi</th>
+              <th style="min-width: 220px;">Uraian Pekerjaan</th>
+              <th style="min-width: 90px;">Volume</th>
+              <th style="min-width: 80px;">Satuan</th>
+              <th style="min-width: 130px;">Harga Satuan (Rp)</th>
+              <th style="min-width: 140px;">Total Harga (Rp)</th>
+              <th style="min-width: 60px;" class="text-center">Aksi</th>
             </tr>
           </thead>
           <tbody id="rabTableBody">
@@ -74,7 +113,7 @@
 
       <!-- Calculation Summary -->
       <div class="row justify-content-end mt-3">
-        <div class="col-md-4">
+        <div class="col-md-5 col-lg-4">
           <div class="d-flex justify-content-between mb-2">
             <span class="fw-bold">Subtotal:</span>
             <span id="subtotalVal" class="fw-bold">Rp 0</span>
@@ -87,6 +126,36 @@
           <div class="d-flex justify-content-between align-items-center">
             <h5 class="fw-bold text-primary mb-0">Grand Total:</h5>
             <h5 id="grandTotalVal" class="fw-bold text-primary mb-0">Rp 0</h5>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Proyek Baru / Edit Info -->
+    <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title fw-bold">🏗️ Informasi Proyek</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label class="form-label font-weight-bold">Nama Proyek</label>
+              <input type="text" id="inputProjectName" class="form-control" placeholder="Contoh: Pembangunan Rumah Type 45">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Nama Pemilik Proyek</label>
+              <input type="text" id="inputProjectOwner" class="form-control" placeholder="Contoh: Bp. Ahmad">
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Lokasi Proyek</label>
+              <input type="text" id="inputProjectLocation" class="form-control" placeholder="Contoh: Samarinda, Kalimantan Timur">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+            <button type="button" class="btn btn-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
           </div>
         </div>
       </div>
@@ -123,13 +192,13 @@
             </div>
 
             <!-- Table Modal AHS -->
-            <div class="table-responsive">
+            <div class="table-responsive table-responsive-custom">
               <table class="table table-hover align-middle">
                 <thead class="table-light">
                   <tr>
-                    <th style="width: 20%;">Kode / Kategori</th>
-                    <th style="width: 55%;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
-                    <th style="width: 25%; text-align: center;">Aksi & Harga Total</th>
+                    <th style="min-width: 150px;">Kode / Kategori</th>
+                    <th style="min-width: 300px;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
+                    <th style="min-width: 180px;" class="text-center">Aksi & Harga Total</th>
                   </tr>
                 </thead>
                 <tbody id="ahsTableBody">
@@ -142,50 +211,64 @@
       </div>
     </div>
 
-    <!-- Panel Harga Dasar (Bahan, Alat, Upah) -->
-    <div class="card p-4">
-      <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar (Bahan, Alat, Upah)</h5>
-      <ul class="nav nav-tabs" id="masterTab" role="tablist">
-        <li class="nav-item"><button class="nav-link active" id="bahan-tab" data-bs-toggle="tab" data-bs-target="#bahan-panel" type="button">Bahan</button></li>
-        <li class="nav-item"><button class="nav-link" id="alat-tab" data-bs-toggle="tab" data-bs-target="#alat-panel" type="button">Alat</button></li>
-        <li class="nav-item"><button class="nav-link" id="upah-tab" data-bs-toggle="tab" data-bs-target="#upah-panel" type="button">Upah</button></li>
-      </ul>
-      
-      <div class="tab-content pt-3" id="masterTabContent">
-        <!-- Panel Bahan -->
-        <div class="tab-pane fade show active" id="bahan-panel">
-          <div class="d-flex justify-content-between mb-2">
-            <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
-            <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
-          </div>
-          <table class="table table-sm table-bordered">
-            <thead><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
-            <tbody id="materialPriceTable"></tbody>
-          </table>
-        </div>
+    <!-- Panel Harga Dasar (Bahan, Alat, Upah) dengan Fitur Hide/Collapse -->
+    <div class="card p-3 p-md-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="card-title fw-bold text-dark mb-0">🏷️ Panel Harga Dasar (Bahan, Alat, Upah)</h5>
+        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelHargaContent" aria-expanded="true">
+          👁️ Sembunyikan / Tampilkan
+        </button>
+      </div>
 
-        <!-- Panel Alat -->
-        <div class="tab-pane fade" id="alat-panel">
-          <div class="d-flex justify-content-between mb-2">
-            <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
-            <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+      <div class="collapse show" id="panelHargaContent">
+        <ul class="nav nav-tabs" id="masterTab" role="tablist">
+          <li class="nav-item"><button class="nav-link active" id="bahan-tab" data-bs-toggle="tab" data-bs-target="#bahan-panel" type="button">Bahan</button></li>
+          <li class="nav-item"><button class="nav-link" id="alat-tab" data-bs-toggle="tab" data-bs-target="#alat-panel" type="button">Alat</button></li>
+          <li class="nav-item"><button class="nav-link" id="upah-tab" data-bs-toggle="tab" data-bs-target="#upah-panel" type="button">Upah</button></li>
+        </ul>
+        
+        <div class="tab-content pt-3" id="masterTabContent">
+          <!-- Panel Bahan -->
+          <div class="tab-pane fade show active" id="bahan-panel">
+            <div class="d-flex justify-content-between mb-2">
+              <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
+              <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+            </div>
+            <div class="master-table-container">
+              <table class="table table-sm table-bordered">
+                <thead><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
+                <tbody id="materialPriceTable"></tbody>
+              </table>
+            </div>
           </div>
-          <table class="table table-sm table-bordered">
-            <thead><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
-            <tbody id="equipmentPriceTable"></tbody>
-          </table>
-        </div>
 
-        <!-- Panel Upah -->
-        <div class="tab-pane fade" id="upah-panel">
-          <div class="d-flex justify-content-between mb-2">
-            <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
-            <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+          <!-- Panel Alat -->
+          <div class="tab-pane fade" id="alat-panel">
+            <div class="d-flex justify-content-between mb-2">
+              <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
+              <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+            </div>
+            <div class="master-table-container">
+              <table class="table table-sm table-bordered">
+                <thead><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
+                <tbody id="equipmentPriceTable"></tbody>
+              </table>
+            </div>
           </div>
-          <table class="table table-sm table-bordered">
-            <thead><tr><th>Tenaga Kerja</th><th>Harga Satuan (Rp)</th></tr></thead>
-            <tbody id="laborPriceTable"></tbody>
-          </table>
+
+          <!-- Panel Upah -->
+          <div class="tab-pane fade" id="upah-panel">
+            <div class="d-flex justify-content-between mb-2">
+              <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
+              <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+            </div>
+            <div class="master-table-container">
+              <table class="table table-sm table-bordered">
+                <thead><tr><th>Tenaga Kerja</th><th>Harga Satuan (Rp)</th></tr></thead>
+                <tbody id="laborPriceTable"></tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -194,18 +277,30 @@
   <!-- Bootstrap 5 Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
+  <!-- SheetJS (XLSX) Library untuk Import / Export Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <!-- Load File Master Data dari Folder js -->
   <script src="js/master-data.js?v=1.2"></script>
 
-  <!-- Logic Script RAB Interaktif -->
+  <!-- Logic Script RAB Interaktif & Excel Storage -->
   <script>
     let ahsModalInstance;
+    let projectModalInstance;
+    
+    let currentProject = {
+      name: "Proyek Bangunan A",
+      owner: "-",
+      location: "-"
+    };
 
     document.addEventListener('DOMContentLoaded', () => {
       ahsModalInstance = new bootstrap.Modal(document.getElementById('ahsModal'));
+      projectModalInstance = new bootstrap.Modal(document.getElementById('projectModal'));
       renderPriceTable('bahan');
       renderPriceTable('alat');
       renderPriceTable('upah');
+      updateProjectHeader();
     });
 
     function openAHSModal() {
@@ -217,6 +312,29 @@
       ahsModalInstance.hide();
     }
 
+    /* Modal Proyek */
+    function openProjectModal() {
+      document.getElementById('inputProjectName').value = currentProject.name;
+      document.getElementById('inputProjectOwner').value = currentProject.owner;
+      document.getElementById('inputProjectLocation').value = currentProject.location;
+      projectModalInstance.show();
+    }
+
+    function saveProjectInfo() {
+      currentProject.name = document.getElementById('inputProjectName').value || "Unnamed Project";
+      currentProject.owner = document.getElementById('inputProjectOwner').value || "-";
+      currentProject.location = document.getElementById('inputProjectLocation').value || "-";
+      updateProjectHeader();
+      projectModalInstance.hide();
+    }
+
+    function updateProjectHeader() {
+      document.getElementById('displayProjectName').innerText = "Proyek: " + currentProject.name;
+      document.getElementById('displayProjectOwner').innerText = currentProject.owner;
+      document.getElementById('displayProjectLocation').innerText = currentProject.location;
+    }
+
+    /* Baris Tabel RAB */
     function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
       const tbody = document.getElementById('rabTableBody');
       const tr = document.createElement('tr');
@@ -266,6 +384,82 @@
 
       document.getElementById('subtotalVal').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
       document.getElementById('grandTotalVal').innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
+    }
+
+    /* Export Excel Functionality */
+    function saveProjectExcel() {
+      const margin = parseFloat(document.getElementById('profitMargin').value) || 0;
+      const data = [
+        ["INFORMASI PROYEK"],
+        ["Nama Proyek", currentProject.name],
+        ["Pemilik Proyek", currentProject.owner],
+        ["Lokasi Proyek", currentProject.location],
+        ["Margin Keuntungan (%)", margin],
+        [],
+        ["RINCIAN ANGGARAN BIAYA (RAB)"],
+        ["Uraian Pekerjaan", "Volume", "Satuan", "Harga Satuan (Rp)", "Total Harga (Rp)"]
+      ];
+
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach(row => {
+        const inputs = row.querySelectorAll('input');
+        const title = inputs[0].value;
+        const vol = parseFloat(inputs[1].value) || 0;
+        const unit = inputs[2].value;
+        const price = parseFloat(inputs[3].value) || 0;
+        const total = vol * price;
+        data.push([title, vol, unit, price, total]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "RAB Proyek");
+
+      const fileName = `${currentProject.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_RAB.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    }
+
+    /* Import Excel Functionality */
+    function openProjectExcel(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+        if (json.length > 0) {
+          // Parsing Metadata
+          json.forEach(row => {
+            if (row[0] === "Nama Proyek") currentProject.name = row[1] || "Unnamed Project";
+            if (row[0] === "Pemilik Proyek") currentProject.owner = row[1] || "-";
+            if (row[0] === "Lokasi Proyek") currentProject.location = row[1] || "-";
+            if (row[0] === "Margin Keuntungan (%)") document.getElementById('profitMargin').value = row[1] || 10;
+          });
+          updateProjectHeader();
+
+          // Clear existing rows
+          document.getElementById('rabTableBody').innerHTML = '';
+
+          // Find start of table data
+          let isTableData = false;
+          json.forEach(row => {
+            if (row[0] === "Uraian Pekerjaan") {
+              isTableData = true;
+              return;
+            }
+            if (isTableData && row.length >= 4 && row[0]) {
+              addItemRow(row[0], parseFloat(row[1]) || 0, row[2] || 'ls', parseFloat(row[3]) || 0);
+            }
+          });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      event.target.value = ''; // Reset input file
     }
   </script>
 
