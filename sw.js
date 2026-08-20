@@ -1,52 +1,61 @@
-/* ==========================================================================
-   SERVICE WORKER SICERMAT (PWA)
-   ========================================================================== */
-
-const CACHE_NAME = 'sicermat-v2'; // Naikkan versi cache agar browser memperbarui file lama
+const CACHE_NAME = 'sicermat-cache-v2';
 const urlsToCache = [
   './',
   './index.html',
-  './master-data.js'
-  // Tambahkan file CSS, JS tambahan, atau ikon di sini jika ada (contoh: './style.css')
+  './master-data.js',
+  './manifest.json',
+  './icon.png',
+  './icon-192.png',
+  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-// 1. Event Install: Menyimpan aset ke dalam cache
-self.addEventListener('install', (event) => {
+// 1. Install Service Worker & Cache Aset Utama
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Service Worker: Menyimpan aset cache baru...');
-      return cache.addAll(urlsToCache);
-    })
+    caches.open(CACHE_NAME)
+      .then(cache => {
+        console.log('Cache SiCerMat dibuka');
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// 2. Event Activate: Menghapus cache versi lama yang sudah tidak relevan
-self.addEventListener('activate', (event) => {
+// 2. Aktifkan Service Worker & Bersihkan Cache Lama
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then(cacheNames => {
       return Promise.all(
-        cacheNames.map((cacheName) => {
+        cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Service Worker: Menghapus cache lama:', cacheName);
+            console.log('Menghapus cache lama:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// 3. Event Fetch: Mengambil data dari cache, fallback ke jaringan internet
-self.addEventListener('fetch', (event) => {
+// 3. Strategi Fetch (Cache First, fallback to Network)
+self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      // Jika ditemukan di cache, kembalikan; jika tidak, ambil dari network
-      return response || fetch(event.request);
-    }).catch(() => {
-      // Opsi fallback offline opsional (misal halaman offline.html)
-    })
+    caches.match(event.request)
+      .then(response => {
+        // Kembalikan dari cache jika ada
+        if (response) {
+          return response;
+        }
+        // Jika tidak ada di cache, ambil dari jaringan internet
+        return fetch(event.request).catch(() => {
+          // Fallback opsional jika offline total untuk halaman HTML
+          if (event.request.mode === 'navigate') {
+            return caches.match('./index.html');
+          }
+        });
+      })
   );
 });
 
