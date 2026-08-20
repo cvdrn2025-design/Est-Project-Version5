@@ -90,7 +90,6 @@
         font-size: 9.5pt !important;
       }
 
-      /* Format Input menjadi teks datar saat cetak */
       #rabTable input {
         border: none !important;
         background: transparent !important;
@@ -176,6 +175,11 @@
         </div>
       </div>
 
+      <!-- Judul Rencana Anggaran Biaya -->
+      <div class="text-center my-3">
+        <h5 class="fw-bold text-uppercase mb-0 tracking-wide">RENCANA ANGGARAN BIAYA (RAB)</h5>
+      </div>
+
       <!-- Tabel RAB -->
       <div class="table-responsive table-responsive-custom">
         <table class="table table-bordered align-middle" id="rabTable">
@@ -193,16 +197,15 @@
           <tbody id="rabTableBody">
             <!-- Dynamic RAB rows -->
           </tbody>
-          <!-- TFOOT agar Subtotal, PPN, Margin & Grand Total sejajar persis dengan kolom Total Harga -->
           <tfoot id="rabTableFoot">
             <tr>
               <td colspan="5" class="text-end fw-semibold">Subtotal:</td>
-              <td class="text-end fw-bold" id="subtotalVal">Rp 0,00</td>
+              <td class="text-end fw-bold" id="subtotalVal">0,00</td>
               <td class="no-print"></td>
             </tr>
             <tr>
               <td colspan="5" class="text-end fw-semibold">PPN 11%:</td>
-              <td class="text-end fw-bold" id="ppnVal">Rp 0,00</td>
+              <td class="text-end fw-bold" id="ppnVal">0,00</td>
               <td class="no-print"></td>
             </tr>
             <tr>
@@ -211,12 +214,12 @@
                 <input type="number" id="profitMargin" class="form-control form-control-sm d-inline-block text-end ms-1 no-print" style="width: 70px;" value="10" onchange="calculateGrandTotal()">
                 <span class="print-only ms-1" id="printMarginVal">10%</span>
               </td>
-              <td class="text-end fw-bold" id="marginAmountVal">Rp 0,00</td>
+              <td class="text-end fw-bold" id="marginAmountVal">0,00</td>
               <td class="no-print"></td>
             </tr>
             <tr class="table-light fw-bold">
               <td colspan="5" class="text-end fs-6">Grand Total:</td>
-              <td class="text-end fs-6 text-dark" id="grandTotalVal">Rp 0,00</td>
+              <td class="text-end fs-6 text-dark" id="grandTotalVal">0,00</td>
               <td class="no-print"></td>
             </tr>
           </tfoot>
@@ -337,8 +340,9 @@
   <div class="modal fade" id="ahsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
-        <div class="modal-header">
+        <div class="modal-header align-items-center">
           <h5 class="modal-title fw-bold">📚 Library AHS (Analisa Harga Satuan)</h5>
+          <button class="btn btn-sm btn-mono-primary ms-auto me-2 no-print" onclick="printSelectedAHS()">🖨️ Cetak AHS RAB</button>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -409,7 +413,6 @@
       location: "-"
     };
 
-    /* Helper Parsing & Formatting Angka (Indonesian Accounting) */
     function parseIndoNumber(val) {
       if (typeof val === 'number') return val;
       if (!val) return 0;
@@ -423,10 +426,6 @@
         minimumFractionDigits: decimals,
         maximumFractionDigits: decimals
       });
-    }
-
-    function formatCurrency(num) {
-      return 'Rp ' + formatNumber(num, 2);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -477,7 +476,6 @@
       return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim();
     }
 
-    /* Handler Fokus Input untuk Mengetik Angka Mentah */
     function handleFocusNumber(input) {
       let val = parseIndoNumber(input.value);
       input.value = val === 0 ? '' : val;
@@ -509,7 +507,7 @@
         <td><input type="text" class="form-control form-control-sm text-end input-volume" value="${formatNumber(numVol, 2)}" onfocus="handleFocusNumber(this)" onblur="handleBlurVolume(this)"></td>
         <td><input type="text" class="form-control form-control-sm text-center input-unit" value="${unit}"></td>
         <td><input type="text" class="form-control form-control-sm text-end input-price" value="${formatNumber(numPrice, 2)}" onfocus="handleFocusNumber(this)" onblur="handleBlurPrice(this)"></td>
-        <td class="text-end fw-bold row-total">${formatCurrency(numVol * numPrice)}</td>
+        <td class="text-end fw-bold row-total">${formatNumber(numVol * numPrice, 2)}</td>
         <td class="text-center no-print"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
       `;
       tbody.appendChild(tr);
@@ -527,7 +525,7 @@
       const priceVal = parseIndoNumber(row.querySelector('.input-price').value);
       const total = volVal * priceVal;
       
-      row.querySelector('.row-total').innerText = formatCurrency(total);
+      row.querySelector('.row-total').innerText = formatNumber(total, 2);
       calculateGrandTotal();
     }
 
@@ -551,11 +549,11 @@
       const marginVal = subtotal * (marginPercent / 100);
       const grandTotal = subtotal + ppn + marginVal;
 
-      document.getElementById('subtotalVal').innerText = formatCurrency(subtotal);
-      document.getElementById('ppnVal').innerText = formatCurrency(ppn);
-      document.getElementById('marginAmountVal').innerText = formatCurrency(marginVal);
+      document.getElementById('subtotalVal').innerText = formatNumber(subtotal, 2);
+      document.getElementById('ppnVal').innerText = formatNumber(ppn, 2);
+      document.getElementById('marginAmountVal').innerText = formatNumber(marginVal, 2);
       document.getElementById('printMarginVal').innerText = marginPercent + '%';
-      document.getElementById('grandTotalVal').innerText = formatCurrency(grandTotal);
+      document.getElementById('grandTotalVal').innerText = formatNumber(grandTotal, 2);
     }
 
     function printRAB() {
@@ -566,6 +564,100 @@
       
       document.getElementById('printDate').innerText = `${day}/${month}/${year}`;
       window.print();
+    }
+
+    /* Cetak Rincian AHS untuk Item Terpilih di RAB */
+    function printSelectedAHS() {
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      if (rows.length === 0) {
+        alert('Tabel RAB masih kosong! Tambahkan pekerjaan ke RAB terlebih dahulu.');
+        return;
+      }
+
+      let printHTML = `
+        <html>
+        <head>
+          <title>Analisa Harga Satuan Pekerjaan (AHSP)</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #000; }
+            h4, h5 { text-align: center; margin: 4px 0; }
+            .header-info { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; text-align: center; font-size: 10pt; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9.5pt; page-break-inside: avoid; }
+            th, td { border: 1px solid #000; padding: 5px 8px; }
+            th { background-color: #f1f5f9; }
+            .text-end { text-align: right; }
+            .text-center { text-align: center; }
+            .fw-bold { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h4>ANALISA HARGA SATUAN PEKERJAAN (AHSP)</h4>
+          <h5>PROYEK: ${currentProject.name.toUpperCase()}</h5>
+          <div class="header-info">Pemilik: ${currentProject.owner} | Lokasi: ${currentProject.location}</div>
+      `;
+
+      let itemCount = 0;
+      rows.forEach(row => {
+        const titleInput = row.querySelector('.input-title');
+        if (!titleInput) return;
+        const jobTitle = titleInput.value.trim();
+        if (!jobTitle) return;
+
+        if (typeof ahsDatabase !== 'undefined') {
+          const matchAHS = ahsDatabase.find(a => cleanJobTitle(a.title).toLowerCase() === jobTitle.toLowerCase() || a.title.toLowerCase().includes(jobTitle.toLowerCase()));
+          if (matchAHS) {
+            itemCount++;
+            printHTML += `
+              <table>
+                <thead>
+                  <tr style="background-color: #e2e8f0;">
+                    <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title} (${matchAHS.code || '-'})</td>
+                  </tr>
+                  <tr>
+                    <th style="width: 40px;" class="text-center">No</th>
+                    <th>Uraian Komponen / Spesifikasi</th>
+                    <th style="width: 90px;" class="text-end">Koefisien</th>
+                    <th style="width: 70px;" class="text-center">Satuan</th>
+                    <th style="width: 130px;" class="text-end">Harga Satuan (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let idx = 1;
+            if (matchAHS.details && matchAHS.details.length > 0) {
+              matchAHS.details.forEach(d => {
+                printHTML += `
+                  <tr>
+                    <td class="text-center">${idx++}</td>
+                    <td>${d.name}</td>
+                    <td class="text-end">${formatNumber(d.coeff || d.koefisien, 4)}</td>
+                    <td class="text-center">${d.unit || d.satuan || '-'}</td>
+                    <td class="text-end">${formatNumber(d.price || d.harga, 2)}</td>
+                  </tr>
+                `;
+              });
+            } else {
+              printHTML += `<tr><td colspan="5" class="text-center">Rincian analisa tidak ditemukan</td></tr>`;
+            }
+
+            printHTML += `</tbody></table>`;
+          }
+        }
+      });
+
+      if (itemCount === 0) {
+        alert('Item di tabel RAB merupakan inputan manual atau tidak cocok dengan Library AHS.');
+        return;
+      }
+
+      printHTML += `</body></html>`;
+
+      const printWin = window.open('', '_blank');
+      printWin.document.write(printHTML);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => { printWin.print(); }, 400);
     }
 
     function saveProjectExcel() {
