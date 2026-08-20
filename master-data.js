@@ -1576,6 +1576,64 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
     ]
   }
+  // ==================== PEKERJAAN FINISHING (VARIAN TAMBAHAN) ====================
+  {
+    code: "AHS-FIN-20",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Plesteran Dinding 1PC : 5PP (Non-Struktural)",
+    unit: "m2",
+    details: [
+      { name: "Semen Portland (50kg)", coeff: 0.130, unit: "sak", price: 75000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.030, unit: "m3", price: 220000 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-21",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Plesteran Dinding 1PC : 3PP (Area Basah)",
+    unit: "m2",
+    details: [
+      { name: "Semen Portland (50kg)", coeff: 0.200, unit: "sak", price: 75000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.020, unit: "m3", price: 220000 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-22",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pasangan Dinding Bata Ringan t=7.5cm (Partisi)",
+    unit: "m2",
+    details: [
+      { name: "Bata Ringan / Hebel (t=7.5cm)", coeff: 0.075, unit: "m3", price: 750000 },
+      { name: "Semen Mortar Thinbed / Perekat Hebel", coeff: 0.075, unit: "sak", price: 85000 },
+      { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.100, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-23",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pasangan Dinding Bata Merah (Konvensional)",
+    unit: "m2",
+    details: [
+      { name: "Bata Merah", coeff: 100.000, unit: "bh", price: 1200 },
+      { name: "Semen Portland (50kg)", coeff: 0.350, unit: "sak", price: 75000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.050, unit: "m3", price: 220000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+    ]
+  }
 ];
 
 // 3. FUNGSI PENGELOLA HARGA DASAR & AHS
