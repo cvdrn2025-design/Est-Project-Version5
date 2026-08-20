@@ -1,60 +1,56 @@
-const CACHE_NAME = 'sicermat-v1';
-const ASSETS = [
+const CACHE_NAME = 'sicermat-v1.3';
+const STATIC_ASSETS = [
   './',
   './index.html',
-  './js/master-data.js',
   './manifest.json',
   './icon.png',
-  './icon-192.png',
-  './icon-512.png',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js'
+  './icon-192.png'
 ];
 
-// Event: Install Service Worker & Cache Aset Utama
+// Install Service Worker & Cache Aset Statis
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
-// Event: Activate Service Worker & Bersihkan Cache Lama
+// Activate & Hapus Cache Versi Lama
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.map((key) => {
-          if (key !== CACHE_NAME) {
-            return caches.delete(key);
-          }
-        })
+        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
       );
     })
   );
   self.clients.claim();
 });
 
-// Event: Fetch Strategy (Stale-While-Revalidate)
-// Mengambil data dari cache agar cepat saat offline, lalu memperbarui cache di background saat online
+// Strategi Pengambilan Data (Fetch)
 self.addEventListener('fetch', (e) => {
+  const requestUrl = new URL(e.request.url);
+
+  // NETWORK-FIRST KHUSUS LIBRARY AHS (master-data.js)
+  if (requestUrl.pathname.includes('master-data.js')) {
+    e.respondWith(
+      fetch(e.request)
+        .then((networkResponse) => {
+          // Update cache lokal dengan data terbaru dari internet
+          return caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, networkResponse.clone());
+            return networkResponse;
+          });
+        })
+        .catch(() => caches.match(e.request)) // Fallback ke cache jika offline
+    );
+    return;
+  }
+
+  // CACHE-FIRST UNTUK TAMPILAN & ASET STATIS LAINNYA
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
-      const fetchPromise = fetch(e.request).then((networkResponse) => {
-        // Update cache dengan respon terbaru dari jaringan
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, networkResponse.clone());
-          });
-        }
-        return networkResponse;
-      }).catch(() => {
-        // Jika offline dan tidak ada di cache, biarkan gagal dengan elegan
-      });
-
-      return cachedResponse || fetchPromise;
+      return cachedResponse || fetch(e.request);
     })
   );
 });
