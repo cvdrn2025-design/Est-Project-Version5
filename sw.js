@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v7';
+const CACHE_NAME = 'sicermat-cache-v8';
 const urlsToCache = [
   './',
   './index.html',
