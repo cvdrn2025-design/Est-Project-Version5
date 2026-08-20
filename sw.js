@@ -1,55 +1,66 @@
-const CACHE_NAME = 'sicermat-v2.0'; // Versi v2.0: Sinkronisasi pembaruan multi-fallback AHS index.html
-const STATIC_ASSETS = [
+const CACHE_NAME = 'sicermat-v2.0';
+
+// Aset lokal & CDN yang akan disimpan dalam cache awal (App Shell)
+const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './icon.png',
-  './icon-192.png'
+  './icon-192.png',
+  './js/master-data.js',
+  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
+  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
+  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-// Install Service Worker & Cache Aset Statis
-self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+// 1. Event Install: Menyimpan aset awal ke dalam Cache Storage
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[Service Worker] Membuka cache dan menyimpan aset App Shell');
+      return cache.addAll(ASSETS_TO_CACHE);
+    }).then(() => self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-// Activate & Hapus Cache Versi Lama Otomatis
-self.addEventListener('activate', (e) => {
-  e.waitUntil(
-    caches.keys().then((keys) => {
+// 2. Event Activate: Membersihkan cache versi lama saat ada pembaruan
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
       return Promise.all(
-        keys.filter((key) => key !== CACHE_NAME).map((key) => caches.delete(key))
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            console.log('[Service Worker] Menghapus cache lama:', cache);
+            return caches.delete(cache);
+          }
+        })
       );
-    })
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Strategi Pengambilan Data (Fetch)
-self.addEventListener('fetch', (e) => {
-  const requestUrl = new URL(e.request.url);
+// 3. Event Fetch: Mengambil data dari Cache terlebih dahulu, lalu memperbarui via Network
+self.addEventListener('fetch', (event) => {
+  // Hanya proses permintaan bermetode GET
+  if (event.request.method !== 'GET') return;
 
-  // NETWORK-FIRST KHUSUS MASTER DATA (master-data.js)
-  if (requestUrl.pathname.includes('master-data.js')) {
-    e.respondWith(
-      fetch(e.request)
-        .then((networkResponse) => {
-          return caches.open(CACHE_NAME).then((cache) => {
-            cache.put(e.request, networkResponse.clone());
-            return networkResponse;
+  event.respondWith(
+    caches.match(event.request).then((cachedResponse) => {
+      // Ambil data terbaru dari jaringan secara terpisah (background sync)
+      const networkFetch = fetch(event.request).then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
           });
-        })
-        .catch(() => caches.match(e.request))
-    );
-    return;
-  }
+        }
+        return networkResponse;
+      }).catch((err) => {
+        console.warn('[Service Worker] Gagal mengambil dari jaringan, menggunakan cache:', err);
+      });
 
-  // CACHE-FIRST UNTUK TAMPILAN & ASET STATIS LAINNYA
-  e.respondWith(
-    caches.match(e.request).then((cachedResponse) => {
-      return cachedResponse || fetch(e.request);
+      // Kembalikan dari cache jika ada, atau tunggu hasil jaringan jika belum ada di cache
+      return cachedResponse || networkFetch;
     })
   );
 });
