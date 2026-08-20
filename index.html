@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiCerMat - Estimasi RAB & AHS</title>
+
+  <!-- PWA Metadata & Manifest -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; }
+    .card { border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    
+    /* Responsif Table Container */
+    .table-responsive-custom {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    /* Scrollable Container untuk Panel Harga Dasar */
+    .master-table-container {
+      max-height: 240px;
+      overflow-y: auto;
+    }
+
+    /* ==========================================
+       PENGATURAN LEBAR KOLOM TABEL RAB (FIXED & PROPORSIONAL)
+       ========================================== */
+    #rabTable {
+      min-width: 860px;
+      width: 100%;
+      table-layout: fixed; /* Memastikan lebar kolom dipatuhi secara presisi */
+    }
+
+    #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 45px; text-align: center; } /* No */
+    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { width: auto; text-align: left; }    /* Uraian Pekerjaan */
+    #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 85px; text-align: right; }  /* Volume */
+    #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 75px; text-align: center; } /* Satuan */
+    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 170px; text-align: right; } /* Harga Satuan */
+    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 150px; text-align: right; } /* Total Harga */
+    #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 50px; text-align: center; } /* Aksi */
+
+    /* Input di dalam tabel agar selalu 100% mengikuti lebar kolom */
+    #rabTable input.form-control-sm {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Monochrome Button System */
+    .btn-mono-primary { background-color: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
+    .btn-mono-primary:hover { background-color: #334155; color: #ffffff; }
+    .btn-mono-secondary { background-color: #475569; color: #ffffff; border: 1px solid #475569; }
+    .btn-mono-secondary:hover { background-color: #1e293b; color: #ffffff; }
+    .btn-mono-outline { background-color: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; }
+    .btn-mono-outline:hover { background-color: #f1f5f9; color: #0f172a; }
+    .btn-mono-danger { background-color: #ffffff; color: #475569; border: 1px solid #cbd5e1; }
+    .btn-mono-danger:hover { background-color: #0f172a; color: #ffffff; }
+
+    /* Indikator Status Item AHS Terpilih (Hijau Centang) */
+    .btn-added {
+      background-color: #16a34a !important;
+      color: #ffffff !important;
+      border-color: #16a34a !important;
+      font-weight: 600;
+    }
+
+    .btn-komponen { color: #0f172a; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    .print-only { display: none; }
+
+    /* ==========================================
+       GAYA TAMPILAN KHUSUS CETAK (PRINT CSS)
+       ========================================== */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 10pt;
+      }
+
+      .no-print, .btn, #panelHargaDasarCard, .modal, .modal-backdrop {
+        display: none !important;
+      }
+
+      .print-only {
+        display: inline !important;
+      }
+
+      .card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      #rabTable {
+        min-width: 100% !important;
+        width: 100% !important;
+        table-layout: auto !important;
+        border-collapse: collapse !important;
+        margin-bottom: 0 !important;
+      }
+
+      #rabTable th, #rabTable td {
+        border: 1px solid #000000 !important;
+        padding: 5px 8px !important;
+        font-size: 9.5pt !important;
+      }
+
+      #rabTable input {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+        padding: 0 !important;
+        width: 100% !important;
+        font-size: 9.5pt !important;
+      }
+
+      .table-responsive-custom {
+        overflow: visible !important;
+      }
+
+      .print-header {
+        margin-bottom: 15px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 8px;
+      }
+
+      .print-footer {
+        display: block !important;
+        margin-top: 25px;
+        padding-top: 8px;
+        border-top: 1px solid #aaa;
+        font-size: 8.5pt;
+        color: #444;
+        text-align: center;
+      }
+    }
+
+    .print-footer { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Header Logo -->
+  <div class="container text-center my-4 no-print">
+    <img src="icon.png" alt="Logo SiCerMat" style="max-width: 220px; width: 100%; height: auto;" class="img-fluid">
+  </div>
+
+  <div class="container mb-5">
+    <!-- Panel Tombol Utama Proyek -->
+    <div class="card p-3 mb-4 no-print">
+      <div class="row g-2 justify-content-center">
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">➕ Proyek Baru</button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">💾 Save Proyek</button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">📂 Open Proyek</button>
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="openProjectExcel(event)">
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="printRAB()">🖨️ Cetak RAB</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Informasi & Tabel Rincian RAB -->
+    <div class="card p-3 p-md-4 mb-4">
+      <!-- Header Proyek -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom print-header">
+        <div>
+          <h5 class="fw-bold text-dark mb-1" id="displayProjectName">Proyek: Unnamed Project</h5>
+          <small class="text-muted">
+            Pemilik: <span id="displayProjectOwner" class="fw-semibold">-</span> | 
+            Lokasi: <span id="displayProjectLocation" class="fw-semibold">-</span>
+          </small>
+        </div>
+        <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0 no-print" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
+      </div>
+
+      <!-- Tombol Library AHS & Manual -->
+      <div class="row g-2 mb-3 no-print">
+        <div class="col-12 col-sm-6 col-md-3">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">📚 Library AHS</button>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">➕ Tambah Item Manual</button>
+        </div>
+      </div>
+
+      <!-- Judul Rencana Anggaran Biaya -->
+      <div class="text-center my-3">
+        <h5 class="fw-bold text-uppercase mb-0 tracking-wide">RENCANA ANGGARAN BIAYA (RAB)</h5>
+      </div>
+
+      <!-- Tabel RAB -->
+      <div class="table-responsive table-responsive-custom">
+        <table class="table table-bordered align-middle" id="rabTable">
+          <thead class="table-light align-middle">
+            <tr>
+              <th>No</th>
+              <th>Uraian Pekerjaan</th>
+              <th>Volume</th>
+              <th>Satuan</th>
+              <th>Harga Satuan (Rp)</th>
+              <th>Total Harga (Rp)</th>
+              <th class="no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rabTableBody">
+            <!-- Dynamic RAB rows -->
+          </tbody>
+          <tfoot id="rabTableFoot">
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">Subtotal:</td>
+              <td class="text-end fw-bold" id="subtotalVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">PPN 11%:</td>
+              <td class="text-end fw-bold" id="ppnVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">
+                Margin Keuntungan (%):
+                <input type="number" id="profitMargin" class="form-control form-control-sm d-inline-block text-end ms-1 no-print" style="width: 70px;" value="10" onchange="calculateGrandTotal()">
+                <span class="print-only ms-1" id="printMarginVal">10%</span>
+              </td>
+              <td class="text-end fw-bold" id="marginAmountVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+            <tr class="table-light fw-bold">
+              <td colspan="5" class="text-end fs-6">Grand Total:</td>
+              <td class="text-end fs-6 text-dark" id="grandTotalVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Footer Keterangan Cetak Otomatis -->
+      <div class="print-footer" id="printFooterText">
+        RAB dibuat menggunakan Platform Aplikasi SiCerMat dicetak secara otomatis <span id="printDate"></span>
+      </div>
+    </div>
+
+    <!-- Panel Harga Dasar -->
+    <div class="card p-3 p-md-4 no-print" id="panelHargaDasarCard">
+      <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar</h5>
+      <div class="accordion accordion-flush" id="accordionHargaDasar">
+        <!-- Bahan -->
+        <div class="accordion-item border-bottom">
+          <h2 class="accordion-header" id="headingBahan">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBahan">
+              ▶ 🔍 Lihat Komponen Bahan
+            </button>
+          </h2>
+          <div id="collapseBahan" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="materialPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Alat -->
+        <div class="accordion-item border-bottom">
+          <h2 class="accordion-header" id="headingAlat">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlat">
+              ▶ 🔍 Lihat Komponen Alat
+            </button>
+          </h2>
+          <div id="collapseAlat" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="equipmentPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Upah -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingUpah">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUpah">
+              ▶ 🔍 Lihat Komponen Upah
+            </button>
+          </h2>
+          <div id="collapseUpah" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Tenaga Kerja</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="laborPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Proyek -->
+  <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">🏗️ Informasi Proyek</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Nama Proyek</label>
+            <input type="text" id="inputProjectName" class="form-control" placeholder="Contoh: Pembangunan Rumah Type 45">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nama Pemilik Proyek</label>
+            <input type="text" id="inputProjectOwner" class="form-control" placeholder="Contoh: Bp. Ahmad">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Lokasi Proyek</label>
+            <input type="text" id="inputProjectLocation" class="form-control" placeholder="Contoh: Samarinda, Kalimantan Timur">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-mono-outline" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-mono-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Library AHS -->
+  <div class="modal fade" id="ahsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header align-items-center">
+          <h5 class="modal-title fw-bold">📚 Library AHS (Analisa Harga Satuan)</h5>
+          <button class="btn btn-sm btn-mono-primary ms-auto me-2 no-print" onclick="printSelectedAHS()">🖨️ Cetak AHS RAB</button>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <select id="ahsCategoryFilter" class="form-select" onchange="filterAHSList()">
+                <option value="ALL">🚩 Semua Kategori</option>
+                <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+                <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+                <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+                <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+                <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+                <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
+                <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+                <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+                <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+              </select>
+            </div>
+            <div class="col-md-8">
+              <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama pekerjaan atau kode AHS..." onkeyup="filterAHSList()">
+            </div>
+          </div>
+          <div class="table-responsive table-responsive-custom">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width: 150px;">Kode / Kategori</th>
+                  <th style="min-width: 300px;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
+                  <th style="min-width: 180px;" class="text-center">Aksi & Harga Total</th>
+                </tr>
+              </thead>
+              <tbody id="ahsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Dynamic Master Data Script Loader -->
+  <script>
+    (function loadOnlineMasterData() {
+      const script = document.createElement('script');
+      script.src = 'js/master-data.js?v=' + new Date().getTime();
+      script.onload = () => {
+        if (typeof renderPriceTable === 'function') {
+          renderPriceTable('bahan');
+          renderPriceTable('alat');
+          renderPriceTable('upah');
+        }
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
+
+  <!-- Core App Logic & Formatter -->
+  <script>
+    let ahsModalInstance;
+    let projectModalInstance;
+    
+    let currentProject = {
+      name: "Proyek Bangunan A",
+      owner: "-",
+      location: "-"
+    };
+
+    function parseIndoNumber(val) {
+      if (typeof val === 'number') return val;
+      if (!val) return 0;
+      let cleaned = val.toString().replace(/\./g, '').replace(',', '.');
+      return parseFloat(cleaned) || 0;
+    }
+
+    function formatNumber(num, decimals = 2) {
+      const n = parseFloat(num) || 0;
+      return n.toLocaleString('id-ID', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      ahsModalInstance = new bootstrap.Modal(document.getElementById('ahsModal'));
+      projectModalInstance = new bootstrap.Modal(document.getElementById('projectModal'));
+      updateProjectHeader();
+    });
+
+    function openAHSModal() {
+      filterAHSList();
+      ahsModalInstance.show();
+    }
+
+    function closeAHSModal() {
+      ahsModalInstance.hide();
+    }
+
+    function openProjectModal() {
+      document.getElementById('inputProjectName').value = currentProject.name;
+      document.getElementById('inputProjectOwner').value = currentProject.owner;
+      document.getElementById('inputProjectLocation').value = currentProject.location;
+      projectModalInstance.show();
+    }
+
+    function saveProjectInfo() {
+      currentProject.name = document.getElementById('inputProjectName').value || "Unnamed Project";
+      currentProject.owner = document.getElementById('inputProjectOwner').value || "-";
+      currentProject.location = document.getElementById('inputProjectLocation').value || "-";
+      updateProjectHeader();
+      projectModalInstance.hide();
+    }
+
+    function updateProjectHeader() {
+      document.getElementById('displayProjectName').innerText = "Proyek: " + currentProject.name;
+      document.getElementById('displayProjectOwner').innerText = currentProject.owner;
+      document.getElementById('displayProjectLocation').innerText = currentProject.location;
+    }
+
+    function updateRowNumbers() {
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach((row, index) => {
+        row.cells[0].innerText = index + 1;
+      });
+    }
+
+    function cleanJobTitle(title) {
+      if (!title) return '';
+      return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim();
+    }
+
+    function handleFocusNumber(input) {
+      let val = parseIndoNumber(input.value);
+      input.value = val === 0 ? '' : val;
+    }
+
+    function handleBlurVolume(input) {
+      let val = parseIndoNumber(input.value);
+      input.value = formatNumber(val, 2);
+      calculateRow(input);
+    }
+
+    function handleBlurPrice(input) {
+      let val = parseIndoNumber(input.value);
+      input.value = formatNumber(val, 2);
+      calculateRow(input);
+    }
+
+    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
+      const cleanTitle = cleanJobTitle(title);
+      const tbody = document.getElementById('rabTableBody');
+      const tr = document.createElement('tr');
+      
+      const numVol = parseIndoNumber(vol);
+      const numPrice = parseIndoNumber(price);
+
+      tr.innerHTML = `
+        <td class="text-center fw-bold text-muted"></td>
+        <td><input type="text" class="form-control form-control-sm input-title" value="${cleanTitle}"></td>
+        <td><input type="text" class="form-control form-control-sm text-end input-volume" value="${formatNumber(numVol, 2)}" onfocus="handleFocusNumber(this)" onblur="handleBlurVolume(this)"></td>
+        <td><input type="text" class="form-control form-control-sm text-center input-unit" value="${unit}"></td>
+        <td><input type="text" class="form-control form-control-sm text-end input-price" value="${formatNumber(numPrice, 2)}" onfocus="handleFocusNumber(this)" onblur="handleBlurPrice(this)"></td>
+        <td class="text-end fw-bold row-total">${formatNumber(numVol * numPrice, 2)}</td>
+        <td class="text-center no-print"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
+      `;
+      tbody.appendChild(tr);
+      updateRowNumbers();
+      calculateGrandTotal();
+    }
+
+    function addManualRow() {
+      addItemRow('Pekerjaan Manual', 1, 'ls', 0);
+    }
+
+    function calculateRow(inputElem) {
+      const row = inputElem.closest('tr');
+      const volVal = parseIndoNumber(row.querySelector('.input-volume').value);
+      const priceVal = parseIndoNumber(row.querySelector('.input-price').value);
+      const total = volVal * priceVal;
+      
+      row.querySelector('.row-total').innerText = formatNumber(total, 2);
+      calculateGrandTotal();
+    }
+
+    function deleteRow(btn) {
+      btn.closest('tr').remove();
+      updateRowNumbers();
+      calculateGrandTotal();
+    }
+
+    function calculateGrandTotal() {
+      let subtotal = 0;
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach(row => {
+        const volVal = parseIndoNumber(row.querySelector('.input-volume').value);
+        const priceVal = parseIndoNumber(row.querySelector('.input-price').value);
+        subtotal += volVal * priceVal;
+      });
+
+      const ppn = subtotal * 0.11;
+      const marginPercent = parseIndoNumber(document.getElementById('profitMargin').value) || 0;
+      const marginVal = subtotal * (marginPercent / 100);
+      const grandTotal = subtotal + ppn + marginVal;
+
+      document.getElementById('subtotalVal').innerText = formatNumber(subtotal, 2);
+      document.getElementById('ppnVal').innerText = formatNumber(ppn, 2);
+      document.getElementById('marginAmountVal').innerText = formatNumber(marginVal, 2);
+      document.getElementById('printMarginVal').innerText = marginPercent + '%';
+      document.getElementById('grandTotalVal').innerText = formatNumber(grandTotal, 2);
+    }
+
+    function printRAB() {
+      const today = new Date();
+      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const year = today.getFullYear();
+      
+      document.getElementById('printDate').innerText = `${day}/${month}/${year}`;
+      window.print();
+    }
+
+    /* Cetak Rincian AHS untuk Item Terpilih di RAB */
+    function printSelectedAHS() {
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      if (rows.length === 0) {
+        alert('Tabel RAB masih kosong! Tambahkan pekerjaan dari Library AHS terlebih dahulu.');
+        return;
+      }
+
+      let printHTML = `
+        <html>
+        <head>
+          <title>Analisa Harga Satuan Pekerjaan (AHSP)</title>
+          <style>
+            body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #000; }
+            h4, h5 { text-align: center; margin: 4px 0; }
+            .header-info { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; text-align: center; font-size: 10pt; }
+            table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9.5pt; page-break-inside: avoid; }
+            th, td { border: 1px solid #000; padding: 5px 8px; }
+            th { background-color: #f1f5f9; }
+            .text-end { text-align: right; }
+            .text-center { text-align: center; }
+            .fw-bold { font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <h4>ANALISA HARGA SATUAN PEKERJAAN (AHSP)</h4>
+          <h5>PROYEK: ${currentProject.name.toUpperCase()}</h5>
+          <div class="header-info">Pemilik: ${currentProject.owner} | Lokasi: ${currentProject.location}</div>
+      `;
+
+      let itemCount = 0;
+      rows.forEach(row => {
+        const titleInput = row.querySelector('.input-title');
+        const volInput = row.querySelector('.input-volume');
+        if (!titleInput) return;
+
+        const rawTitle = titleInput.value.trim();
+        const volVal = parseIndoNumber(volInput ? volInput.value : 0);
+
+        if (!rawTitle || volVal === 0) return;
+
+        const jobTitleClean = cleanJobTitle(rawTitle).toLowerCase();
+
+        if (typeof ahsDatabase !== 'undefined') {
+          const matchAHS = ahsDatabase.find(a => {
+            const dbTitleClean = cleanJobTitle(a.title).toLowerCase();
+            return dbTitleClean === jobTitleClean || dbTitleClean.includes(jobTitleClean) || jobTitleClean.includes(dbTitleClean);
+          });
+
+          if (matchAHS) {
+            itemCount++;
+            printHTML += `
+              <table>
+                <thead>
+                  <tr style="background-color: #e2e8f0;">
+                    <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title} (${matchAHS.code || '-'})</td>
+                  </tr>
+                  <tr>
+                    <th style="width: 40px;" class="text-center">No</th>
+                    <th>Uraian Komponen / Spesifikasi</th>
+                    <th style="width: 90px;" class="text-end">Koefisien</th>
+                    <th style="width: 70px;" class="text-center">Satuan</th>
+                    <th style="width: 130px;" class="text-end">Harga Satuan (Rp)</th>
+                  </tr>
+                </thead>
+                <tbody>
+            `;
+
+            let idx = 1;
+            if (matchAHS.details && matchAHS.details.length > 0) {
+              matchAHS.details.forEach(d => {
+                printHTML += `
+                  <tr>
+                    <td class="text-center">${idx++}</td>
+                    <td>${d.name}</td>
+                    <td class="text-end">${formatNumber(d.coeff || d.koefisien, 4)}</td>
+                    <td class="text-center">${d.unit || d.satuan || '-'}</td>
+                    <td class="text-end">${formatNumber(d.price || d.harga, 2)}</td>
+                  </tr>
+                `;
+              });
+            } else {
+              printHTML += `<tr><td colspan="5" class="text-center">Rincian analisa tidak ditemukan</td></tr>`;
+            }
+
+            printHTML += `</tbody></table>`;
+          }
+        }
+      });
+
+      if (itemCount === 0) {
+        alert('Tidak ditemukan item pekerjaan dari Library AHS pada tabel RAB untuk dicetak.');
+        return;
+      }
+
+      printHTML += `</body></html>`;
+
+      const printWin = window.open('', '_blank');
+      printWin.document.write(printHTML);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => { printWin.print(); }, 400);
+    }
+
+    function saveProjectExcel() {
+      const margin = parseIndoNumber(document.getElementById('profitMargin').value) || 0;
+      const data = [
+        ["INFORMASI PROYEK"],
+        ["Nama Proyek", currentProject.name],
+        ["Pemilik Proyek", currentProject.owner],
+        ["Lokasi Proyek", currentProject.location],
+        ["Margin Keuntungan (%)", margin],
+        [],
+        ["RINCIAN ANGGARAN BIAYA (RAB)"],
+        ["No", "Uraian Pekerjaan", "Volume", "Satuan", "Harga Satuan (Rp)", "Total Harga (Rp)"]
+      ];
+
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach((row, idx) => {
+        const title = row.querySelector('.input-title').value;
+        const vol = parseIndoNumber(row.querySelector('.input-volume').value);
+        const unit = row.querySelector('.input-unit').value;
+        const price = parseIndoNumber(row.querySelector('.input-price').value);
+        const total = vol * price;
+        data.push([idx + 1, title, vol, unit, price, total]);
+      });
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "RAB Proyek");
+
+      const fileName = `${currentProject.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_RAB.xlsx`;
+      XLSX.writeFile(wb, fileName);
+    }
+
+    function openProjectExcel(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const data = new Uint8Array(e.target.result);
+        const workbook = XLSX.read(data, {type: 'array'});
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+
+        if (json.length > 0) {
+          json.forEach(row => {
+            if (row[0] === "Nama Proyek") currentProject.name = row[1] || "Unnamed Project";
+            if (row[0] === "Pemilik Proyek") currentProject.owner = row[1] || "-";
+            if (row[0] === "Lokasi Proyek") currentProject.location = row[1] || "-";
+            if (row[0] === "Margin Keuntungan (%)") document.getElementById('profitMargin').value = row[1] || 10;
+          });
+          updateProjectHeader();
+
+          document.getElementById('rabTableBody').innerHTML = '';
+
+          let isTableData = false;
+          json.forEach(row => {
+            if (row[1] === "Uraian Pekerjaan" || row[0] === "Uraian Pekerjaan") {
+              isTableData = true;
+              return;
+            }
+            if (isTableData && row.length >= 4) {
+              const title = row[1] || row[0];
+              const vol = parseFloat(row[2] || row[1]) || 0;
+              const unit = row[3] || row[2] || 'ls';
+              const price = parseFloat(row[4] || row[3]) || 0;
+              if (title) addItemRow(title, vol, unit, price);
+            }
+          });
+        }
+      };
+      reader.readAsArrayBuffer(file);
+      event.target.value = '';
+    }
+
+    /* ==========================================
+       LOGIKA CHECKLIST & PENAMBAHAN ITEM AHS
+       ========================================== */
+    function getActiveAHSCodesInRAB() {
+      const activeTitles = [];
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach(row => {
+        const inputTitle = row.querySelector('.input-title');
+        if (inputTitle && inputTitle.value) {
+          activeTitles.push(cleanJobTitle(inputTitle.value).toLowerCase());
+        }
+      });
+      return activeTitles;
+    }
+
+    function selectAHSItem(code, btnElem) {
+      if (typeof ahsDatabase === 'undefined') return;
+      
+      const item = ahsDatabase.find(a => a.code === code);
+      if (!item) return;
+
+      let unitPrice = 0;
+      if (item.details && item.details.length > 0) {
+        unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || d.koefisien || 0) * (d.price || d.harga || 0)), 0);
+      } else {
+        unitPrice = item.totalPrice || item.harga || 0;
+      }
+
+      addItemRow(item.title, 1, item.unit || 'm2', unitPrice);
+
+      if (btnElem) {
+        btnElem.classList.remove('btn-mono-primary', 'btn-mono-outline');
+        btnElem.classList.add('btn-added');
+        btnElem.innerHTML = '✓ Ditambahkan';
+      }
+    }
+
+    function filterAHSList() {
+      const category = document.getElementById('ahsCategoryFilter').value;
+      const search = (document.getElementById('ahsSearch').value || '').toLowerCase().trim();
+      const tbody = document.getElementById('ahsTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Memuat data AHS...</td></tr>';
+        return;
+      }
+
+      const activeRABTitles = getActiveAHSCodesInRAB();
+
+      const filtered = ahsDatabase.filter(item => {
+        const matchCat = (category === 'ALL' || item.category === category);
+        const matchSearch = (!search || 
+          (item.title && item.title.toLowerCase().includes(search)) || 
+          (item.code && item.code.toLowerCase().includes(search))
+        );
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">AHS tidak ditemukan.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        const isAdded = activeRABTitles.includes(cleanJobTitle(item.title).toLowerCase());
+        
+        let detailRows = '';
+        let totalPrice = 0;
+        if (item.details && item.details.length > 0) {
+          item.details.forEach(d => {
+            const coeff = d.coeff || d.koefisien || 0;
+            const price = d.price || d.harga || 0;
+            totalPrice += coeff * price;
+            detailRows += `
+              <div class="small text-muted d-flex justify-content-between border-bottom py-1">
+                <span>• ${d.name} (${coeff} ${d.unit || d.satuan || ''})</span>
+                <span>Rp ${formatNumber(price, 2)}</span>
+              </div>
+            `;
+          });
+        } else {
+          totalPrice = item.totalPrice || item.harga || 0;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <span class="badge bg-dark mb-1">${item.code || 'AHS'}</span>
+            <div class="small fw-semibold text-secondary">${item.category || '-'}</div>
+          </td>
+          <td>
+            <div class="fw-bold text-dark mb-1">${item.title}</div>
+            <div class="mt-2 bg-light p-2 rounded">${detailRows}</div>
+          </td>
+          <td class="text-center align-middle">
+            <div class="fw-bold text-primary mb-2">Rp ${formatNumber(totalPrice, 2)} / ${item.unit || 'm2'}</div>
+            <button class="btn btn-sm ${isAdded ? 'btn-added' : 'btn-mono-primary'} w-100" onclick="selectAHSItem('${item.code}', this)">
+              ${isAdded ? '✓ Ditambahkan' : '➕ Tambahkan'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+  </script>
+
+  <!-- PWA Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker SiCerMat Aktif'))
+          .catch(err => console.log('Gagal mendaftarkan Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>
+
