@@ -2,7 +2,7 @@
    MASTER DATA SICERMAT (HARGA DASAR & ANALISA HARGA SATUAN PEKERJAAN)
    ========================================================================== */
 
-// 1. DATA HARGA DASAR KOMPONEN (BAHAN, ALAT, UPAH)
+// 1. DATA HARGA DASAR KOMPONEN (BAHAN, ALAT, UPAH)[span_1](start_span)[span_1](end_span)
 const masterBahan = [
   { nama: "Semen Portland (50kg)", harga: 75000, satuan: "sak" },
   { nama: "Pasir Pasang / Pasir Beton", harga: 220000, satuan: "m3" },
@@ -45,6 +45,7 @@ const masterUpah = [
 
 // 2. DATABASE ANALISA HARGA SATUAN PEKERJAAN (AHSP) LENGKAP
 const ahsDatabase = [
+  // --- Pekerjaan Persiapan (Awal & Tambahan) ---
   {
     code: "AHS-PRP-01",
     category: "Pekerjaan Persiapan",
@@ -69,6 +70,83 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.005, unit: "OH", price: 180000 }
     ]
   },
+  {
+    code: "AHS-PRP-03",
+    category: "Pekerjaan Persiapan",
+    title: "Pembuatan Direksikeet",
+    unit: "m2",
+    details: [
+      { name: "Kayu Bekisting / Meranti", coeff: 0.150, unit: "m3", price: 2800000 },
+      { name: "Plywood / Multiplek 9mm", coeff: 0.350, unit: "lbr", price: 165000 },
+      { name: "Paku Biasa 2\" - 5\"", coeff: 0.400, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 1.000, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 1.000, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.100, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.050, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PRP-04",
+    category: "Pekerjaan Persiapan",
+    title: "Pemasangan Pagar Keliling Proyek",
+    unit: "m'",
+    details: [
+      { name: "Kayu Bekisting / Meranti", coeff: 0.050, unit: "m3", price: 2800000 },
+      { name: "Paku Biasa 2\" - 5\"", coeff: 0.100, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 0.400, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 0.400, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.040, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.020, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PRP-05",
+    category: "Pekerjaan Persiapan",
+    title: "Pembuatan Bedeng Pekerja",
+    unit: "m2",
+    details: [
+      { name: "Kayu Bekisting / Meranti", coeff: 0.120, unit: "m3", price: 2800000 },
+      { name: "Plywood / Multiplek 9mm", coeff: 0.300, unit: "lbr", price: 165000 },
+      { name: "Paku Biasa 2\" - 5\"", coeff: 0.350, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 0.800, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 0.800, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.080, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.040, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PRP-06",
+    category: "Pekerjaan Persiapan",
+    title: "Pembuatan Toilet Sementara",
+    unit: "ls",
+    details: [
+      { name: "Pipa PVC 3\" Type AW", coeff: 2.000, unit: "btg", price: 95000 },
+      { name: "Pipa PVC 3/4\" Type AW", coeff: 2.000, unit: "btg", price: 35000 },
+      { name: "Kayu Bekisting / Meranti", coeff: 0.100, unit: "m3", price: 2800000 },
+      { name: "Paku Biasa 2\" - 5\"", coeff: 0.250, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 1.500, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 1.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.150, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.075, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PRP-07",
+    category: "Pekerjaan Persiapan",
+    title: "Pembuatan Gudang",
+    unit: "m2",
+    details: [
+      { name: "Kayu Bekisting / Meranti", coeff: 0.130, unit: "m3", price: 2800000 },
+      { name: "Plywood / Multiplek 9mm", coeff: 0.300, unit: "lbr", price: 165000 },
+      { name: "Paku Biasa 2\" - 5\"", coeff: 0.300, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 0.900, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 0.900, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.090, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.045, unit: "OH", price: 180000 }
+    ]
+  },
+
+  // --- Pekerjaan Tanah (Awal & Tambahan) ---
   {
     code: "AHS-TNH-01",
     category: "Pekerjaan Tanah",
@@ -101,6 +179,51 @@ const ahsDatabase = [
     ]
   },
   {
+    code: "AHS-TNH-04",
+    category: "Pekerjaan Tanah",
+    title: "Galian Tanah Sedalam 2 Meter",
+    unit: "m3",
+    details: [
+      { name: "Pekerja", coeff: 1.150, unit: "OH", price: 110000 },
+      { name: "Mandor Proyek", coeff: 0.045, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-TNH-05",
+    category: "Pekerjaan Tanah",
+    title: "Galian Tanah Mekanis",
+    unit: "m3",
+    details: [
+      { name: "Alat Bantu Kerja & Pertukangan", coeff: 0.050, unit: "ls", price: 25000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-TNH-06",
+    category: "Pekerjaan Tanah",
+    title: "Urugan Tanah Mekanis",
+    unit: "m3",
+    details: [
+      { name: "Pasir Urug", coeff: 1.000, unit: "m3", price: 150000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Mandor Proyek", coeff: 0.005, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-TNH-07",
+    category: "Pekerjaan Tanah",
+    title: "Pemadatan Tanah",
+    unit: "m3",
+    details: [
+      { name: "Stamper Kuda / Plate Compactor", coeff: 0.100, unit: "hari", price: 200000 },
+      { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+
+  // --- Pekerjaan Pondasi ---
+  {
     code: "AHS-PND-01",
     category: "Pekerjaan Pondasi",
     title: "Pasangan Pondasi Batu Kali Adukan 1PC : 4PP",
@@ -115,6 +238,8 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.075, unit: "OH", price: 180000 }
     ]
   },
+
+  // --- Pekerjaan Beton ---
   {
     code: "AHS-BTN-01",
     category: "Pekerjaan Beton",
@@ -144,6 +269,8 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.0004, unit: "OH", price: 180000 }
     ]
   },
+
+  // --- Pekerjaan Finishing / Arsitektur ---
   {
     code: "AHS-FIN-01",
     category: "Pekerjaan Finishing/Arsitektur",
@@ -231,7 +358,7 @@ const ahsDatabase = [
   }
 ];
 
-// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM) DENGAN INPUT INTERAKTIF
+// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM) DENGAN INPUT INTERAKTIF[span_2](start_span)[span_2](end_span)
 function renderPriceTable(type) {
   let targetBodyId, searchInputId, dataList;
 
