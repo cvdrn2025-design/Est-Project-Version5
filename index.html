@@ -7,15 +7,15 @@
 
   <!-- PWA Metadata & Manifest -->
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#2563eb">
+  <meta name="theme-color" content="#0f172a">
   <link rel="apple-touch-icon" href="icon-192.png">
 
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   
   <style>
-    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .card { border-radius: 12px; border: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; }
+    .card { border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
     .category-badge { background-color: #e2e8f0; color: #334155; font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
     .table-ahs-detail { font-size: 0.85rem; background-color: #f1f5f9; border-radius: 6px; }
     
@@ -34,52 +34,103 @@
       overflow-y: auto;
     }
 
-    /* Style Tombol Accordion Komponen */
+    /* ==========================================
+       MONOCHROME ELEGANT BUTTON SYSTEM
+       ========================================== */
+    .btn-mono-primary {
+      background-color: #0f172a;
+      color: #ffffff;
+      border: 1px solid #0f172a;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-mono-primary:hover, .btn-mono-primary:focus {
+      background-color: #334155;
+      color: #ffffff;
+      border-color: #334155;
+    }
+
+    .btn-mono-secondary {
+      background-color: #475569;
+      color: #ffffff;
+      border: 1px solid #475569;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-mono-secondary:hover, .btn-mono-secondary:focus {
+      background-color: #1e293b;
+      color: #ffffff;
+      border-color: #1e293b;
+    }
+
+    .btn-mono-outline {
+      background-color: #ffffff;
+      color: #0f172a;
+      border: 1px solid #cbd5e1;
+      transition: all 0.2s ease-in-out;
+    }
+    .btn-mono-outline:hover, .btn-mono-outline:focus {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      border-color: #94a3b8;
+    }
+
+    .btn-mono-danger {
+      background-color: #ffffff;
+      color: #475569;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-mono-danger:hover {
+      background-color: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+
+    /* Style Accordion Monochrome */
     .btn-komponen {
-      color: #0d6efd;
+      color: #0f172a;
       text-decoration: none;
       font-weight: 600;
       font-size: 0.9rem;
     }
     .btn-komponen:hover {
+      color: #475569;
       text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header Clean Tanpa Warna Biru (Logo 512x512 Resized Center) -->
-  <div class="container text-center my-3">
-    <img src="icon.png" alt="Logo SiCerMat" width="512" height="512" style="max-width: 130px; height: auto; object-fit: contain;">
+  <!-- Header Clean dengan Logo Besar (Proporsi Sesuai Box) -->
+  <div class="container text-center my-4">
+    <img src="icon.png" alt="Logo SiCerMat" width="512" height="512" style="max-width: 250px; width: 100%; height: auto; object-fit: contain;" class="img-fluid drop-shadow">
   </div>
 
   <div class="container mb-5">
-    <!-- Panel Tombol Utama & Aksi Proyek -->
+    <!-- Panel Tombol Utama & Aksi Proyek (Monochrome Style) -->
     <div class="card p-3 mb-4">
       <div class="row g-2">
         <div class="col-6 col-md-2">
-          <button class="btn btn-outline-primary w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">
             ➕ Proyek Baru
           </button>
         </div>
         <div class="col-6 col-md-2">
-          <button class="btn btn-success w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">
             💾 Save Proyek
           </button>
         </div>
         <div class="col-6 col-md-2">
-          <button class="btn btn-info text-white w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">
+          <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">
             📂 Open Proyek
           </button>
           <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="openProjectExcel(event)">
         </div>
         <div class="col-6 col-md-3">
-          <button class="btn btn-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
             📚 Library AHS Standard
           </button>
         </div>
         <div class="col-12 col-md-3">
-          <button class="btn btn-secondary w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">
             ➕ Tambah Item Manual
           </button>
         </div>
@@ -96,7 +147,7 @@
             Lokasi: <span id="displayProjectLocation" class="fw-semibold">-</span>
           </small>
         </div>
-        <button class="btn btn-sm btn-outline-secondary mt-2 mt-md-0" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
+        <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
       </div>
 
       <!-- Tabel Responsif -->
@@ -131,14 +182,14 @@
           </div>
           <hr>
           <div class="d-flex justify-content-between align-items-center">
-            <h5 class="fw-bold text-primary mb-0">Grand Total:</h5>
-            <h5 id="grandTotalVal" class="fw-bold text-primary mb-0">Rp 0</h5>
+            <h5 class="fw-bold text-dark mb-0">Grand Total:</h5>
+            <h5 id="grandTotalVal" class="fw-bold text-dark mb-0">Rp 0</h5>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- Panel Harga Dasar (Masing-masing disembuynikan dengan Accordion) -->
+    <!-- Panel Harga Dasar (Accordion Monochrome) -->
     <div class="card p-3 p-md-4">
       <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar</h5>
 
@@ -155,7 +206,7 @@
             <div class="accordion-body px-0 pt-2">
               <div class="d-flex justify-content-between mb-2">
                 <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
-                <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
               </div>
               <div class="master-table-container">
                 <table class="table table-sm table-bordered mb-0">
@@ -178,7 +229,7 @@
             <div class="accordion-body px-0 pt-2">
               <div class="d-flex justify-content-between mb-2">
                 <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
-                <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
               </div>
               <div class="master-table-container">
                 <table class="table table-sm table-bordered mb-0">
@@ -201,7 +252,7 @@
             <div class="accordion-body px-0 pt-2">
               <div class="d-flex justify-content-between mb-2">
                 <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
-                <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
               </div>
               <div class="master-table-container">
                 <table class="table table-sm table-bordered mb-0">
@@ -240,8 +291,8 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-          <button type="button" class="btn btn-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
+          <button type="button" class="btn btn-mono-outline" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-mono-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
         </div>
       </div>
     </div>
@@ -367,7 +418,7 @@
         <td><input type="text" class="form-control form-control-sm text-center" value="${unit}"></td>
         <td><input type="number" class="form-control form-control-sm text-end" value="${price}" onchange="calculateRow(this)"></td>
         <td class="text-end fw-bold row-total">Rp ${(vol * price).toLocaleString('id-ID')}</td>
-        <td class="text-center"><button class="btn btn-sm btn-danger" onclick="deleteRow(this)">❌</button></td>
+        <td class="text-center"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
       `;
       tbody.appendChild(tr);
       calculateGrandTotal();
