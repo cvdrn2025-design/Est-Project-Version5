@@ -43,7 +43,7 @@ const masterUpah = [
   { nama: "Mandor Proyek", harga: 180000, satuan: "OH" }
 ];
 
-// 2. DATABASE ANALISA HARGA SATUAN PEKERJAAN (AHSP) LENGKAP
+// 2. DATABASE ANALISA HARGA SATUAN PEKERJAAN (AHSP)
 const ahsDatabase = [
   {
     code: "AHS-PRP-01",
@@ -214,24 +214,31 @@ const ahsDatabase = [
       { name: "Kepala Tukang", coeff: 0.006, unit: "OH", price: 160000 },
       { name: "Mandor Proyek", coeff: 0.003, unit: "OH", price: 180000 }
     ]
-  },
-  {
-    code: "AHS-FIN-06",
-    category: "Pekerjaan Finishing/Arsitektur",
-    title: "Pengecatan Dinding Tembok Baru (Exterior)",
-    unit: "m2",
-    details: [
-      { name: "Cat Tembok Dinding Luar (Exterior)", coeff: 0.280, unit: "kg", price: 65000 },
-      { name: "Plamuur Tembok", coeff: 0.100, unit: "kg", price: 20000 },
-      { name: "Pekerja", coeff: 0.020, unit: "OH", price: 110000 },
-      { name: "Tukang Cat", coeff: 0.070, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.007, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.003, unit: "OH", price: 180000 }
-    ]
   }
 ];
 
-// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM)
+// 3. FUNGSI UPDATE HARGA DASAR SECARA REAL-TIME
+function updateHargaDasar(type, index, value) {
+  const val = parseFloat(value) || 0;
+  if (type === 'bahan') masterBahan[index].harga = val;
+  else if (type === 'alat') masterAlat[index].harga = val;
+  else if (type === 'upah') masterUpah[index].harga = val;
+
+  // Sinkronisasi ulang kalkulasi RAB & AHS jika fungsi utama tersedia
+  if (typeof calculateRAB === 'function') calculateRAB();
+  if (typeof renderAhsLibrary === 'function') renderAhsLibrary();
+}
+
+// 4. FUNGSI UPDATE KOEFISIEN AHS SECARA REAL-TIME
+function updateAHSCoeff(ahsIndex, detailIndex, value) {
+  const val = parseFloat(value) || 0;
+  if (ahsDatabase[ahsIndex] && ahsDatabase[ahsIndex].details[detailIndex]) {
+    ahsDatabase[ahsIndex].details[detailIndex].coeff = val;
+    if (typeof calculateRAB === 'function') calculateRAB();
+  }
+}
+
+// 5. RENDER PANEL HARGA DASAR (DENGAN INPUT EDITABLE & TANPA "RP")
 function renderPriceTable(type) {
   let targetBodyId, searchInputId, dataList;
 
@@ -255,13 +262,19 @@ function renderPriceTable(type) {
 
   tbody.innerHTML = '';
 
-  dataList.forEach((item) => {
+  dataList.forEach((item, index) => {
     if (!searchVal || item.nama.toLowerCase().includes(searchVal)) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${item.nama}</td>
-        <td class="text-end fw-semibold">
-          Rp ${(item.harga || 0).toLocaleString('id-ID')} / ${item.satuan || '-'}
+        <td class="align-middle">
+          <div class="fw-medium">${item.nama}</div>
+          <small class="text-muted">Satuan: ${item.satuan}</small>
+        </td>
+        <td class="text-end align-middle" style="width: 160px;">
+          <input type="number" class="form-control form-control-sm text-end" 
+                 value="${item.harga}" 
+                 onchange="updateHargaDasar('${type}', ${index}, this.value)"
+                 min="0" step="100">
         </td>
       `;
       tbody.appendChild(tr);
@@ -271,6 +284,69 @@ function renderPriceTable(type) {
   if (tbody.children.length === 0) {
     tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted">Data tidak ditemukan</td></tr>';
   }
+}
+
+// 6. RENDER LIBRARY AHS DENGAN KOLOM KOEFISIEN EDITABLE
+function renderAhsLibrary() {
+  const container = document.getElementById('ahsLibraryContainer') || document.getElementById('ahsListContainer');
+  if (!container) return;
+
+  const searchVal = (document.getElementById('searchAhs')?.value || '').toLowerCase();
+  const catVal = (document.getElementById('filterKategoriAhs')?.value || 'Semua');
+
+  container.innerHTML = '';
+
+  ahsDatabase.forEach((ahs, ahsIndex) => {
+    if (catVal !== 'Semua' && ahs.category !== catVal) return;
+    if (searchVal && !ahs.title.toLowerCase().includes(searchVal) && !ahs.code.toLowerCase().includes(searchVal)) return;
+
+    let detailsHtml = '';
+    ahs.details.forEach((det, detIndex) => {
+      detailsHtml += `
+        <tr>
+          <td class="align-middle">${det.name}</td>
+          <td class="align-middle text-center" style="width: 110px;">
+            <input type="number" step="0.001" min="0" class="form-control form-control-sm text-center" 
+                   value="${det.coeff}" 
+                   onchange="updateAHSCoeff(${ahsIndex}, ${detIndex}, this.value)">
+          </td>
+          <td class="align-middle text-center" style="width: 70px;">${det.unit}</td>
+          <td class="align-middle text-end">Rp ${(det.price || 0).toLocaleString('id-ID')}</td>
+        </tr>
+      `;
+    });
+
+    const card = document.createElement('div');
+    card.className = 'card mb-3 shadow-sm';
+    card.innerHTML = `
+      <div class="card-header bg-light d-flex justify-content-between align-items-center">
+        <div>
+          <span class="badge bg-secondary me-2">${ahs.code}</span>
+          <strong>${ahs.title}</strong>
+          <small class="text-muted ms-2">(${ahs.unit})</small>
+        </div>
+        <span class="badge bg-info text-dark">${ahs.category}</span>
+      </div>
+      <div class="card-body p-2">
+        <div class="table-responsive">
+          <table class="table table-sm table-bordered mb-0">
+            <thead>
+              <tr class="table-light text-center">
+                <th>Komponen / Uraian</th>
+                <th>Koefisien</th>
+                <th>Satuan</th>
+                <th>Harga Satuan</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${detailsHtml}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
 function addMasterItem(type) {
