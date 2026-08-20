@@ -43,7 +43,7 @@ const masterUpah = [
   { nama: "Mandor Proyek", harga: 180000, satuan: "OH" }
 ];
 
-// 2. DATABASE ANALISA HARGA SATUAN PEKERJAAN (AHSP) LENGKAP
+// 2. DATABASE ANALISA HARGA SATUAN PEKERJAAN (AHSP) LENGKAP[span_2](start_span)[span_2](end_span)
 const ahsDatabase = [
   // --- Pekerjaan Persiapan (Awal & Tambahan) ---
   {
@@ -358,7 +358,7 @@ const ahsDatabase = [
   }
 ];
 
-// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM) DENGAN INPUT INTERAKTIF[span_2](start_span)[span_2](end_span)
+// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM) DENGAN INPUT INTERAKTIF[span_3](start_span)[span_3](end_span)
 function renderPriceTable(type) {
   let targetBodyId, searchInputId, dataList;
 
