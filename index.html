@@ -425,13 +425,20 @@
       });
     }
 
+    /* Fungsi Menghilangkan Awalan Satuan (1 m2, 1 m3, 1 m', 1 Bh, dll.) */
+    function cleanJobTitle(title) {
+      if (!title) return '';
+      return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim();
+    }
+
     /* Baris Tabel RAB */
     function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
+      const cleanTitle = cleanJobTitle(title);
       const tbody = document.getElementById('rabTableBody');
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="text-center fw-bold text-muted"></td>
-        <td><input type="text" class="form-control form-control-sm" value="${title}"></td>
+        <td><input type="text" class="form-control form-control-sm" value="${cleanTitle}"></td>
         <td><input type="number" class="form-control form-control-sm text-end" value="${vol}" step="any" onchange="calculateRow(this)"></td>
         <td><input type="text" class="form-control form-control-sm text-center" value="${unit}"></td>
         <td><input type="number" class="form-control form-control-sm text-end" value="${price}" onchange="calculateRow(this)"></td>
