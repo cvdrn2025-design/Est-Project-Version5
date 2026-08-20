@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v3';
+const CACHE_NAME = 'sicermat-cache-v4';
 const urlsToCache = [
   './',
   './index.html',
@@ -38,23 +38,21 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: strategi cache first, tetapi untuk file yang sering berubah (master-data.js)
-// kita gunakan network first atau selalu ambil dari network.
+// Fetch: cache first, tapi jangan cache master-data.js agar update selalu terbaca
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Jangan cache master-data.js agar update selalu terbaca
+  // Jangan cache master-data.js
   if (url.pathname.endsWith('master-data.js')) {
     event.respondWith(
       fetch(event.request).catch(() => {
-        // Fallback jika offline: mungkin coba cache
         return caches.match(event.request);
       })
     );
     return;
   }
 
-  // Untuk semua request lain: cache first, fallback ke network
+  // Cache first untuk yang lain
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -62,7 +60,6 @@ self.addEventListener('fetch', event => {
           return response;
         }
         return fetch(event.request).catch(() => {
-          // Fallback halaman utama jika offline
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
