@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-v1.5'; // Versi dinaikkan ke v1.5 untuk memuat pembaruan layout RAB & cetak AHS
+const CACHE_NAME = 'sicermat-v1.6'; // Versi v1.6: Penyesuaian lebar kolom Uraian Pekerjaan & pengabaian item manual pada cetak AHS
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -53,3 +53,4 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
+
