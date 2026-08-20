@@ -42,10 +42,11 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Jangan cache master-data.js
+  // Jangan cache master-data.js (ambil selalu dari jaringan)
   if (url.pathname.endsWith('master-data.js')) {
     event.respondWith(
       fetch(event.request).catch(() => {
+        // Fallback jika offline: coba ambil dari cache
         return caches.match(event.request);
       })
     );
@@ -60,6 +61,7 @@ self.addEventListener('fetch', event => {
           return response;
         }
         return fetch(event.request).catch(() => {
+          // Fallback halaman utama jika offline
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
