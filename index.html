@@ -25,7 +25,7 @@
       -webkit-overflow-scrolling: touch;
     }
     .table-responsive-custom table {
-      min-width: 680px; /* Menjaga lebar minimum tabel agar tidak gepeng di layar HP */
+      min-width: 680px;
     }
 
     /* Scrollable Container untuk Panel Harga Dasar */
@@ -33,18 +33,25 @@
       max-height: 240px;
       overflow-y: auto;
     }
+
+    /* Style Tombol Accordion Komponen */
+    .btn-komponen {
+      color: #0d6efd;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .btn-komponen:hover {
+      text-decoration: underline;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Header / Navbar Clean dengan Logo icon.png -->
-  <nav class="navbar navbar-dark bg-primary mb-3 shadow-sm py-2">
-    <div class="container justify-content-center">
-      <a class="navbar-brand m-0 p-0" href="#">
-        <img src="icon.png" alt="Logo SiCerMat" style="max-height: 40px; width: auto; object-fit: contain;">
-      </a>
-    </div>
-  </nav>
+  <!-- Header Clean Tanpa Warna Biru (Logo 512x512 Resized Center) -->
+  <div class="container text-center my-3">
+    <img src="icon.png" alt="Logo SiCerMat" width="512" height="512" style="max-width: 130px; height: auto; object-fit: contain;">
+  </div>
 
   <div class="container mb-5">
     <!-- Panel Tombol Utama & Aksi Proyek -->
@@ -131,143 +138,159 @@
       </div>
     </div>
 
-    <!-- Modal Proyek Baru / Edit Info -->
-    <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold">🏗️ Informasi Proyek</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label font-weight-bold">Nama Proyek</label>
-              <input type="text" id="inputProjectName" class="form-control" placeholder="Contoh: Pembangunan Rumah Type 45">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Nama Pemilik Proyek</label>
-              <input type="text" id="inputProjectOwner" class="form-control" placeholder="Contoh: Bp. Ahmad">
-            </div>
-            <div class="mb-3">
-              <label class="form-label">Lokasi Proyek</label>
-              <input type="text" id="inputProjectLocation" class="form-control" placeholder="Contoh: Samarinda, Kalimantan Timur">
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="button" class="btn btn-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal Library AHS -->
-    <div class="modal fade" id="ahsModal" tabindex="-1" aria-hidden="true">
-      <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title fw-bold">📚 Standard AHS Library (Analisa Harga Satuan)</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <!-- Filter & Search -->
-            <div class="row g-2 mb-3">
-              <div class="col-md-4">
-                <select id="ahsCategoryFilter" class="form-select" onchange="filterAHSList()">
-                  <option value="ALL">🚩 Semua Kategori</option>
-                  <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
-                  <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
-                  <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
-                  <option value="Pekerjaan Beton">Pekerjaan Beton</option>
-                  <option value="Pekerjaan Atap">Pekerjaan Atap</option>
-                  <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
-                  <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
-                  <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
-                  <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
-                </select>
-              </div>
-              <div class="col-md-8">
-                <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama pekerjaan atau kode AHS..." onkeyup="filterAHSList()">
-              </div>
-            </div>
-
-            <!-- Table Modal AHS -->
-            <div class="table-responsive table-responsive-custom">
-              <table class="table table-hover align-middle">
-                <thead class="table-light">
-                  <tr>
-                    <th style="min-width: 150px;">Kode / Kategori</th>
-                    <th style="min-width: 300px;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
-                    <th style="min-width: 180px;" class="text-center">Aksi & Harga Total</th>
-                  </tr>
-                </thead>
-                <tbody id="ahsTableBody">
-                  <!-- AHS list rendered dynamically -->
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Panel Harga Dasar (Bahan, Alat, Upah) dengan Fitur Hide/Collapse -->
+    <!-- Panel Harga Dasar (Masing-masing disembuynikan dengan Accordion) -->
     <div class="card p-3 p-md-4">
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h5 class="card-title fw-bold text-dark mb-0">🏷️ Panel Harga Dasar (Bahan, Alat, Upah)</h5>
-        <button class="btn btn-sm btn-outline-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#panelHargaContent" aria-expanded="true">
-          👁️ Sembunyikan / Tampilkan
-        </button>
-      </div>
+      <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar</h5>
 
-      <div class="collapse show" id="panelHargaContent">
-        <ul class="nav nav-tabs" id="masterTab" role="tablist">
-          <li class="nav-item"><button class="nav-link active" id="bahan-tab" data-bs-toggle="tab" data-bs-target="#bahan-panel" type="button">Bahan</button></li>
-          <li class="nav-item"><button class="nav-link" id="alat-tab" data-bs-toggle="tab" data-bs-target="#alat-panel" type="button">Alat</button></li>
-          <li class="nav-item"><button class="nav-link" id="upah-tab" data-bs-toggle="tab" data-bs-target="#upah-panel" type="button">Upah</button></li>
-        </ul>
+      <div class="accordion accordion-flush" id="accordionHargaDasar">
         
-        <div class="tab-content pt-3" id="masterTabContent">
-          <!-- Panel Bahan -->
-          <div class="tab-pane fade show active" id="bahan-panel">
-            <div class="d-flex justify-content-between mb-2">
-              <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
-              <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+        <!-- Komponen Bahan -->
+        <div class="accordion-item border-bottom">
+          <h2 class="accordion-header" id="headingBahan">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBahan">
+              ▶ 🔍 Lihat Komponen Bahan
+            </button>
+          </h2>
+          <div id="collapseBahan" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
+                <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="materialPriceTable"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="master-table-container">
-              <table class="table table-sm table-bordered">
-                <thead><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
-                <tbody id="materialPriceTable"></tbody>
-              </table>
+          </div>
+        </div>
+
+        <!-- Komponen Alat -->
+        <div class="accordion-item border-bottom">
+          <h2 class="accordion-header" id="headingAlat">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlat">
+              ▶ 🔍 Lihat Komponen Alat
+            </button>
+          </h2>
+          <div id="collapseAlat" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
+                <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="equipmentPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Komponen Upah -->
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingUpah">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUpah">
+              ▶ 🔍 Lihat Komponen Upah
+            </button>
+          </h2>
+          <div id="collapseUpah" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
+                <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Tenaga Kerja</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="laborPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Proyek Baru / Edit Info -->
+  <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">🏗️ Informasi Proyek</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label font-weight-bold">Nama Proyek</label>
+            <input type="text" id="inputProjectName" class="form-control" placeholder="Contoh: Pembangunan Rumah Type 45">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nama Pemilik Proyek</label>
+            <input type="text" id="inputProjectOwner" class="form-control" placeholder="Contoh: Bp. Ahmad">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Lokasi Proyek</label>
+            <input type="text" id="inputProjectLocation" class="form-control" placeholder="Contoh: Samarinda, Kalimantan Timur">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Library AHS -->
+  <div class="modal fade" id="ahsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">📚 Standard AHS Library (Analisa Harga Satuan)</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Filter & Search -->
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <select id="ahsCategoryFilter" class="form-select" onchange="filterAHSList()">
+                <option value="ALL">🚩 Semua Kategori</option>
+                <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+                <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+                <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+                <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+                <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+                <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
+                <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+                <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+                <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+              </select>
+            </div>
+            <div class="col-md-8">
+              <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama pekerjaan atau kode AHS..." onkeyup="filterAHSList()">
             </div>
           </div>
 
-          <!-- Panel Alat -->
-          <div class="tab-pane fade" id="alat-panel">
-            <div class="d-flex justify-content-between mb-2">
-              <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
-              <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
-            </div>
-            <div class="master-table-container">
-              <table class="table table-sm table-bordered">
-                <thead><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
-                <tbody id="equipmentPriceTable"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Panel Upah -->
-          <div class="tab-pane fade" id="upah-panel">
-            <div class="d-flex justify-content-between mb-2">
-              <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
-              <button class="btn btn-sm btn-outline-primary" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
-            </div>
-            <div class="master-table-container">
-              <table class="table table-sm table-bordered">
-                <thead><tr><th>Tenaga Kerja</th><th>Harga Satuan (Rp)</th></tr></thead>
-                <tbody id="laborPriceTable"></tbody>
-              </table>
-            </div>
+          <!-- Table Modal AHS -->
+          <div class="table-responsive table-responsive-custom">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th style="min-width: 150px;">Kode / Kategori</th>
+                  <th style="min-width: 300px;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th>
+                  <th style="min-width: 180px;" class="text-center">Aksi & Harga Total</th>
+                </tr>
+              </thead>
+              <tbody id="ahsTableBody">
+                <!-- AHS list rendered dynamically -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -433,7 +456,6 @@
         const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
 
         if (json.length > 0) {
-          // Parsing Metadata
           json.forEach(row => {
             if (row[0] === "Nama Proyek") currentProject.name = row[1] || "Unnamed Project";
             if (row[0] === "Pemilik Proyek") currentProject.owner = row[1] || "-";
@@ -442,10 +464,8 @@
           });
           updateProjectHeader();
 
-          // Clear existing rows
           document.getElementById('rabTableBody').innerHTML = '';
 
-          // Find start of table data
           let isTableData = false;
           json.forEach(row => {
             if (row[0] === "Uraian Pekerjaan") {
@@ -459,7 +479,7 @@
         }
       };
       reader.readAsArrayBuffer(file);
-      event.target.value = ''; // Reset input file
+      event.target.value = '';
     }
   </script>
 
