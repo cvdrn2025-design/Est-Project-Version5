@@ -262,147 +262,148 @@ const ahsDatabase = [
   },
 
   // ==================== PEKERJAAN PONDASI ====================
-  {
-    code: "AHS-PND-01",
-    category: "Pekerjaan Pondasi",
-    title: "Pasangan Pondasi Batu Kali Adukan 1PC : 4PP",
-    unit: "m3",
-    details: [
-      { name: "Batu Belah / Batu Kali", coeff: 1.200, unit: "m3", price: 250000 },
-      { name: "Semen Portland (50kg)", coeff: 3.260, unit: "sak", price: 75000 },
-      { name: "Pasir Pasang / Pasir Beton", coeff: 0.520, unit: "m3", price: 220000 },
-      { name: "Pekerja", coeff: 1.500, unit: "OH", price: 110000 },
-      { name: "Tukang Batu", coeff: 0.750, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.075, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.075, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-02",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile ∆ 20",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile ∆ 20 (sudah jadi)", coeff: 1.000, unit: "m'", price: 350000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-03",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile ∆ 25",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile ∆ 25 (sudah jadi)", coeff: 1.000, unit: "m'", price: 450000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-04",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile ∆ 30",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile ∆ 30 (sudah jadi)", coeff: 1.000, unit: "m'", price: 550000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-05",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile 20x20",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile 20x20 (sudah jadi)", coeff: 1.000, unit: "m'", price: 380000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-06",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile 25x25",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile 25x25 (sudah jadi)", coeff: 1.000, unit: "m'", price: 480000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-07",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile 30x30",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile 30x30 (sudah jadi)", coeff: 1.000, unit: "m'", price: 600000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-08",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Mini Pile 40x40",
-    unit: "m'",
-    details: [
-      { name: "Tiang Pancang Mini Pile 40x40 (sudah jadi)", coeff: 1.000, unit: "m'", price: 800000 },
-      { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
-      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-09",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Spun Pile Dia. 50cm",
-    unit: "m'",
-    details: [
-      { name: "Spun Pile Dia. 50cm (ready)", coeff: 1.000, unit: "m'", price: 1200000 },
-      { name: "Sewa Alat Pancang Besar", coeff: 0.020, unit: "jam", price: 500000 },
-      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.080, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
-  {
-    code: "AHS-PND-10",
-    category: "Pekerjaan Pondasi",
-    title: "Pondasi Tiang Pancang Spun Pile Dia. 60cm",
-    unit: "m'",
-    details: [
-      { name: "Spun Pile Dia. 60cm (ready)", coeff: 1.000, unit: "m'", price: 1500000 },
-      { name: "Sewa Alat Pancang Besar", coeff: 0.020, unit: "jam", price: 500000 },
-      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
-      { name: "Tukang Besi", coeff: 0.080, unit: "OH", price: 140000 },
-      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
-      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
-    ]
-  },
+{
+  code: "AHS-PND-01",
+  category: "Pekerjaan Pondasi",
+  title: "Pasangan Pondasi Batu Kali Adukan 1PC : 4PP",
+  unit: "m3",
+  details: [
+    { name: "Batu Belah / Batu Kali", coeff: 1.200, unit: "m3", price: 250000 },
+    { name: "Semen Portland (50kg)", coeff: 3.260, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.520, unit: "m3", price: 220000 },
+    { name: "Pekerja", coeff: 1.500, unit: "OH", price: 110000 },
+    { name: "Tukang Batu", coeff: 0.750, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.075, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.075, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-02",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile ∆ 20",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile ∆ 20 Beton Precast", coeff: 1.000, unit: "m'", price: 350000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-03",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile ∆ 25",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile ∆ 25 Beton Precast", coeff: 1.000, unit: "m'", price: 450000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-04",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile ∆ 30",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile ∆ 30 Beton Precast", coeff: 1.000, unit: "m'", price: 550000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-05",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile 20x20",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile 20x20 Beton Precast", coeff: 1.000, unit: "m'", price: 380000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-06",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile 25x25",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile 25x25 Beton Precast", coeff: 1.000, unit: "m'", price: 480000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-07",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile 30x30",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile 30x30 Beton Precast", coeff: 1.000, unit: "m'", price: 600000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-08",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Mini Pile 40x40",
+  unit: "m'",
+  details: [
+    { name: "Tiang Pancang Mini Pile 40x40 Beton Precast", coeff: 1.000, unit: "m'", price: 800000 },
+    { name: "Sewa Alat Pancang", coeff: 0.020, unit: "jam", price: 300000 },
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.050, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-09",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Spun Pile Dia. 50cm",
+  unit: "m'",
+  details: [
+    { name: "Spun Pile Dia. 50cm Beton Precast", coeff: 1.000, unit: "m'", price: 1200000 },
+    { name: "Sewa Alat Pancang Besar", coeff: 0.020, unit: "jam", price: 500000 },
+    { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.080, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-PND-10",
+  category: "Pekerjaan Pondasi",
+  title: "Pondasi Tiang Pancang Spun Pile Dia. 60cm",
+  unit: "m'",
+  details: [
+    { name: "Spun Pile Dia. 60cm Beton Precast", coeff: 1.000, unit: "m'", price: 1500000 },
+    { name: "Sewa Alat Pancang Besar", coeff: 0.020, unit: "jam", price: 500000 },
+    { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+    { name: "Tukang Besi", coeff: 0.080, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+// Lanjut ke AHS-PND-11 (Kayu Ulin) dan seterusnya...
   {
     code: "AHS-PND-11",
     category: "Pekerjaan Pondasi",
