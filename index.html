@@ -30,18 +30,27 @@
     }
 
     /* ==========================================
-       PENGATURAN LEBAR KOLOM TABEL RAB (ADJUST & LEBAR)
+       PENGATURAN LEBAR KOLOM TABEL RAB (FIXED & PROPORSIONAL)
        ========================================== */
     #rabTable {
-      min-width: 750px; /* Menjaga struktur tabel tetap proporsional di HP */
+      min-width: 860px;
+      width: 100%;
+      table-layout: fixed; /* Memastikan lebar kolom dipatuhi secara presisi */
     }
-    #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 40px; text-align: center; } /* No */
-    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { min-width: 250px; text-align: left; } /* Uraian Pekerjaan (Adjust/Lebar) */
-    #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 90px; text-align: right; } /* Volume */
-    #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 70px; text-align: center; } /* Satuan */
-    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 130px; text-align: right; } /* Harga Satuan */
-    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 140px; text-align: right; } /* Total Harga */
-    #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 45px; text-align: center; } /* Aksi */
+
+    #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 45px; text-align: center; } /* No */
+    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { width: auto; text-align: left; }    /* Uraian Pekerjaan (Flex/Fleksibel) */
+    #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 85px; text-align: right; }  /* Volume */
+    #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 75px; text-align: center; } /* Satuan */
+    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 170px; text-align: right; } /* Harga Satuan (Dilebarkan) */
+    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 150px; text-align: right; } /* Total Harga (Diperketat) */
+    #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 50px; text-align: center; } /* Aksi */
+
+    /* Input di dalam tabel agar selalu 100% mengikuti lebar kolom */
+    #rabTable input.form-control-sm {
+      width: 100%;
+      box-sizing: border-box;
+    }
 
     /* Monochrome Button System */
     .btn-mono-primary { background-color: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
@@ -84,6 +93,7 @@
       #rabTable {
         min-width: 100% !important;
         width: 100% !important;
+        table-layout: auto !important;
         border-collapse: collapse !important;
         margin-bottom: 0 !important;
       }
@@ -609,7 +619,7 @@
         const rawTitle = titleInput.value.trim();
         const volVal = parseIndoNumber(volInput ? volInput.value : 0);
 
-        // Abaikan Sub-judul (misal volume 0 atau teks judul seperti "PEKERJAAN...")
+        // Abaikan Sub-judul (misal volume 0 atau teks judul)
         if (!rawTitle || volVal === 0) return;
 
         const jobTitleClean = cleanJobTitle(rawTitle).toLowerCase();
@@ -660,7 +670,6 @@
 
             printHTML += `</tbody></table>`;
           }
-          // Jika item manual / tidak ada di library, sistem melewati baris ini secara otomatis tanpa melempar error popup
         }
       });
 
