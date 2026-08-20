@@ -38,7 +38,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: strategi cache first, tetapi untuk file yang sering berubah (seperti master-data.js)
+// Fetch: strategi cache first, tetapi untuk file yang sering berubah (master-data.js)
 // kita gunakan network first atau selalu ambil dari network.
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
