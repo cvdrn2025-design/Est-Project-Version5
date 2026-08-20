@@ -30,15 +30,18 @@
     }
 
     /* ==========================================
-       PENGATURAN LEBAR KOLOM TABEL RAB
+       PENGATURAN LEBAR KOLOM TABEL RAB (ADJUST & LEBAR)
        ========================================== */
-    #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 45px; text-align: center; white-space: nowrap; } /* No */
-    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { width: auto; text-align: left; } /* Uraian Pekerjaan (Adjust) */
-    #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 1%; white-space: nowrap; text-align: right; } /* Volume (Fit) */
-    #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 1%; white-space: nowrap; text-align: center; } /* Satuan (Fit) */
-    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 1%; white-space: nowrap; text-align: right; } /* Harga Satuan (Fit) */
-    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 160px; white-space: nowrap; text-align: right; } /* Total Harga (Adjust/Fixed) */
-    #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 50px; text-align: center; } /* Aksi */
+    #rabTable {
+      min-width: 750px; /* Menjaga struktur tabel tetap proporsional di HP */
+    }
+    #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 40px; text-align: center; } /* No */
+    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { min-width: 250px; text-align: left; } /* Uraian Pekerjaan (Adjust/Lebar) */
+    #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 90px; text-align: right; } /* Volume */
+    #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 70px; text-align: center; } /* Satuan */
+    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 130px; text-align: right; } /* Harga Satuan */
+    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 140px; text-align: right; } /* Total Harga */
+    #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 45px; text-align: center; } /* Aksi */
 
     /* Monochrome Button System */
     .btn-mono-primary { background-color: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
@@ -79,6 +82,7 @@
       }
 
       #rabTable {
+        min-width: 100% !important;
         width: 100% !important;
         border-collapse: collapse !important;
         margin-bottom: 0 !important;
@@ -566,11 +570,11 @@
       window.print();
     }
 
-    /* Cetak Rincian AHS untuk Item Terpilih di RAB */
+    /* Cetak Rincian AHS untuk Item Terpilih di RAB (Sub Judul & Item Manual Diabaikan) */
     function printSelectedAHS() {
       const rows = document.querySelectorAll('#rabTableBody tr');
       if (rows.length === 0) {
-        alert('Tabel RAB masih kosong! Tambahkan pekerjaan ke RAB terlebih dahulu.');
+        alert('Tabel RAB masih kosong! Tambahkan pekerjaan dari Library AHS terlebih dahulu.');
         return;
       }
 
@@ -599,12 +603,25 @@
       let itemCount = 0;
       rows.forEach(row => {
         const titleInput = row.querySelector('.input-title');
+        const volInput = row.querySelector('.input-volume');
         if (!titleInput) return;
-        const jobTitle = titleInput.value.trim();
-        if (!jobTitle) return;
+
+        const rawTitle = titleInput.value.trim();
+        const volVal = parseIndoNumber(volInput ? volInput.value : 0);
+
+        // Abaikan Sub-judul (misal volume 0 atau teks judul seperti "PEKERJAAN...")
+        if (!rawTitle || volVal === 0) return;
+
+        const jobTitleClean = cleanJobTitle(rawTitle).toLowerCase();
 
         if (typeof ahsDatabase !== 'undefined') {
-          const matchAHS = ahsDatabase.find(a => cleanJobTitle(a.title).toLowerCase() === jobTitle.toLowerCase() || a.title.toLowerCase().includes(jobTitle.toLowerCase()));
+          // Cari item yang cocok di database AHS
+          const matchAHS = ahsDatabase.find(a => {
+            const dbTitleClean = cleanJobTitle(a.title).toLowerCase();
+            return dbTitleClean === jobTitleClean || dbTitleClean.includes(jobTitleClean) || jobTitleClean.includes(dbTitleClean);
+          });
+
+          // Jika cocok dengan Library AHS, cetak rincian analisanya
           if (matchAHS) {
             itemCount++;
             printHTML += `
@@ -643,11 +660,12 @@
 
             printHTML += `</tbody></table>`;
           }
+          // Jika item manual / tidak ada di library, sistem melewati baris ini secara otomatis tanpa melempar error popup
         }
       });
 
       if (itemCount === 0) {
-        alert('Item di tabel RAB merupakan inputan manual atau tidak cocok dengan Library AHS.');
+        alert('Tidak ditemukan item pekerjaan dari Library AHS pada tabel RAB untuk dicetak.');
         return;
       }
 
