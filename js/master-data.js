@@ -231,7 +231,7 @@ const ahsDatabase = [
   }
 ];
 
-// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM)
+// 3. FUNGSI RENDER TABEL HARGA DASAR (PANEL BOTTOM) DENGAN INPUT INTERAKTIF
 function renderPriceTable(type) {
   let targetBodyId, searchInputId, dataList;
 
@@ -255,13 +255,16 @@ function renderPriceTable(type) {
 
   tbody.innerHTML = '';
 
-  dataList.forEach((item) => {
+  dataList.forEach((item, index) => {
     if (!searchVal || item.nama.toLowerCase().includes(searchVal)) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${item.nama}</td>
-        <td class="text-end fw-semibold">
-          Rp ${(item.harga || 0).toLocaleString('id-ID')} / ${item.satuan || '-'}
+        <td class="text-end" style="width: 160px;">
+          <input type="number" class="form-control form-control-sm text-end" 
+                 value="${item.harga}" 
+                 onchange="updateHargaDasar('${type}', ${index}, this.value)"
+                 min="0" step="100">
         </td>
       `;
       tbody.appendChild(tr);
