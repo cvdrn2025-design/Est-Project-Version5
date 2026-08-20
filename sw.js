@@ -1,6 +1,6 @@
 const CACHE_NAME = 'sicermat-v2.0';
 
-// Aset lokal & CDN yang akan disimpan dalam cache awal (App Shell)
+// Daftar aset penting yang wajib di-cache untuk penggunaan offline
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -13,17 +13,16 @@ const ASSETS_TO_CACHE = [
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-// 1. Event Install: Menyimpan aset awal ke dalam Cache Storage
+// 1. Install Event: Mengunduh dan menyimpan aset ke dalam cache
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      console.log('[Service Worker] Membuka cache dan menyimpan aset App Shell');
       return cache.addAll(ASSETS_TO_CACHE);
     }).then(() => self.skipWaiting())
   );
 });
 
-// 2. Event Activate: Membersihkan cache versi lama saat ada pembaruan
+// 2. Activate Event: Membersihkan cache versi lama
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -39,28 +38,33 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// 3. Event Fetch: Mengambil data dari Cache terlebih dahulu, lalu memperbarui via Network
+// 3. Fetch Event: Strategi Stale-While-Revalidate (Gunakan cache dulu, perbarui di background)
 self.addEventListener('fetch', (event) => {
-  // Hanya proses permintaan bermetode GET
+  // Hanya proses request dengan metode GET
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      // Ambil data terbaru dari jaringan secara terpisah (background sync)
-      const networkFetch = fetch(event.request).then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      }).catch((err) => {
-        console.warn('[Service Worker] Gagal mengambil dari jaringan, menggunakan cache:', err);
-      });
+      const fetchPromise = fetch(event.request)
+        .then((networkResponse) => {
+          // Validasi response sebelum disimpan ke cache
+          if (
+            networkResponse && 
+            networkResponse.status === 200 && 
+            (networkResponse.type === 'basic' || networkResponse.type === 'cors')
+          ) {
+            const responseToCache = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Mode offline: Jika fetch jaringan gagal, sistem akan mengandalkan cache
+        });
 
-      // Kembalikan dari cache jika ada, atau tunggu hasil jaringan jika belum ada di cache
-      return cachedResponse || networkFetch;
+      return cachedResponse || fetchPromise;
     })
   );
 });
