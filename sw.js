@@ -1,8 +1,7 @@
-const CACHE_NAME = 'sicermat-cache-v2';
+const CACHE_NAME = 'sicermat-cache-v3';
 const urlsToCache = [
   './',
   './index.html',
-  './master-data.js',
   './manifest.json',
   './icon.png',
   './icon-192.png',
@@ -11,7 +10,7 @@ const urlsToCache = [
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
 ];
 
-// 1. Install Service Worker & Cache Aset Utama
+// Install: cache aset statis
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
@@ -23,7 +22,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// 2. Aktifkan Service Worker & Bersihkan Cache Lama
+// Aktifkan: bersihkan cache lama
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
@@ -39,18 +38,31 @@ self.addEventListener('activate', event => {
   );
 });
 
-// 3. Strategi Fetch (Cache First, fallback to Network)
+// Fetch: strategi cache first, tetapi untuk file yang sering berubah (seperti master-data.js)
+// kita gunakan network first atau selalu ambil dari network.
 self.addEventListener('fetch', event => {
+  const url = new URL(event.request.url);
+
+  // Jangan cache master-data.js agar update selalu terbaca
+  if (url.pathname.endsWith('master-data.js')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Fallback jika offline: mungkin coba cache
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // Untuk semua request lain: cache first, fallback ke network
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // Kembalikan dari cache jika ada
         if (response) {
           return response;
         }
-        // Jika tidak ada di cache, ambil dari jaringan internet
         return fetch(event.request).catch(() => {
-          // Fallback opsional jika offline total untuk halaman HTML
+          // Fallback halaman utama jika offline
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
@@ -58,4 +70,3 @@ self.addEventListener('fetch', event => {
       })
   );
 });
-
