@@ -1,62 +1,74 @@
-const CACHE_NAME = 'sicermat-v2.2';
-const ASSETS_TO_CACHE = [
+/* ==========================================================================
+   SERVICE WORKER SICERMAT (sw.js)
+   ========================================================================== */
+
+const CACHE_NAME = 'sicermat-cache-v2';
+const urlsToCache = [
   './',
   './index.html',
-  './js/master-data.js',
-  './manifest.json',
-  './icon-192.png',
-  './icon.png',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-  'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
+  './master-data.js'
+  // Tambahkan file aset lain jika ada (misal: icon, file CSS eksternal, dll)
 ];
 
-// Install Event - Caching Aset Utama
+// 1. Install Service Worker & Cache Aset Utama
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[SW] Membuka Cache & Menyiapkan File SiCerMat v2.2');
-      return cache.addAll(ASSETS_TO_CACHE);
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Cache SICERMAT berhasil dibuka');
+        return cache.addAll(urlsToCache);
+      })
   );
+  // Langsung aktifkan service worker tanpa menunggu tab lama ditutup
+  self.skipWaiting();
 });
 
-// Activate Event - Hapus Cache Lama Otomatis
+// 2. Aktifkan dan Bersihkan Cache Versi Lama
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
-        cacheNames.map((cache) => {
-          if (cache !== CACHE_NAME) {
-            console.log('[SW] Menghapus Cache Lama:', cache);
-            return caches.delete(cache);
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('Menghapus cache lama:', cacheName);
+            return caches.delete(cacheName);
           }
         })
       );
-    }).then(() => self.clients.claim())
+    })
   );
+  self.clients.claim();
 });
 
-// Fetch Event - Stale-While-Revalidate Strategy (Mengutamakan Jaringan untuk Perubahan Kode)
+// 3. Strategi Fetch: Cache First, fallback to Network
 self.addEventListener('fetch', (event) => {
-  // Hiraukan request non-GET
-  if (event.request.method !== 'GET') return;
-
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        // Jika berhasil ambil dari jaringan, perbarui isi cache
-        if (networkResponse && networkResponse.status === 200) {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+    caches.match(event.request)
+      .then((response) => {
+        // Kembalikan dari cache jika ada
+        if (response) {
+          return response;
         }
-        return networkResponse;
-      })
-      .catch(() => {
-        // Jika offline, fallback ke cache yang tersimpan
-        return caches.match(event.request);
+        
+        // Jika tidak ada di cache, ambil dari network
+        return fetch(event.request).then(
+          (networkResponse) => {
+            // Validasi respons
+            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
+            }
+
+            // Clone respons untuk disimpan ke cache dinamis
+            const responseToCache = networkResponse.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return networkResponse;
+          }
+        );
       })
   );
 });
