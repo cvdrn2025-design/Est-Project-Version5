@@ -1409,6 +1409,174 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
     ]
   }
+  // ==================== PEKERJAAN FINISHING (TAMBAHAN LANJUTAN) ====================
+  {
+    code: "AHS-FIN-16",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pengecatan Dinding Tembok Luar (Exterior)",
+    unit: "m2",
+    details: [
+      { name: "Cat Tembok Dinding Luar (Exterior)", coeff: 0.300, unit: "kg", price: 65000 },
+      { name: "Plamuur Tembok", coeff: 0.100, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 0.020, unit: "OH", price: 110000 },
+      { name: "Tukang Cat", coeff: 0.080, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.008, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.004, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-17",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pengecatan Pagar Besi / Teralis",
+    unit: "m2",
+    details: [
+      { name: "Cat Tembok Dinding Luar (Exterior)", coeff: 0.200, unit: "kg", price: 65000 },
+      { name: "Thinner Cat", coeff: 0.100, unit: "liter", price: 30000 },
+      { name: "Amplas Besi", coeff: 0.500, unit: "lbr", price: 10000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Cat", coeff: 0.250, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-18",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Lantai Vinyl / Parket Kayu",
+    unit: "m2",
+    details: [
+      { name: "Lantai Vinyl / Parket (Plank)", coeff: 1.050, unit: "m2", price: 165000 },
+      { name: "Lem Lantai Vinyl / Parket", coeff: 0.150, unit: "kg", price: 45000 },
+      { name: "List Vinyl / Parket", coeff: 0.100, unit: "m'", price: 25000 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 0.300, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.030, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-19",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Kanopi Baja Ringan & Kaca",
+    unit: "m2",
+    details: [
+      { name: "Baja Ringan (Galvalum)", coeff: 4.000, unit: "m'", price: 35000 },
+      { name: "Kaca Polos 5mm", coeff: 1.100, unit: "lbr", price: 250000 },
+      { name: "Sekrup Self Drilling", coeff: 0.500, unit: "bh", price: 1500 },
+      { name: "Pekerja", coeff: 0.400, unit: "OH", price: 110000 },
+      { name: "Tukang Baja", coeff: 0.400, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.040, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.020, unit: "OH", price: 180000 }
+    ]
+  },
+
+  // ==================== PEKERJAAN MEKANIKAL & ELEKTRIKAL (TAMBAHAN) ====================
+  {
+    code: "AHS-MEP-09",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Panel Listrik Utama (PHB) dengan MCCB",
+    unit: "unit",
+    details: [
+      { name: "Panel Box Listrik Ukuran 5-6 Group", coeff: 1.000, unit: "unit", price: 750000 },
+      { name: "MCCB 3 Phase 25A", coeff: 1.000, unit: "bh", price: 300000 },
+      { name: "Kabel NYY 4x6", coeff: 10.000, unit: "m'", price: 35000 },
+      { name: "Pekerja", coeff: 0.800, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.800, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.080, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.040, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-10",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Sistem Grounding (Arde) / Penangkal Petir",
+    unit: "titik",
+    details: [
+      { name: "Batang Grounding / As Grounding 5/8\"", coeff: 1.000, unit: "btg", price: 250000 },
+      { name: "Kabel Grounding NYA 16mm", coeff: 10.000, unit: "m'", price: 15000 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.300, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.030, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-11",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Kabel Tray (Kabel Canal) Jalur Utama",
+    unit: "m'",
+    details: [
+      { name: "Kabel Tray Besi / Kabel Canal", coeff: 1.000, unit: "m'", price: 45000 },
+      { name: "Kabel Listrik NYM 2x2.5", coeff: 2.000, unit: "m'", price: 8000 },
+      { name: "Pekerja", coeff: 0.120, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.120, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.012, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.006, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-12",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Pompa Air (Jet Pump / Submersible)",
+    unit: "unit",
+    details: [
+      { name: "Pompa Air Jet Pump / Submersible", coeff: 1.000, unit: "unit", price: 1800000 },
+      { name: "Pipa PVC 1\" Type AW", coeff: 4.000, unit: "btg", price: 45000 },
+      { name: "Kabel Listrik NYM 3x1.5", coeff: 4.000, unit: "m'", price: 6000 },
+      { name: "Pekerja", coeff: 0.400, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik/Plumbing", coeff: 0.400, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.040, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.020, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-13",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Tandon Air / Water Tank (500 Liter)",
+    unit: "unit",
+    details: [
+      { name: "Tandon Air Plastik (500 Liter)", coeff: 1.000, unit: "unit", price: 900000 },
+      { name: "Pipa PVC 3/4\" Type AW", coeff: 2.000, unit: "btg", price: 35000 },
+      { name: "Lem Pipa PVC", coeff: 0.020, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.300, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.030, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+    ]
+  },
+
+  // ==================== PEKERJAAN LANDSCAPE (TAMBAHAN) ====================
+  {
+    code: "AHS-LSC-05",
+    category: "Pekerjaan Landscape",
+    title: "Pembuatan Kolam Ikan / Batu Alam",
+    unit: "m2",
+    details: [
+      { name: "Batu Alam Andesit / Paras", coeff: 1.100, unit: "m2", price: 150000 },
+      { name: "Semen Portland (50kg)", coeff: 0.400, unit: "sak", price: 75000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.080, unit: "m3", price: 220000 },
+      { name: "Pekerja", coeff: 0.750, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.050, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-LSC-06",
+    category: "Pekerjaan Landscape",
+    title: "Pemasangan Pagar Taman / Pagar Bata Precast",
+    unit: "m'",
+    details: [
+      { name: "Pagar Bata Precast / Pilar Beton", coeff: 1.000, unit: "m'", price: 450000 },
+      { name: "Semen Portland (50kg)", coeff: 0.200, unit: "sak", price: 75000 },
+      { name: "Besi Beton Polos / Ulir", coeff: 2.000, unit: "kg", price: 14500 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.200, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  }
+] // <--- PASTIKAN TANDA TITIK KOMA INI ADA DI PALING BAWAH FILE ANDA!
 ] // <--- PASTIKAN TANDA TITIK KOMA INI ADA DI PALING BAWAH FILE ANDA!
 ] // <--- PASTIKAN TANDA KURUNG INI ADA DI PALING BAWAH FILE ANDA!
 ];
