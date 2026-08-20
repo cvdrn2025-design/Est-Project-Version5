@@ -103,10 +103,9 @@
       body {
         background-color: #ffffff !important;
         color: #000000 !important;
-        font-size: 12pt;
+        font-size: 11pt;
       }
 
-      /* Sembunyikan elemen non-cetak */
       .no-print,
       .btn,
       #panelHargaDasarCard,
@@ -117,7 +116,6 @@
         display: none !important;
       }
 
-      /* Hilangkan border card dan shadow untuk print */
       .card {
         border: none !important;
         box-shadow: none !important;
@@ -125,7 +123,6 @@
         margin: 0 !important;
       }
 
-      /* Format Input menjadi teks datar saat dicetak */
       .table input, #profitMargin {
         border: none !important;
         background: transparent !important;
@@ -139,14 +136,12 @@
         overflow: visible !important;
       }
 
-      /* Header Proyek dan Tabel Cetak */
       .print-header {
         margin-bottom: 20px;
         border-bottom: 2px solid #000;
         padding-bottom: 10px;
       }
 
-      /* Footer Cetak */
       .print-footer {
         display: block !important;
         margin-top: 30px;
@@ -165,13 +160,13 @@
 </head>
 <body>
 
-  <!-- Header Clean dengan Logo Besar (Sembunyi Saat Cetak) -->
+  <!-- Header Clean dengan Logo Besar -->
   <div class="container text-center my-4 no-print">
     <img src="icon.png" alt="Logo SiCerMat" width="512" height="512" style="max-width: 250px; width: 100%; height: auto; object-fit: contain;" class="img-fluid drop-shadow">
   </div>
 
   <div class="container mb-5">
-    <!-- Panel Tombol Utama Proyek (Sembunyi Saat Cetak) -->
+    <!-- Panel Tombol Utama Proyek -->
     <div class="card p-3 mb-4 no-print">
       <div class="row g-2 justify-content-center">
         <div class="col-6 col-md-3">
@@ -212,7 +207,7 @@
         <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0 no-print" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
       </div>
 
-      <!-- Posisi Tombol Library AHS & Tambah Item Manual (Di atas Tabel) -->
+      <!-- Tombol Library AHS & Tambah Item Manual -->
       <div class="row g-2 mb-3 no-print">
         <div class="col-12 col-sm-6 col-md-3">
           <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
@@ -226,7 +221,7 @@
         </div>
       </div>
 
-      <!-- Tabel Responsif -->
+      <!-- Tabel RAB -->
       <div class="table-responsive table-responsive-custom">
         <table class="table table-bordered align-middle" id="rabTable">
           <thead class="table-light">
@@ -241,12 +236,12 @@
             </tr>
           </thead>
           <tbody id="rabTableBody">
-            <!-- Dynamic RAB rows added here -->
+            <!-- Dynamic RAB rows -->
           </tbody>
         </table>
       </div>
 
-      <!-- Calculation Summary -->
+      <!-- Panel Perhitungan Biaya -->
       <div class="row justify-content-end mt-3">
         <div class="col-md-6 col-lg-5">
           <div class="d-flex justify-content-between mb-2">
@@ -275,13 +270,12 @@
       </div>
     </div>
 
-    <!-- Panel Harga Dasar (Accordion Monochrome) -->
+    <!-- Panel Harga Dasar -->
     <div class="card p-3 p-md-4 no-print" id="panelHargaDasarCard">
       <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar</h5>
 
       <div class="accordion accordion-flush" id="accordionHargaDasar">
-        
-        <!-- Komponen Bahan -->
+        <!-- Bahan -->
         <div class="accordion-item border-bottom">
           <h2 class="accordion-header" id="headingBahan">
             <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBahan">
@@ -304,7 +298,7 @@
           </div>
         </div>
 
-        <!-- Komponen Alat -->
+        <!-- Alat -->
         <div class="accordion-item border-bottom">
           <h2 class="accordion-header" id="headingAlat">
             <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlat">
@@ -327,7 +321,7 @@
           </div>
         </div>
 
-        <!-- Komponen Upah -->
+        <!-- Upah -->
         <div class="accordion-item">
           <h2 class="accordion-header" id="headingUpah">
             <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUpah">
@@ -349,12 +343,11 @@
             </div>
           </div>
         </div>
-
       </div>
     </div>
   </div>
 
-  <!-- Modal Proyek Baru / Edit Info -->
+  <!-- Modal Proyek -->
   <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -393,7 +386,6 @@
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <!-- Filter & Search -->
           <div class="row g-2 mb-3">
             <div class="col-md-4">
               <select id="ahsCategoryFilter" class="form-select" onchange="filterAHSList()">
@@ -414,7 +406,6 @@
             </div>
           </div>
 
-          <!-- Table Modal AHS -->
           <div class="table-responsive table-responsive-custom">
             <table class="table table-hover align-middle">
               <thead class="table-light">
@@ -425,7 +416,7 @@
                 </tr>
               </thead>
               <tbody id="ahsTableBody">
-                <!-- AHS list rendered dynamically -->
+                <!-- AHS dynamic list -->
               </tbody>
             </table>
           </div>
@@ -434,16 +425,28 @@
     </div>
   </div>
 
-  <!-- Bootstrap 5 Bundle JS -->
+  <!-- JS Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- SheetJS (XLSX) Library untuk Import / Export Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
-  <!-- Load File Master Data dari Folder js -->
-  <script src="js/master-data.js?v=1.2"></script>
+  <!-- Dynamic Master Data Script Loader (Online Update Guarantee) -->
+  <script>
+    (function loadOnlineMasterData() {
+      const script = document.createElement('script');
+      // Memakai query string timestamp agar browser selalu mengambil versi terupdate saat online
+      script.src = 'js/master-data.js?v=' + new Date().getTime();
+      script.onload = () => {
+        if (typeof renderPriceTable === 'function') {
+          renderPriceTable('bahan');
+          renderPriceTable('alat');
+          renderPriceTable('upah');
+        }
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
 
-  <!-- Logic Script RAB Interaktif & Excel Storage -->
+  <!-- Core App Logic -->
   <script>
     let ahsModalInstance;
     let projectModalInstance;
@@ -457,14 +460,11 @@
     document.addEventListener('DOMContentLoaded', () => {
       ahsModalInstance = new bootstrap.Modal(document.getElementById('ahsModal'));
       projectModalInstance = new bootstrap.Modal(document.getElementById('projectModal'));
-      renderPriceTable('bahan');
-      renderPriceTable('alat');
-      renderPriceTable('upah');
       updateProjectHeader();
     });
 
     function openAHSModal() {
-      filterAHSList();
+      if (typeof filterAHSList === 'function') filterAHSList();
       ahsModalInstance.show();
     }
 
@@ -472,7 +472,6 @@
       ahsModalInstance.hide();
     }
 
-    /* Modal Proyek */
     function openProjectModal() {
       document.getElementById('inputProjectName').value = currentProject.name;
       document.getElementById('inputProjectOwner').value = currentProject.owner;
@@ -494,7 +493,6 @@
       document.getElementById('displayProjectLocation').innerText = currentProject.location;
     }
 
-    /* Penomoran Otomatis Baris Tabel RAB */
     function updateRowNumbers() {
       const rows = document.querySelectorAll('#rabTableBody tr');
       rows.forEach((row, index) => {
@@ -502,13 +500,12 @@
       });
     }
 
-    /* Fungsi Menghilangkan Awalan Satuan (1 m2, 1 m3, 1 m', 1 Bh, dll.) */
+    /* Auto-Clean Awalan Satuan (1 m2, 1 m3, 1 m', 1 Bh, dll.) */
     function cleanJobTitle(title) {
       if (!title) return '';
       return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim();
     }
 
-    /* Baris Tabel RAB */
     function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
       const cleanTitle = cleanJobTitle(title);
       const tbody = document.getElementById('rabTableBody');
@@ -559,7 +556,7 @@
 
       const ppn = subtotal * 0.11;
       const marginPercent = parseFloat(document.getElementById('profitMargin').value) || 0;
-      const marginVal = subtotal * (marginPercent / 100);
+      const marginVal = (subtotal + ppn) * (marginPercent / 100);
       const grandTotal = subtotal + ppn + marginVal;
 
       document.getElementById('subtotalVal').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
@@ -567,7 +564,6 @@
       document.getElementById('grandTotalVal').innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
     }
 
-    /* Fungsi Cetak RAB */
     function printRAB() {
       const today = new Date();
       const day = String(today.getDate()).padStart(2, '0');
@@ -578,7 +574,6 @@
       window.print();
     }
 
-    /* Export Excel Functionality */
     function saveProjectExcel() {
       const margin = parseFloat(document.getElementById('profitMargin').value) || 0;
       const data = [
@@ -611,7 +606,6 @@
       XLSX.writeFile(wb, fileName);
     }
 
-    /* Import Excel Functionality */
     function openProjectExcel(event) {
       const file = event.target.files[0];
       if (!file) return;
@@ -656,12 +650,12 @@
     }
   </script>
 
-  <!-- Register PWA Service Worker -->
+  <!-- PWA Service Worker -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('PWA Service Worker Berhasil Didaftarkan!'))
+          .then(reg => console.log('Service Worker SiCerMat Aktif'))
           .catch(err => console.log('Gagal mendaftarkan Service Worker:', err));
       });
     }
