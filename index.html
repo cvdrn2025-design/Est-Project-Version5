@@ -30,7 +30,7 @@
     }
 
     /* ==========================================
-       PENGATURAN LEBAR KOLOM TABEL RAB (FIXED & PROPORSIONAL)
+       PENGATURAN LEBAR KOLOM TABEL RAB
        ========================================== */
     #rabTable {
       min-width: 860px;
@@ -46,13 +46,13 @@
     #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 150px; text-align: right; } /* Total Harga */
     #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 50px; text-align: center; } /* Aksi */
 
-    /* Input di dalam tabel agar selalu 100% mengikuti lebar kolom */
+    /* Input di dalam tabel */
     #rabTable input.form-control-sm {
       width: 100%;
       box-sizing: border-box;
     }
 
-    /* Monochrome Button System */
+    /* Monochrome Button System & Custom Indicators */
     .btn-mono-primary { background-color: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
     .btn-mono-primary:hover { background-color: #334155; color: #ffffff; }
     .btn-mono-secondary { background-color: #475569; color: #ffffff; border: 1px solid #475569; }
@@ -65,8 +65,16 @@
     .btn-komponen { color: #0f172a; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
     .print-only { display: none; }
 
+    /* Indicator Status Terpilih */
+    .btn-added {
+      background-color: #16a34a !important;
+      color: #ffffff !important;
+      border-color: #16a34a !important;
+      font-weight: 600;
+    }
+
     /* ==========================================
-       GAYA TAMPILAN KHUSUS CETAK (PRINT CSS)
+       PRINT CSS
        ========================================== */
     @media print {
       body {
@@ -150,7 +158,7 @@
     <div class="card p-3 mb-4 no-print">
       <div class="row g-2 justify-content-center">
         <div class="col-6 col-md-3">
-          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">➕ Proyek Baru</button>
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="createNewProject()">➕ Proyek Baru</button>
         </div>
         <div class="col-6 col-md-3">
           <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">💾 Save Proyek</button>
@@ -225,7 +233,7 @@
             <tr>
               <td colspan="5" class="text-end fw-semibold">
                 Margin Keuntungan (%):
-                <input type="number" id="profitMargin" class="form-control form-control-sm d-inline-block text-end ms-1 no-print" style="width: 70px;" value="10" onchange="calculateGrandTotal()">
+                <input type="number" id="profitMargin" class="form-control form-control-sm d-inline-block text-end ms-1 no-print" style="width: 70px;" value="10" onchange="calculateGrandTotal(); saveToLocalStorage();">
                 <span class="print-only ms-1" id="printMarginVal">10%</span>
               </td>
               <td class="text-end fw-bold" id="marginAmountVal">0,00</td>
@@ -419,7 +427,7 @@
     })();
   </script>
 
-  <!-- Core App Logic & Handlers -->
+  <!-- Core App Logic & Auto-Save Engine -->
   <script>
     let ahsModalInstance;
     let projectModalInstance;
@@ -445,11 +453,89 @@
       });
     }
 
+    /* ==========================================
+       AUTO-SAVE & RESTORE LOCALSTORAGE
+       ========================================== */
+    function saveToLocalStorage() {
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      const rabData = [];
+      rows.forEach(row => {
+        const title = row.querySelector('.input-title')?.value || '';
+        const vol = parseIndoNumber(row.querySelector('.input-volume')?.value);
+        const unit = row.querySelector('.input-unit')?.value || '';
+        const price = parseIndoNumber(row.querySelector('.input-price')?.value);
+        const code = row.dataset.ahsCode || '';
+        rabData.push({ title, vol, unit, price, code });
+      });
+
+      const state = {
+        currentProject,
+        profitMargin: document.getElementById('profitMargin')?.value || 10,
+        rabData,
+        customBahan: window.masterBahan || [],
+        customAlat: window.masterAlat || [],
+        customUpah: window.masterUpah || []
+      };
+
+      localStorage.setItem('sicermat_rab_app_state', JSON.stringify(state));
+    }
+
+    function loadFromLocalStorage() {
+      const saved = localStorage.getItem('sicermat_rab_app_state');
+      if (!saved) return;
+
+      try {
+        const state = JSON.parse(saved);
+        if (state.currentProject) {
+          currentProject = state.currentProject;
+          updateProjectHeader();
+        }
+        if (state.profitMargin !== undefined && document.getElementById('profitMargin')) {
+          document.getElementById('profitMargin').value = state.profitMargin;
+        }
+        if (state.customBahan) window.masterBahan = state.customBahan;
+        if (state.customAlat) window.masterAlat = state.customAlat;
+        if (state.customUpah) window.masterUpah = state.customUpah;
+
+        if (state.rabData && Array.isArray(state.rabData)) {
+          document.getElementById('rabTableBody').innerHTML = '';
+          state.rabData.forEach(item => {
+            addItemRow(item.title, item.vol, item.unit, item.price, item.code, false);
+          });
+        }
+        calculateGrandTotal();
+      } catch (e) {
+        console.error('Gagal memuat data dari LocalStorage:', e);
+      }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
       ahsModalInstance = new bootstrap.Modal(document.getElementById('ahsModal'));
       projectModalInstance = new bootstrap.Modal(document.getElementById('projectModal'));
+      
+      loadFromLocalStorage();
       updateProjectHeader();
+
+      const rabBody = document.getElementById('rabTableBody');
+      if (rabBody) {
+        rabBody.addEventListener('input', () => {
+          calculateGrandTotal();
+          saveToLocalStorage();
+        });
+      }
     });
+
+    function createNewProject() {
+      if (confirm('Apakah Anda yakin ingin membuat proyek baru? Seluruh data RAB saat ini akan dikosongkan.')) {
+        currentProject = { name: "Proyek Baru", owner: "-", location: "-" };
+        document.getElementById('rabTableBody').innerHTML = '';
+        document.getElementById('profitMargin').value = 10;
+        updateProjectHeader();
+        calculateGrandTotal();
+        saveToLocalStorage();
+        openProjectModal();
+      }
+    }
 
     /* Multi-fallback Helper untuk Mengambil Database AHS */
     function getAHSData() {
@@ -459,7 +545,16 @@
              (window.ahsDatabase || window.ahsData || window.masterAHS || window.masterDataAHS || []);
     }
 
-    /* Modal Library AHS Handlers */
+    function getActiveAHSCodesInRAB() {
+      const activeCodes = new Set();
+      document.querySelectorAll('#rabTableBody tr').forEach(row => {
+        if (row.dataset.ahsCode) {
+          activeCodes.add(row.dataset.ahsCode);
+        }
+      });
+      return activeCodes;
+    }
+
     function openAHSModal() {
       filterAHSList();
       ahsModalInstance.show();
@@ -483,6 +578,8 @@
         return;
       }
 
+      const activeCodes = getActiveAHSCodesInRAB();
+
       const filtered = dbAHS.filter(item => {
         const itemCat = item.category || item.kategori || '';
         const itemTitle = item.title || item.nama || item.pekerjaan || '';
@@ -505,6 +602,10 @@
         const unit = item.unit || item.satuan || 'm2';
         const price = item.totalPrice || item.totalHarga || item.hargaTotal || item.price || item.harga || 0;
         const details = item.details || item.rincian || item.komponen || item.items || [];
+
+        const isAdded = activeCodes.has(code);
+        const btnClass = isAdded ? 'btn-added' : 'btn-mono-primary';
+        const btnText = isAdded ? '✓ Ditambahkan' : '➕ Tambahkan';
 
         let detailsHtml = '';
         if (details.length > 0) {
@@ -533,22 +634,27 @@
           </td>
           <td class="text-center align-middle">
             <div class="fw-bold text-dark mb-1">Rp ${formatNumber(price, 2)} / ${unit}</div>
-            <button class="btn btn-sm btn-mono-primary px-3" onclick="selectAHSItem('${code}')">➕ Pilih</button>
+            <button class="btn btn-sm ${btnClass} px-3" onclick="selectAHSItem('${code}', this)">${btnText}</button>
           </td>
         `;
         tbody.appendChild(tr);
       });
     }
 
-    function selectAHSItem(code) {
+    function selectAHSItem(code, btnElem) {
       const dbAHS = getAHSData();
       const item = dbAHS.find(a => (a.code || a.kode) === code);
       if (item) {
         const title = item.title || item.nama || item.pekerjaan || '';
         const unit = item.unit || item.satuan || 'm2';
         const price = item.totalPrice || item.totalHarga || item.hargaTotal || item.price || item.harga || 0;
-        addItemRow(title, 1, unit, price, code);
-        closeAHSModal();
+        
+        addItemRow(title, 1, unit, price, code, true);
+        
+        if (btnElem) {
+          btnElem.className = 'btn btn-sm btn-added px-3';
+          btnElem.innerHTML = '✓ Ditambahkan';
+        }
       }
     }
 
@@ -565,6 +671,7 @@
       currentProject.owner = document.getElementById('inputProjectOwner').value || "-";
       currentProject.location = document.getElementById('inputProjectLocation').value || "-";
       updateProjectHeader();
+      saveToLocalStorage();
       projectModalInstance.hide();
     }
 
@@ -612,7 +719,7 @@
       calculateRow(input);
     }
 
-    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0, code = '') {
+    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0, code = '', autoSave = true) {
       const cleanTitle = cleanJobTitle(title);
       const tbody = document.getElementById('rabTableBody');
       const tr = document.createElement('tr');
@@ -636,6 +743,7 @@
       tbody.appendChild(tr);
       updateRowNumbers();
       calculateGrandTotal();
+      if (autoSave) saveToLocalStorage();
     }
 
     function addManualRow() {
@@ -650,12 +758,14 @@
       
       row.querySelector('.row-total').innerText = formatNumber(total, 2);
       calculateGrandTotal();
+      saveToLocalStorage();
     }
 
     function deleteRow(btn) {
       btn.closest('tr').remove();
       updateRowNumbers();
       calculateGrandTotal();
+      saveToLocalStorage();
     }
 
     function calculateGrandTotal() {
@@ -689,7 +799,7 @@
       window.print();
     }
 
-    /* Cetak Rincian AHS dengan Multi-fallback Variable & Property Matching */
+    /* Cetak Rincian AHS RAB */
     function printSelectedAHS() {
       const dbAHS = getAHSData();
 
@@ -884,6 +994,7 @@
       let list = getMasterPrices(type);
       list.push(newItem);
       renderPriceTable(type);
+      saveToLocalStorage();
     }
 
     /* Save & Open Excel Handlers */
@@ -952,9 +1063,11 @@
               const vol = parseFloat(row[2] || row[1]) || 0;
               const unit = row[3] || row[2] || 'ls';
               const price = parseFloat(row[4] || row[3]) || 0;
-              if (title) addItemRow(title, vol, unit, price);
+              if (title) addItemRow(title, vol, unit, price, '', false);
             }
           });
+          calculateGrandTotal();
+          saveToLocalStorage();
         }
       };
       reader.readAsArrayBuffer(file);
