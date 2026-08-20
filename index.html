@@ -35,15 +35,15 @@
     #rabTable {
       min-width: 860px;
       width: 100%;
-      table-layout: fixed; /* Memastikan lebar kolom dipatuhi secara presisi */
+      table-layout: fixed;
     }
 
     #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 45px; text-align: center; } /* No */
-    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { width: auto; text-align: left; }    /* Uraian Pekerjaan (Flex/Fleksibel) */
+    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { width: auto; text-align: left; }    /* Uraian Pekerjaan */
     #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 85px; text-align: right; }  /* Volume */
     #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 75px; text-align: center; } /* Satuan */
-    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 170px; text-align: right; } /* Harga Satuan (Dilebarkan) */
-    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 150px; text-align: right; } /* Total Harga (Diperketat) */
+    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 170px; text-align: right; } /* Harga Satuan */
+    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 150px; text-align: right; } /* Total Harga */
     #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 50px; text-align: center; } /* Aksi */
 
     /* Input di dalam tabel agar selalu 100% mengikuti lebar kolom */
@@ -411,12 +411,15 @@
           renderPriceTable('alat');
           renderPriceTable('upah');
         }
+        if (typeof filterAHSList === 'function') {
+          filterAHSList();
+        }
       };
       document.head.appendChild(script);
     })();
   </script>
 
-  <!-- Core App Logic & Formatter -->
+  <!-- Core App Logic & Handlers -->
   <script>
     let ahsModalInstance;
     let projectModalInstance;
@@ -448,8 +451,17 @@
       updateProjectHeader();
     });
 
+    /* Multi-fallback Helper untuk Mengambil Database AHS */
+    function getAHSData() {
+      return (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase) && ahsDatabase.length) ? ahsDatabase :
+             (typeof ahsData !== 'undefined' && Array.isArray(ahsData) && ahsData.length) ? ahsData :
+             (typeof masterAHS !== 'undefined' && Array.isArray(masterAHS) && masterAHS.length) ? masterAHS :
+             (window.ahsDatabase || window.ahsData || window.masterAHS || window.masterDataAHS || []);
+    }
+
+    /* Modal Library AHS Handlers */
     function openAHSModal() {
-      if (typeof filterAHSList === 'function') filterAHSList();
+      filterAHSList();
       ahsModalInstance.show();
     }
 
@@ -457,6 +469,90 @@
       ahsModalInstance.hide();
     }
 
+    function filterAHSList() {
+      const dbAHS = getAHSData();
+      const category = document.getElementById('ahsCategoryFilter').value;
+      const search = document.getElementById('ahsSearch').value.toLowerCase().trim();
+      const tbody = document.getElementById('ahsTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      if (!dbAHS || dbAHS.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Database AHS belum terisi atau sedang dimuat. Silakan muat ulang halaman.</td></tr>';
+        return;
+      }
+
+      const filtered = dbAHS.filter(item => {
+        const itemCat = item.category || item.kategori || '';
+        const itemTitle = item.title || item.nama || item.pekerjaan || '';
+        const itemCode = item.code || item.kode || '';
+
+        const matchCat = (category === 'ALL' || itemCat === category);
+        const matchSearch = itemTitle.toLowerCase().includes(search) || itemCode.toLowerCase().includes(search);
+        return matchCat && matchSearch;
+      });
+
+      if (filtered.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-3">Tidak ada data AHS yang cocok.</td></tr>';
+        return;
+      }
+
+      filtered.forEach(item => {
+        const code = item.code || item.kode || '-';
+        const cat = item.category || item.kategori || 'Umum';
+        const title = item.title || item.nama || item.pekerjaan || 'Pekerjaan';
+        const unit = item.unit || item.satuan || 'm2';
+        const price = item.totalPrice || item.totalHarga || item.hargaTotal || item.price || item.harga || 0;
+        const details = item.details || item.rincian || item.komponen || item.items || [];
+
+        let detailsHtml = '';
+        if (details.length > 0) {
+          detailsHtml = '<ul class="mb-0 ps-3 text-muted small" style="font-size: 0.82rem;">';
+          details.slice(0, 4).forEach(d => {
+            const name = d.name || d.nama || d.komponen || '';
+            const coeff = d.coeff || d.koefisien || 0;
+            const dUnit = d.unit || d.satuan || '';
+            detailsHtml += `<li>${name} (${coeff} ${dUnit})</li>`;
+          });
+          if (details.length > 4) {
+            detailsHtml += `<li><em>+ ${details.length - 4} komponen lainnya...</em></li>`;
+          }
+          detailsHtml += '</ul>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <span class="badge bg-secondary mb-1 d-inline-block">${code}</span><br>
+            <small class="text-muted">${cat}</small>
+          </td>
+          <td>
+            <div class="fw-bold text-dark">${title}</div>
+            ${detailsHtml}
+          </td>
+          <td class="text-center align-middle">
+            <div class="fw-bold text-dark mb-1">Rp ${formatNumber(price, 2)} / ${unit}</div>
+            <button class="btn btn-sm btn-mono-primary px-3" onclick="selectAHSItem('${code}')">➕ Pilih</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function selectAHSItem(code) {
+      const dbAHS = getAHSData();
+      const item = dbAHS.find(a => (a.code || a.kode) === code);
+      if (item) {
+        const title = item.title || item.nama || item.pekerjaan || '';
+        const unit = item.unit || item.satuan || 'm2';
+        const price = item.totalPrice || item.totalHarga || item.hargaTotal || item.price || item.harga || 0;
+        addItemRow(title, 1, unit, price, code);
+        closeAHSModal();
+      }
+    }
+
+    /* Info Proyek Handlers */
     function openProjectModal() {
       document.getElementById('inputProjectName').value = currentProject.name;
       document.getElementById('inputProjectOwner').value = currentProject.owner;
@@ -478,6 +574,7 @@
       document.getElementById('displayProjectLocation').innerText = currentProject.location;
     }
 
+    /* Tabel RAB Handlers */
     function updateRowNumbers() {
       const rows = document.querySelectorAll('#rabTableBody tr');
       rows.forEach((row, index) => {
@@ -495,7 +592,7 @@
       return str
         .toLowerCase()
         .replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '')
-        .replace(/[^a-z0-9]/g, ''); // Menyisakan karakter alfanumerik saja
+        .replace(/[^a-z0-9]/g, '');
     }
 
     function handleFocusNumber(input) {
@@ -592,16 +689,18 @@
       window.print();
     }
 
-    /* Cetak Rincian AHS dengan Pencocokan Toleran / Fuzzy */
+    /* Cetak Rincian AHS dengan Multi-fallback Variable & Property Matching */
     function printSelectedAHS() {
-      const rows = document.querySelectorAll('#rabTableBody tr');
-      if (rows.length === 0) {
-        alert('Tabel RAB masih kosong! Tambahkan pekerjaan dari Library AHS terlebih dahulu.');
+      const dbAHS = getAHSData();
+
+      if (!dbAHS || dbAHS.length === 0) {
+        alert('Database AHS belum terisi atau gagal dimuat dari master-data.js. Silakan muat ulang halaman (Refresh).');
         return;
       }
 
-      if (typeof ahsDatabase === 'undefined' || !ahsDatabase.length) {
-        alert('Database AHS belum terisi atau sedang dimuat.');
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      if (rows.length === 0) {
+        alert('Tabel RAB masih kosong! Tambahkan pekerjaan dari Library AHS terlebih dahulu.');
         return;
       }
 
@@ -639,28 +738,33 @@
         const rawTitle = titleInput.value.trim();
         const volVal = parseIndoNumber(volInput ? volInput.value : 0);
 
-        // Abaikan Sub-judul / Volume 0
         if (!rawTitle || volVal === 0) return;
 
         const normInputTitle = normalizeString(rawTitle);
 
-        // Cari match berdasarkan Kode AHS atau Teks Fleksibel
-        const matchAHS = ahsDatabase.find(a => {
-          if (ahsCode && a.code === ahsCode) return true;
+        const matchAHS = dbAHS.find(a => {
+          const itemCode = a.code || a.kode || '';
+          const itemTitle = a.title || a.nama || a.pekerjaan || '';
+
+          if (ahsCode && itemCode && ahsCode === itemCode) return true;
           
-          const normDbTitle = normalizeString(a.title);
+          const normDbTitle = normalizeString(itemTitle);
           return normDbTitle === normInputTitle || 
-                 normDbTitle.includes(normInputTitle) || 
-                 normInputTitle.includes(normDbTitle);
+                 (normDbTitle.length > 3 && normInputTitle.includes(normDbTitle)) || 
+                 (normInputTitle.length > 3 && normDbTitle.includes(normInputTitle));
         });
 
         if (matchAHS) {
           itemCount++;
+          const titleText = matchAHS.title || matchAHS.nama || matchAHS.pekerjaan || rawTitle;
+          const codeText = matchAHS.code || matchAHS.kode || '-';
+          const detailsList = matchAHS.details || matchAHS.rincian || matchAHS.komponen || matchAHS.items || [];
+
           printHTML += `
             <table>
               <thead>
                 <tr style="background-color: #e2e8f0;">
-                  <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title} (${matchAHS.code || '-'})</td>
+                  <td colspan="5" class="fw-bold">Pekerjaan: ${titleText} (${codeText})</td>
                 </tr>
                 <tr>
                   <th style="width: 40px;" class="text-center">No</th>
@@ -674,15 +778,20 @@
           `;
 
           let idx = 1;
-          if (matchAHS.details && matchAHS.details.length > 0) {
-            matchAHS.details.forEach(d => {
+          if (detailsList && detailsList.length > 0) {
+            detailsList.forEach(d => {
+              const compName = d.name || d.nama || d.komponen || '-';
+              const compCoeff = d.coeff || d.koefisien || d.coef || 0;
+              const compUnit = d.unit || d.satuan || '-';
+              const compPrice = d.price || d.harga || 0;
+
               printHTML += `
                 <tr>
                   <td class="text-center">${idx++}</td>
-                  <td>${d.name}</td>
-                  <td class="text-end">${formatNumber(d.coeff || d.koefisien, 4)}</td>
-                  <td class="text-center">${d.unit || d.satuan || '-'}</td>
-                  <td class="text-end">${formatNumber(d.price || d.harga, 2)}</td>
+                  <td>${compName}</td>
+                  <td class="text-end">${formatNumber(compCoeff, 4)}</td>
+                  <td class="text-center">${compUnit}</td>
+                  <td class="text-end">${formatNumber(compPrice, 2)}</td>
                 </tr>
               `;
             });
@@ -708,6 +817,76 @@
       setTimeout(() => { printWin.print(); }, 400);
     }
 
+    /* Panel Harga Dasar Handlers */
+    function getMasterPrices(type) {
+      if (type === 'bahan') {
+        return window.masterBahan || window.materialPrices || (typeof masterBahan !== 'undefined' ? masterBahan : []);
+      } else if (type === 'alat') {
+        return window.masterAlat || window.equipmentPrices || (typeof masterAlat !== 'undefined' ? masterAlat : []);
+      } else if (type === 'upah') {
+        return window.masterUpah || window.laborPrices || (typeof masterUpah !== 'undefined' ? masterUpah : []);
+      }
+      return [];
+    }
+
+    function renderPriceTable(type) {
+      let tableId, searchId;
+      if (type === 'bahan') {
+        tableId = 'materialPriceTable';
+        searchId = 'searchBahan';
+      } else if (type === 'alat') {
+        tableId = 'equipmentPriceTable';
+        searchId = 'searchAlat';
+      } else if (type === 'upah') {
+        tableId = 'laborPriceTable';
+        searchId = 'searchUpah';
+      }
+
+      const tbody = document.getElementById(tableId);
+      const search = (document.getElementById(searchId)?.value || '').toLowerCase().trim();
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+      const list = getMasterPrices(type);
+
+      if (!list || list.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="2" class="text-center text-muted small py-2">Data tidak tersedia</td></tr>';
+        return;
+      }
+
+      const filtered = list.filter(item => {
+        const name = item.name || item.nama || '';
+        return name.toLowerCase().includes(search);
+      });
+
+      filtered.forEach(item => {
+        const name = item.name || item.nama || '-';
+        const unit = item.unit || item.satuan || '';
+        const price = item.price || item.harga || 0;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${name} ${unit ? '(' + unit + ')' : ''}</td>
+          <td class="text-end fw-semibold">Rp ${formatNumber(price, 2)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function addMasterItem(type) {
+      const name = prompt(`Masukkan nama ${type} baru:`);
+      if (!name) return;
+      const unit = prompt(`Masukkan satuan (contoh: m3, kg, oh, jam):`, 'unit');
+      const priceStr = prompt(`Masukkan harga satuan (Rp):`, '0');
+      const price = parseIndoNumber(priceStr);
+
+      const newItem = { name, unit, price, harga: price, nama: name, satuan: unit };
+      let list = getMasterPrices(type);
+      list.push(newItem);
+      renderPriceTable(type);
+    }
+
+    /* Save & Open Excel Handlers */
     function saveProjectExcel() {
       const margin = parseIndoNumber(document.getElementById('profitMargin').value) || 0;
       const data = [
