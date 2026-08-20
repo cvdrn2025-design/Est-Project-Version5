@@ -25,7 +25,7 @@
       -webkit-overflow-scrolling: touch;
     }
     .table-responsive-custom table {
-      min-width: 680px;
+      min-width: 720px;
     }
 
     /* Scrollable Container untuk Panel Harga Dasar */
@@ -99,40 +99,30 @@
 </head>
 <body>
 
-  <!-- Header Clean dengan Logo Besar (Proporsi Sesuai Box) -->
+  <!-- Header Clean dengan Logo Besar -->
   <div class="container text-center my-4">
     <img src="icon.png" alt="Logo SiCerMat" width="512" height="512" style="max-width: 250px; width: 100%; height: auto; object-fit: contain;" class="img-fluid drop-shadow">
   </div>
 
   <div class="container mb-5">
-    <!-- Panel Tombol Utama & Aksi Proyek (Monochrome Style) -->
+    <!-- Panel Tombol Utama Proyek -->
     <div class="card p-3 mb-4">
-      <div class="row g-2">
-        <div class="col-6 col-md-2">
+      <div class="row g-2 justify-content-center">
+        <div class="col-12 col-md-4">
           <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">
             ➕ Proyek Baru
           </button>
         </div>
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-4">
           <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">
             💾 Save Proyek
           </button>
         </div>
-        <div class="col-6 col-md-2">
+        <div class="col-6 col-md-4">
           <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">
             📂 Open Proyek
           </button>
           <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="openProjectExcel(event)">
-        </div>
-        <div class="col-6 col-md-3">
-          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
-            📚 Library AHS Standard
-          </button>
-        </div>
-        <div class="col-12 col-md-3">
-          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">
-            ➕ Tambah Item Manual
-          </button>
         </div>
       </div>
     </div>
@@ -150,11 +140,26 @@
         <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
       </div>
 
+      <!-- Posisi Tombol Library AHS & Tambah Item Manual (Di atas Tabel) -->
+      <div class="row g-2 mb-3">
+        <div class="col-12 col-sm-6 col-md-3">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
+            📚 Library AHS
+          </button>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">
+            ➕ Tambah Item Manual
+          </button>
+        </div>
+      </div>
+
       <!-- Tabel Responsif -->
       <div class="table-responsive table-responsive-custom">
         <table class="table table-bordered align-middle" id="rabTable">
           <thead class="table-light">
             <tr>
+              <th style="width: 50px;" class="text-center">No</th>
               <th style="min-width: 220px;">Uraian Pekerjaan</th>
               <th style="min-width: 90px;">Volume</th>
               <th style="min-width: 80px;">Satuan</th>
@@ -171,16 +176,20 @@
 
       <!-- Calculation Summary -->
       <div class="row justify-content-end mt-3">
-        <div class="col-md-5 col-lg-4">
+        <div class="col-md-6 col-lg-5">
           <div class="d-flex justify-content-between mb-2">
-            <span class="fw-bold">Subtotal:</span>
+            <span class="fw-semibold">Subtotal:</span>
             <span id="subtotalVal" class="fw-bold">Rp 0</span>
           </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span class="fw-semibold">PPN 11%:</span>
+            <span id="ppnVal" class="fw-bold">Rp 0</span>
+          </div>
           <div class="d-flex justify-content-between align-items-center mb-2">
-            <span>Margin Keuntungan (%):</span>
+            <span class="fw-semibold">Margin Keuntungan (%):</span>
             <input type="number" id="profitMargin" class="form-control form-control-sm w-25 text-end" value="10" onchange="calculateGrandTotal()">
           </div>
-          <hr>
+          <hr class="my-2">
           <div class="d-flex justify-content-between align-items-center">
             <h5 class="fw-bold text-dark mb-0">Grand Total:</h5>
             <h5 id="grandTotalVal" class="fw-bold text-dark mb-0">Rp 0</h5>
@@ -303,7 +312,7 @@
     <div class="modal-dialog modal-xl modal-dialog-scrollable">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title fw-bold">📚 Standard AHS Library (Analisa Harga Satuan)</h5>
+          <h5 class="modal-title fw-bold">📚 Library AHS (Analisa Harga Satuan)</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -408,11 +417,20 @@
       document.getElementById('displayProjectLocation').innerText = currentProject.location;
     }
 
+    /* Penomoran Otomatis Baris Tabel RAB */
+    function updateRowNumbers() {
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach((row, index) => {
+        row.cells[0].innerText = index + 1;
+      });
+    }
+
     /* Baris Tabel RAB */
     function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
       const tbody = document.getElementById('rabTableBody');
       const tr = document.createElement('tr');
       tr.innerHTML = `
+        <td class="text-center fw-bold text-muted"></td>
         <td><input type="text" class="form-control form-control-sm" value="${title}"></td>
         <td><input type="number" class="form-control form-control-sm text-end" value="${vol}" step="any" onchange="calculateRow(this)"></td>
         <td><input type="text" class="form-control form-control-sm text-center" value="${unit}"></td>
@@ -421,6 +439,7 @@
         <td class="text-center"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
       `;
       tbody.appendChild(tr);
+      updateRowNumbers();
       calculateGrandTotal();
     }
 
@@ -440,6 +459,7 @@
 
     function deleteRow(btn) {
       btn.closest('tr').remove();
+      updateRowNumbers();
       calculateGrandTotal();
     }
 
@@ -453,10 +473,13 @@
         subtotal += vol * price;
       });
 
-      const margin = parseFloat(document.getElementById('profitMargin').value) || 0;
-      const grandTotal = subtotal + (subtotal * (margin / 100));
+      const ppn = subtotal * 0.11;
+      const marginPercent = parseFloat(document.getElementById('profitMargin').value) || 0;
+      const marginVal = subtotal * (marginPercent / 100);
+      const grandTotal = subtotal + ppn + marginVal;
 
       document.getElementById('subtotalVal').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
+      document.getElementById('ppnVal').innerText = 'Rp ' + Math.round(ppn).toLocaleString('id-ID');
       document.getElementById('grandTotalVal').innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
     }
 
@@ -471,18 +494,18 @@
         ["Margin Keuntungan (%)", margin],
         [],
         ["RINCIAN ANGGARAN BIAYA (RAB)"],
-        ["Uraian Pekerjaan", "Volume", "Satuan", "Harga Satuan (Rp)", "Total Harga (Rp)"]
+        ["No", "Uraian Pekerjaan", "Volume", "Satuan", "Harga Satuan (Rp)", "Total Harga (Rp)"]
       ];
 
       const rows = document.querySelectorAll('#rabTableBody tr');
-      rows.forEach(row => {
+      rows.forEach((row, idx) => {
         const inputs = row.querySelectorAll('input');
         const title = inputs[0].value;
         const vol = parseFloat(inputs[1].value) || 0;
         const unit = inputs[2].value;
         const price = parseFloat(inputs[3].value) || 0;
         const total = vol * price;
-        data.push([title, vol, unit, price, total]);
+        data.push([idx + 1, title, vol, unit, price, total]);
       });
 
       const ws = XLSX.utils.aoa_to_sheet(data);
@@ -519,12 +542,16 @@
 
           let isTableData = false;
           json.forEach(row => {
-            if (row[0] === "Uraian Pekerjaan") {
+            if (row[1] === "Uraian Pekerjaan" || row[0] === "Uraian Pekerjaan") {
               isTableData = true;
               return;
             }
-            if (isTableData && row.length >= 4 && row[0]) {
-              addItemRow(row[0], parseFloat(row[1]) || 0, row[2] || 'ls', parseFloat(row[3]) || 0);
+            if (isTableData && row.length >= 4) {
+              const title = row[1] || row[0];
+              const vol = parseFloat(row[2] || row[1]) || 0;
+              const unit = row[3] || row[2] || 'ls';
+              const price = parseFloat(row[4] || row[3]) || 0;
+              if (title) addItemRow(title, vol, unit, price);
             }
           });
         }
