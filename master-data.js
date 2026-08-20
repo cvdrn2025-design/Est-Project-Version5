@@ -1134,6 +1134,282 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.005, unit: "OH", price: 180000 }
     ]
   }
+  // ==================== PEKERJAAN MEKANIKAL & ELEKTRIKAL ====================
+  {
+    code: "AHS-MEP-01",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Instalasi Titik Lampu / Fiting Lampu",
+    unit: "titik",
+    details: [
+      { name: "Kabel NYM 2x1.5", coeff: 3.000, unit: "m'", price: 4000 },
+      { name: "Pipa PVC 5/8\" Conduit", coeff: 3.000, unit: "m'", price: 12000 },
+      { name: "Dus Kotak / Fitting", coeff: 1.000, unit: "bh", price: 8000 },
+      { name: "Saklar Tunggal", coeff: 1.000, unit: "bh", price: 15000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.008, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-02",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Saklar Tunggal / Double",
+    unit: "bh",
+    details: [
+      { name: "Saklar Tunggal / Double", coeff: 1.000, unit: "bh", price: 15000 },
+      { name: "Pipa PVC 5/8\" Conduit", coeff: 1.500, unit: "m'", price: 12000 },
+      { name: "Dus Kotak", coeff: 1.000, unit: "bh", price: 8000 },
+      { name: "Pekerja", coeff: 0.080, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.080, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.008, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.004, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-03",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Stop Kontak",
+    unit: "bh",
+    details: [
+      { name: "Stop Kontak", coeff: 1.000, unit: "bh", price: 25000 },
+      { name: "Kabel NYM 3x2.5", coeff: 3.000, unit: "m'", price: 8000 },
+      { name: "Pipa PVC 5/8\" Conduit", coeff: 3.000, unit: "m'", price: 12000 },
+      { name: "Dus Kotak", coeff: 1.000, unit: "bh", price: 8000 },
+      { name: "Pekerja", coeff: 0.120, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.120, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.012, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.006, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-04",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Instalasi Kabel Listrik NYM 2x2.5 (per meter)",
+    unit: "m'",
+    details: [
+      { name: "Kabel NYM 2x2.5", coeff: 1.000, unit: "m'", price: 8000 },
+      { name: "Pipa PVC 5/8\" Conduit", coeff: 1.000, unit: "m'", price: 12000 },
+      { name: "Isolasi / Lakban Listrik", coeff: 0.005, unit: "rol", price: 10000 },
+      { name: "Pekerja", coeff: 0.050, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.050, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.005, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.002, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-05",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan MCB (Miniature Circuit Breaker)",
+    unit: "bh",
+    details: [
+      { name: "MCB 2A / 6A / 10A", coeff: 1.000, unit: "bh", price: 65000 },
+      { name: "Panel Box MCB", coeff: 0.250, unit: "unit", price: 300000 },
+      { name: "Kabel NYA 2.5", coeff: 2.000, unit: "m'", price: 4000 },
+      { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.200, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-06",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Lampu Downlight LED",
+    unit: "bh",
+    details: [
+      { name: "Lampu Downlight LED 12W", coeff: 1.000, unit: "bh", price: 120000 },
+      { name: "Trafo Driver LED", coeff: 1.000, unit: "bh", price: 50000 },
+      { name: "Kabel NYM 2x1.5", coeff: 2.000, unit: "m'", price: 4000 },
+      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.100, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.005, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-07",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan AC Split 1 PK",
+    unit: "unit",
+    details: [
+      { name: "AC Split 1 PK Standard", coeff: 1.000, unit: "unit", price: 3500000 },
+      { name: "Pipa AC (Kupfer) 1/4 - 3/8", coeff: 6.000, unit: "m'", price: 250000 },
+      { name: "Kabel Listrik NYM 3x2.5", coeff: 6.000, unit: "m'", price: 8000 },
+      { name: "Sekrup / Bracket", coeff: 1.000, unit: "set", price: 50000 },
+      { name: "Pekerja", coeff: 0.500, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik / AC", coeff: 0.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.050, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-MEP-08",
+    category: "Pekerjaan Mekanikal & Elektrikal",
+    title: "Pemasangan Exhaust Fan Kamar Mandi",
+    unit: "bh",
+    details: [
+      { name: "Exhaust Fan (Standard)", coeff: 1.000, unit: "bh", price: 350000 },
+      { name: "Kabel NYM 2x1.5", coeff: 2.000, unit: "m'", price: 4000 },
+      { name: "Sekrup", coeff: 0.050, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Tukang Listrik", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.008, unit: "OH", price: 180000 }
+    ]
+  },
+
+  // ==================== PEKERJAAN PLUMBING ====================
+  {
+    code: "AHS-PLM-01",
+    category: "Pekerjaan Plumbing",
+    title: "Instalasi Pipa PVC Air Bersih 3/4\" per meter lari",
+    unit: "m'",
+    details: [
+      { name: "Pipa PVC 3/4\" Type AW", coeff: 1.000, unit: "btg", price: 35000 },
+      { name: "Lem Pipa PVC", coeff: 0.020, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.100, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.005, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PLM-02",
+    category: "Pekerjaan Plumbing",
+    title: "Instalasi Pipa PVC Air Bersih 1/2\" per meter lari",
+    unit: "m'",
+    details: [
+      { name: "Pipa PVC 1/2\" Type AW", coeff: 1.000, unit: "btg", price: 25000 },
+      { name: "Lem Pipa PVC", coeff: 0.020, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.080, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.080, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.008, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.004, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PLM-03",
+    category: "Pekerjaan Plumbing",
+    title: "Instalasi Pipa PVC Air Kotor / Riol 3\" - 4\" per meter",
+    unit: "m'",
+    details: [
+      { name: "Pipa PVC 4\" Type AW", coeff: 1.000, unit: "btg", price: 125000 },
+      { name: "Lem Pipa PVC", coeff: 0.030, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.120, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.120, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.012, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.006, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PLM-04",
+    category: "Pekerjaan Plumbing",
+    title: "Pemasangan Floor Drain (Saluran Lantai)",
+    unit: "bh",
+    details: [
+      { name: "Floor Drain Stainless / PVC", coeff: 1.000, unit: "bh", price: 250000 },
+      { name: "Pipa PVC 3\" Type AW", coeff: 1.000, unit: "btg", price: 95000 },
+      { name: "Lem Pipa PVC", coeff: 0.020, unit: "tube", price: 25000 },
+      { name: "Semen Portland (50kg)", coeff: 0.050, unit: "sak", price: 75000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.008, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PLM-05",
+    category: "Pekerjaan Plumbing",
+    title: "Pemasangan Wastafel / Kitchen Sink",
+    unit: "bh",
+    details: [
+      { name: "Wastafel / Kitchen Sink", coeff: 1.000, unit: "bh", price: 800000 },
+      { name: "Kran Air Wastafel", coeff: 1.000, unit: "bh", price: 150000 },
+      { name: "Fitting Pipa PVC", coeff: 1.000, unit: "set", price: 30000 },
+      { name: "Sealant / Lem Silikon", coeff: 0.500, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.250, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-PLM-06",
+    category: "Pekerjaan Plumbing",
+    title: "Pemasangan Septictank Bio / Konvensional",
+    unit: "unit",
+    details: [
+      { name: "Septictank Bio / Konvensional", coeff: 1.000, unit: "unit", price: 3500000 },
+      { name: "Besi Beton Polos / Ulir", coeff: 10.000, unit: "kg", price: 14500 },
+      { name: "Semen Portland (50kg)", coeff: 2.500, unit: "sak", price: 75000 },
+      { name: "Pipa PVC 3\" Type AW", coeff: 2.000, unit: "btg", price: 95000 },
+      { name: "Pekerja", coeff: 1.500, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.050, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
+    ]
+  },
+
+  // ==================== PEKERJAAN LANDSCAPE ====================
+  {
+    code: "AHS-LSC-01",
+    category: "Pekerjaan Landscape",
+    title: "Pemasangan Paving Block / Grass Block",
+    unit: "m2",
+    details: [
+      { name: "Paving Block / Grass Block", coeff: 1.000, unit: "m2", price: 95000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.050, unit: "m3", price: 220000 },
+      { name: "Semen Portland (50kg)", coeff: 0.100, unit: "sak", price: 75000 },
+      { name: "Pekerja", coeff: 0.300, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.200, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-LSC-02",
+    category: "Pekerjaan Landscape",
+    title: "Penanaman Rumput Gajah / Merbabu (per m2)",
+    unit: "m2",
+    details: [
+      { name: "Rumput Gajah / Merbabu", coeff: 1.000, unit: "m2", price: 25000 },
+      { name: "Tanah Urug / Top Soil", coeff: 0.100, unit: "m3", price: 100000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Mandor Proyek", coeff: 0.008, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-LSC-03",
+    category: "Pekerjaan Landscape",
+    title: "Penanaman Pohon Peneduh / Tanaman Hias",
+    unit: "poh",
+    details: [
+      { name: "Bibit Pohon Peneduh / Tanaman", coeff: 1.000, unit: "poh", price: 450000 },
+      { name: "Pupuk Organik / Kompos", coeff: 1.000, unit: "kg", price: 10000 },
+      { name: "Tanah Urug / Top Soil", coeff: 0.050, unit: "m3", price: 100000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Taman", coeff: 0.250, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-LSC-04",
+    category: "Pekerjaan Landscape",
+    title: "Pembuatan Deck / Jembatan Kayu Minimalis",
+    unit: "m2",
+    details: [
+      { name: "Kayu Meranti / Ulin", coeff: 0.150, unit: "m3", price: 2800000 },
+      { name: "Besi Beton Polos / Ulir", coeff: 2.000, unit: "kg", price: 14500 },
+      { name: "Paku Biasa 2\" - 5\"", coeff: 0.150, unit: "kg", price: 20000 },
+      { name: "Pekerja", coeff: 0.500, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 0.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.050, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
+    ]
+  }
+] // <--- PASTIKAN TANDA TITIK KOMA INI ADA DI PALING BAWAH FILE ANDA!
 ] // <--- PASTIKAN TANDA KURUNG INI ADA DI PALING BAWAH FILE ANDA!
 ];
 
