@@ -271,7 +271,7 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label class="form-label font-weight-bold">Nama Proyek</label>
+            <label class="form-label fw-bold">Nama Proyek</label>
             <input type="text" id="inputProjectName" class="form-control" placeholder="Contoh: Pembangunan Rumah Type 45">
           </div>
           <div class="mb-3">
@@ -337,10 +337,11 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Scripts External -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
+  <!-- Dynamic Master Data Loading -->
   <script>
     (function loadOnlineMasterData() {
       const script = document.createElement('script');
@@ -387,13 +388,17 @@
       return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim();
     }
 
+    function getAHSId(item, index) {
+      return item.code || item.kode || item.id || `AHS-INDEX-${index}`;
+    }
+
     /* LocalStorage System */
     function saveToLocalStorage() {
       const rows = document.querySelectorAll('#rabTableBody tr');
       const rabItems = [];
       rows.forEach(row => {
         rabItems.push({
-          ahsCode: row.dataset.ahsCode || '',
+          ahsId: row.dataset.ahsId || '',
           title: row.querySelector('.input-title').value,
           volume: parseIndoNumber(row.querySelector('.input-volume').value),
           unit: row.querySelector('.input-unit').value,
@@ -424,7 +429,7 @@
 
         if (Array.isArray(appData.rabItems)) {
           appData.rabItems.forEach(item => {
-            addItemRow(item.title, item.volume, item.unit, item.price, item.ahsCode, false);
+            addItemRow(item.title, item.volume, item.unit, item.price, item.ahsId, false);
           });
         }
         calculateGrandTotal();
@@ -440,7 +445,6 @@
       loadFromLocalStorage();
     });
 
-    /* Perintah Proyek Baru (Clear Data) */
     function startNewProject() {
       if (confirm("Apakah Anda yakin ingin membuat Proyek Baru?\n\nSeluruh data RAB saat ini akan dikosongkan.")) {
         currentProject = {
@@ -508,14 +512,30 @@
       calculateRow(input);
     }
 
-    /* Tambah Baris RAB */
-    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0, ahsCode = '', autoSave = true) {
+    function getActiveAHSIdsInRAB() {
+      const activeIds = new Set();
+      const activeTitles = new Set();
+
+      const rows = document.querySelectorAll('#rabTableBody tr');
+      rows.forEach(row => {
+        if (row.dataset.ahsId) {
+          activeIds.add(row.dataset.ahsId);
+        }
+        const titleVal = row.querySelector('.input-title')?.value;
+        if (titleVal) {
+          activeTitles.add(cleanJobTitle(titleVal).toLowerCase());
+        }
+      });
+      return { activeIds, activeTitles };
+    }
+
+    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0, ahsId = '', autoSave = true) {
       const cleanTitle = cleanJobTitle(title);
       const tbody = document.getElementById('rabTableBody');
       const tr = document.createElement('tr');
       
-      if (ahsCode) {
-        tr.dataset.ahsCode = ahsCode;
+      if (ahsId) {
+        tr.dataset.ahsId = ahsId;
       }
 
       const numVol = parseIndoNumber(vol);
@@ -539,6 +559,30 @@
 
     function addManualRow() {
       addItemRow('Pekerjaan Manual', 1, 'ls', 0, '');
+    }
+
+    function selectAHSItem(index, btnElem) {
+      if (typeof ahsDatabase === 'undefined' || !ahsDatabase[index]) {
+        alert('Data AHS tidak ditemukan.');
+        return;
+      }
+      
+      const item = ahsDatabase[index];
+      const itemId = getAHSId(item, index);
+
+      let unitPrice = 0;
+      if (item.details && item.details.length > 0) {
+        unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || d.koefisien || 0) * (d.price || d.harga || 0)), 0);
+      } else {
+        unitPrice = item.totalPrice || item.harga || 0;
+      }
+
+      addItemRow(item.title || item.nama, 1, item.unit || item.satuan || 'm2', unitPrice, itemId, true);
+
+      if (btnElem) {
+        btnElem.className = 'btn btn-sm btn-added w-100';
+        btnElem.innerHTML = '✓ Ditambahkan';
+      }
     }
 
     function calculateRow(inputElem) {
@@ -582,6 +626,82 @@
       saveToLocalStorage();
     }
 
+    function filterAHSList() {
+      const category = document.getElementById('ahsCategoryFilter').value;
+      const search = (document.getElementById('ahsSearch').value || '').toLowerCase().trim();
+      const tbody = document.getElementById('ahsTableBody');
+      if (!tbody) return;
+
+      tbody.innerHTML = '';
+
+      if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Memuat data AHS...</td></tr>';
+        return;
+      }
+
+      const { activeIds, activeTitles } = getActiveAHSIdsInRAB();
+
+      let renderedCount = 0;
+      ahsDatabase.forEach((item, index) => {
+        const itemCategory = item.category || item.kategori || '';
+        const itemTitle = item.title || item.nama || '';
+        const itemCode = item.code || item.kode || `AHS-${index + 1}`;
+        const itemId = getAHSId(item, index);
+
+        const matchCat = (category === 'ALL' || itemCategory === category);
+        const matchSearch = (!search || 
+          itemTitle.toLowerCase().includes(search) || 
+          itemCode.toLowerCase().includes(search)
+        );
+
+        if (matchCat && matchSearch) {
+          renderedCount++;
+          const isAdded = activeIds.has(itemId) || activeTitles.has(cleanJobTitle(itemTitle).toLowerCase());
+          
+          let detailRows = '';
+          let totalPrice = 0;
+          if (item.details && item.details.length > 0) {
+            item.details.forEach(d => {
+              const coeff = d.coeff || d.koefisien || 0;
+              const price = d.price || d.harga || 0;
+              totalPrice += coeff * price;
+              detailRows += `
+                <div class="small text-muted d-flex justify-content-between border-bottom py-1">
+                  <span>• ${d.name || d.nama} (${coeff} ${d.unit || d.satuan || ''})</span>
+                  <span>Rp ${formatNumber(price, 2)}</span>
+                </div>
+              `;
+            });
+          } else {
+            totalPrice = item.totalPrice || item.harga || 0;
+          }
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <span class="badge bg-dark mb-1">${itemCode}</span>
+              <div class="small fw-semibold text-secondary">${itemCategory || '-'}</div>
+            </td>
+            <td>
+              <div class="fw-bold text-dark mb-1">${itemTitle}</div>
+              <div class="mt-2 bg-light p-2 rounded">${detailRows}</div>
+            </td>
+            <td class="text-center align-middle">
+              <div class="fw-bold text-primary mb-2">Rp ${formatNumber(totalPrice, 2)} / ${item.unit || item.satuan || 'm2'}</div>
+              <button class="btn btn-sm ${isAdded ? 'btn-added' : 'btn-mono-primary'} w-100" onclick="selectAHSItem(${index}, this)">
+                ${isAdded ? '✓ Ditambahkan' : '➕ Tambahkan'}
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
+      });
+
+      if (renderedCount === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">AHS tidak ditemukan.</td></tr>';
+      }
+    }
+
     function printRAB() {
       const today = new Date();
       const day = String(today.getDate()).padStart(2, '0');
@@ -592,40 +712,22 @@
       window.print();
     }
 
-    /* Deteksi Semua Item AHS Aktif */
-    function getActiveAHSCodesInRAB() {
-      const activeCodes = new Set();
-      const activeTitles = new Set();
-
-      const rows = document.querySelectorAll('#rabTableBody tr');
-      rows.forEach(row => {
-        if (row.dataset.ahsCode) {
-          activeCodes.add(row.dataset.ahsCode);
-        }
-        const titleVal = row.querySelector('.input-title')?.value;
-        if (titleVal) {
-          activeTitles.add(cleanJobTitle(titleVal).toLowerCase());
-        }
-      });
-      return { activeCodes, activeTitles };
-    }
-
-    /* Cetak Rincian AHS Berdasarkan Item Terpilih */
     function printSelectedAHS() {
-      const { activeCodes, activeTitles } = getActiveAHSCodesInRAB();
+      const { activeIds, activeTitles } = getActiveAHSIdsInRAB();
 
       if (typeof ahsDatabase === 'undefined' || ahsDatabase.length === 0) {
-        alert('Database AHS belum siap.');
+        alert('Database AHS belum dimuat atau kosong.');
         return;
       }
 
-      // Filter AHS yang sedang digunakan di RAB
-      const selectedAHSList = ahsDatabase.filter(item => {
-        return activeCodes.has(item.code) || activeTitles.has(cleanJobTitle(item.title).toLowerCase());
+      const selectedAHSList = ahsDatabase.filter((item, index) => {
+        const itemId = getAHSId(item, index);
+        const itemTitle = cleanJobTitle(item.title || item.nama || '').toLowerCase();
+        return activeIds.has(itemId) || activeTitles.has(itemTitle);
       });
 
       if (selectedAHSList.length === 0) {
-        alert('Tidak ada item AHS yang ditambahkan ke RAB. Tambahkan item dengan klik "+ Tambahkan" terlebih dahulu.');
+        alert('Tidak ditemukan item AHS dari Library yang aktif pada tabel RAB untuk dicetak.\n\nSaran: Klik tombol "+ Tambahkan" pada Library AHS terlebih dahulu.');
         return;
       }
 
@@ -647,8 +749,8 @@
         </head>
         <body>
           <h4>ANALISA HARGA SATUAN PEKERJAAN (AHSP)</h4>
-          <h5>PROYEK: ${currentProject.name.toUpperCase()}</h5>
-          <div class="header-info">Pemilik: ${currentProject.owner} | Lokasi: ${currentProject.location}</div>
+          <h5>PROYEK: ${(currentProject.name || 'Unnamed Project').toUpperCase()}</h5>
+          <div class="header-info">Pemilik: ${currentProject.owner || '-'} | Lokasi: ${currentProject.location || '-'}</div>
       `;
 
       selectedAHSList.forEach(matchAHS => {
@@ -656,7 +758,7 @@
           <table>
             <thead>
               <tr style="background-color: #e2e8f0;">
-                <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title} (${matchAHS.code || '-'})</td>
+                <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title || matchAHS.nama} (${matchAHS.code || matchAHS.kode || 'AHS'})</td>
               </tr>
               <tr>
                 <th style="width: 40px;" class="text-center">No</th>
@@ -675,10 +777,10 @@
             printHTML += `
               <tr>
                 <td class="text-center">${idx++}</td>
-                <td>${d.name}</td>
-                <td class="text-end">${formatNumber(d.coeff || d.koefisien, 4)}</td>
+                <td>${d.name || d.nama}</td>
+                <td class="text-end">${formatNumber(d.coeff || d.koefisien || 0, 4)}</td>
                 <td class="text-center">${d.unit || d.satuan || '-'}</td>
-                <td class="text-end">${formatNumber(d.price || d.harga, 2)}</td>
+                <td class="text-end">${formatNumber(d.price || d.harga || 0, 2)}</td>
               </tr>
             `;
           });
@@ -696,102 +798,6 @@
       printWin.document.close();
       printWin.focus();
       setTimeout(() => { printWin.print(); }, 400);
-    }
-
-    /* Pilihan Item AHS */
-    function selectAHSItem(code, btnElem) {
-      if (typeof ahsDatabase === 'undefined') return;
-      
-      const item = ahsDatabase.find(a => a.code === code);
-      if (!item) return;
-
-      let unitPrice = 0;
-      if (item.details && item.details.length > 0) {
-        unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || d.koefisien || 0) * (d.price || d.harga || 0)), 0);
-      } else {
-        unitPrice = item.totalPrice || item.harga || 0;
-      }
-
-      // Tambahkan item ke RAB
-      addItemRow(item.title, 1, item.unit || 'm2', unitPrice, item.code, true);
-
-      // Ubah tampilan tombol seketika menjadi hijau centang
-      if (btnElem) {
-        btnElem.className = 'btn btn-sm btn-added w-100';
-        btnElem.innerHTML = '✓ Ditambahkan';
-      }
-    }
-
-    /* Render & Filter Library AHS */
-    function filterAHSList() {
-      const category = document.getElementById('ahsCategoryFilter').value;
-      const search = (document.getElementById('ahsSearch').value || '').toLowerCase().trim();
-      const tbody = document.getElementById('ahsTableBody');
-      if (!tbody) return;
-
-      tbody.innerHTML = '';
-
-      if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Memuat data AHS...</td></tr>';
-        return;
-      }
-
-      const { activeCodes, activeTitles } = getActiveAHSCodesInRAB();
-
-      const filtered = ahsDatabase.filter(item => {
-        const matchCat = (category === 'ALL' || item.category === category);
-        const matchSearch = (!search || 
-          (item.title && item.title.toLowerCase().includes(search)) || 
-          (item.code && item.code.toLowerCase().includes(search))
-        );
-        return matchCat && matchSearch;
-      });
-
-      if (filtered.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">AHS tidak ditemukan.</td></tr>';
-        return;
-      }
-
-      filtered.forEach(item => {
-        const isAdded = activeCodes.has(item.code) || activeTitles.has(cleanJobTitle(item.title).toLowerCase());
-        
-        let detailRows = '';
-        let totalPrice = 0;
-        if (item.details && item.details.length > 0) {
-          item.details.forEach(d => {
-            const coeff = d.coeff || d.koefisien || 0;
-            const price = d.price || d.harga || 0;
-            totalPrice += coeff * price;
-            detailRows += `
-              <div class="small text-muted d-flex justify-content-between border-bottom py-1">
-                <span>• ${d.name} (${coeff} ${d.unit || d.satuan || ''})</span>
-                <span>Rp ${formatNumber(price, 2)}</span>
-              </div>
-            `;
-          });
-        } else {
-          totalPrice = item.totalPrice || item.harga || 0;
-        }
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>
-            <span class="badge bg-dark mb-1">${item.code || 'AHS'}</span>
-            <div class="small fw-semibold text-secondary">${item.category || '-'}</div>
-          </td>
-          <td>
-            <div class="fw-bold text-dark mb-1">${item.title}</div>
-            <div class="mt-2 bg-light p-2 rounded">${detailRows}</div>
-          </td>
-          <td class="text-center align-middle">
-            <div class="fw-bold text-primary mb-2">Rp ${formatNumber(totalPrice, 2)} / ${item.unit || 'm2'}</div>
-            <button class="btn btn-sm ${isAdded ? 'btn-added' : 'btn-mono-primary'} w-100" onclick="selectAHSItem('${item.code}', this)">
-              ${isAdded ? '✓ Ditambahkan' : '➕ Tambahkan'}
-            </button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
     }
 
     function saveProjectExcel() {
