@@ -983,6 +983,158 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.003, unit: "OH", price: 180000 }
     ]
   }
+     // ==================== PEKERJAAN FINISHING (TAMBAHAN BARU) ====================
+  {
+    code: "AHS-FIN-06",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Plafon Gypsum (Rangka Hollow)",
+    unit: "m2",
+    details: [
+      { name: "Plafon Gypsum 9mm", coeff: 1.000, unit: "lbr", price: 85000 },
+      { name: "Baja Ringan Hollow 2x4x0.35", coeff: 2.500, unit: "m'", price: 10000 },
+      { name: "Sekrup Gypsum", coeff: 0.250, unit: "pak", price: 12000 },
+      { name: "Pekerja", coeff: 0.150, unit: "OH", price: 110000 },
+      { name: "Tukang Gypsum", coeff: 0.150, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.008, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-07",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Keramik Dinding 30x30",
+    unit: "m2",
+    details: [
+      { name: "Keramik Lantai 30x30 cm (Kamar Mandi)", coeff: 1.050, unit: "dus", price: 60000 },
+      { name: "Semen Portland (50kg)", coeff: 0.150, unit: "sak", price: 75000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.030, unit: "m3", price: 220000 },
+      { name: "Semen Warna / Nat Keramik", coeff: 0.500, unit: "kg", price: 18000 },
+      { name: "Pekerja", coeff: 0.500, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.050, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-08",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Lantai Granit 60x60",
+    unit: "m2",
+    details: [
+      { name: "Granit Tile 60x60 KW 1", coeff: 1.050, unit: "dus", price: 180000 },
+      { name: "Semen Portland (50kg)", coeff: 0.200, unit: "sak", price: 75000 },
+      { name: "Pasir Pasang / Pasir Beton", coeff: 0.040, unit: "m3", price: 220000 },
+      { name: "Semen Warna / Nat Keramik", coeff: 0.600, unit: "kg", price: 18000 },
+      { name: "Pekerja", coeff: 0.500, unit: "OH", price: 110000 },
+      { name: "Tukang Batu", coeff: 0.500, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.050, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.025, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-09",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Kusen Pintu Aluminium",
+    unit: "m'",
+    details: [
+      { name: "Kusen Aluminium 3\" x 1.4mm", coeff: 1.000, unit: "m'", price: 85000 },
+      { name: "Sekrup Self Drilling", coeff: 0.200, unit: "bh", price: 1500 },
+      { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+      { name: "Tukang Aluminium", coeff: 0.200, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-10",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Daun Pintu Panel Kayu",
+    unit: "bh",
+    details: [
+      { name: "Daun Pintu Panel Kayu (Standard)", coeff: 1.000, unit: "bh", price: 1200000 },
+      { name: "Engsel Pintu", coeff: 3.000, unit: "set", price: 35000 },
+      { name: "Handle Pintu / Kunci", coeff: 1.000, unit: "set", price: 50000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Kayu", coeff: 0.250, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-11",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Jendela Kaca Aluminium (Nako)",
+    unit: "bh",
+    details: [
+      { name: "Kusen Aluminium Jendela", coeff: 1.000, unit: "unit", price: 600000 },
+      { name: "Kaca Polos 5mm", coeff: 1.000, unit: "lbr", price: 250000 },
+      { name: "Engsel Jendela Nako", coeff: 2.000, unit: "bh", price: 15000 },
+      { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+      { name: "Tukang Aluminium", coeff: 0.200, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-12",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Railing Tangga Besi",
+    unit: "m'",
+    details: [
+      { name: "Pipa Besi Hollow 4x4", coeff: 1.200, unit: "m'", price: 45000 },
+      { name: "Besi Plat Strip", coeff: 0.500, unit: "m'", price: 25000 },
+      { name: "Cat Tembok Dinding Luar (Exterior)", coeff: 0.200, unit: "kg", price: 65000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Las / Besi", coeff: 0.250, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-13",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan Kloset Duduk (Sanitair)",
+    unit: "bh",
+    details: [
+      { name: "Kloset Duduk (Toilet)", coeff: 1.000, unit: "bh", price: 1500000 },
+      { name: "Fitting Pipa PVC", coeff: 1.000, unit: "set", price: 30000 },
+      { name: "Sealant / Lem Silikon", coeff: 1.000, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+      { name: "Tukang Plumbing", coeff: 0.200, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-14",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pengecatan Kusen dan Pintu Kayu",
+    unit: "m2",
+    details: [
+      { name: "Cat Kayu (Melamine / Gloss)", coeff: 0.150, unit: "kg", price: 120000 },
+      { name: "Thinner Cat", coeff: 0.100, unit: "liter", price: 30000 },
+      { name: "Amplas Kayu", coeff: 0.500, unit: "lbr", price: 10000 },
+      { name: "Pekerja", coeff: 0.250, unit: "OH", price: 110000 },
+      { name: "Tukang Cat", coeff: 0.250, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+    ]
+  },
+  {
+    code: "AHS-FIN-15",
+    category: "Pekerjaan Finishing/Arsitektur",
+    title: "Pemasangan List Plafon Gypsum / PVC",
+    unit: "m'",
+    details: [
+      { name: "List Plafon PVC / Gypsum", coeff: 1.000, unit: "m'", price: 30000 },
+      { name: "Lem Gypsum / PVC", coeff: 0.100, unit: "tube", price: 25000 },
+      { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+      { name: "Tukang Gypsum", coeff: 0.100, unit: "OH", price: 140000 },
+      { name: "Kepala Tukang", coeff: 0.010, unit: "OH", price: 160000 },
+      { name: "Mandor Proyek", coeff: 0.005, unit: "OH", price: 180000 }
+    ]
+  }
+] // <--- PASTIKAN TANDA KURUNG INI ADA DI PALING BAWAH FILE ANDA!
 ];
 
 // 3. FUNGSI PENGELOLA HARGA DASAR & AHS
