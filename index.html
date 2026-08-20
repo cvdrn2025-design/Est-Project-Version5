@@ -490,6 +490,14 @@
       return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim();
     }
 
+    function normalizeString(str) {
+      if (!str) return '';
+      return str
+        .toLowerCase()
+        .replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '')
+        .replace(/[^a-z0-9]/g, ''); // Menyisakan karakter alfanumerik saja
+    }
+
     function handleFocusNumber(input) {
       let val = parseIndoNumber(input.value);
       input.value = val === 0 ? '' : val;
@@ -507,11 +515,15 @@
       calculateRow(input);
     }
 
-    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0) {
+    function addItemRow(title = '', vol = 1, unit = 'm2', price = 0, code = '') {
       const cleanTitle = cleanJobTitle(title);
       const tbody = document.getElementById('rabTableBody');
       const tr = document.createElement('tr');
       
+      if (code) {
+        tr.dataset.ahsCode = code;
+      }
+
       const numVol = parseIndoNumber(vol);
       const numPrice = parseIndoNumber(price);
 
@@ -580,11 +592,16 @@
       window.print();
     }
 
-    /* Cetak Rincian AHS untuk Item Terpilih di RAB (Sub Judul & Item Manual Diabaikan) */
+    /* Cetak Rincian AHS dengan Pencocokan Toleran / Fuzzy */
     function printSelectedAHS() {
       const rows = document.querySelectorAll('#rabTableBody tr');
       if (rows.length === 0) {
         alert('Tabel RAB masih kosong! Tambahkan pekerjaan dari Library AHS terlebih dahulu.');
+        return;
+      }
+
+      if (typeof ahsDatabase === 'undefined' || !ahsDatabase.length) {
+        alert('Database AHS belum terisi atau sedang dimuat.');
         return;
       }
 
@@ -611,65 +628,69 @@
       `;
 
       let itemCount = 0;
+
       rows.forEach(row => {
         const titleInput = row.querySelector('.input-title');
         const volInput = row.querySelector('.input-volume');
+        const ahsCode = row.dataset.ahsCode || '';
+
         if (!titleInput) return;
 
         const rawTitle = titleInput.value.trim();
         const volVal = parseIndoNumber(volInput ? volInput.value : 0);
 
-        // Abaikan Sub-judul (misal volume 0 atau teks judul)
+        // Abaikan Sub-judul / Volume 0
         if (!rawTitle || volVal === 0) return;
 
-        const jobTitleClean = cleanJobTitle(rawTitle).toLowerCase();
+        const normInputTitle = normalizeString(rawTitle);
 
-        if (typeof ahsDatabase !== 'undefined') {
-          // Cari item yang cocok di database AHS
-          const matchAHS = ahsDatabase.find(a => {
-            const dbTitleClean = cleanJobTitle(a.title).toLowerCase();
-            return dbTitleClean === jobTitleClean || dbTitleClean.includes(jobTitleClean) || jobTitleClean.includes(dbTitleClean);
-          });
+        // Cari match berdasarkan Kode AHS atau Teks Fleksibel
+        const matchAHS = ahsDatabase.find(a => {
+          if (ahsCode && a.code === ahsCode) return true;
+          
+          const normDbTitle = normalizeString(a.title);
+          return normDbTitle === normInputTitle || 
+                 normDbTitle.includes(normInputTitle) || 
+                 normInputTitle.includes(normDbTitle);
+        });
 
-          // Jika cocok dengan Library AHS, cetak rincian analisanya
-          if (matchAHS) {
-            itemCount++;
-            printHTML += `
-              <table>
-                <thead>
-                  <tr style="background-color: #e2e8f0;">
-                    <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title} (${matchAHS.code || '-'})</td>
-                  </tr>
-                  <tr>
-                    <th style="width: 40px;" class="text-center">No</th>
-                    <th>Uraian Komponen / Spesifikasi</th>
-                    <th style="width: 90px;" class="text-end">Koefisien</th>
-                    <th style="width: 70px;" class="text-center">Satuan</th>
-                    <th style="width: 130px;" class="text-end">Harga Satuan (Rp)</th>
-                  </tr>
-                </thead>
-                <tbody>
-            `;
+        if (matchAHS) {
+          itemCount++;
+          printHTML += `
+            <table>
+              <thead>
+                <tr style="background-color: #e2e8f0;">
+                  <td colspan="5" class="fw-bold">Pekerjaan: ${matchAHS.title} (${matchAHS.code || '-'})</td>
+                </tr>
+                <tr>
+                  <th style="width: 40px;" class="text-center">No</th>
+                  <th>Uraian Komponen / Spesifikasi</th>
+                  <th style="width: 90px;" class="text-end">Koefisien</th>
+                  <th style="width: 70px;" class="text-center">Satuan</th>
+                  <th style="width: 130px;" class="text-end">Harga Satuan (Rp)</th>
+                </tr>
+              </thead>
+              <tbody>
+          `;
 
-            let idx = 1;
-            if (matchAHS.details && matchAHS.details.length > 0) {
-              matchAHS.details.forEach(d => {
-                printHTML += `
-                  <tr>
-                    <td class="text-center">${idx++}</td>
-                    <td>${d.name}</td>
-                    <td class="text-end">${formatNumber(d.coeff || d.koefisien, 4)}</td>
-                    <td class="text-center">${d.unit || d.satuan || '-'}</td>
-                    <td class="text-end">${formatNumber(d.price || d.harga, 2)}</td>
-                  </tr>
-                `;
-              });
-            } else {
-              printHTML += `<tr><td colspan="5" class="text-center">Rincian analisa tidak ditemukan</td></tr>`;
-            }
-
-            printHTML += `</tbody></table>`;
+          let idx = 1;
+          if (matchAHS.details && matchAHS.details.length > 0) {
+            matchAHS.details.forEach(d => {
+              printHTML += `
+                <tr>
+                  <td class="text-center">${idx++}</td>
+                  <td>${d.name}</td>
+                  <td class="text-end">${formatNumber(d.coeff || d.koefisien, 4)}</td>
+                  <td class="text-center">${d.unit || d.satuan || '-'}</td>
+                  <td class="text-end">${formatNumber(d.price || d.harga, 2)}</td>
+                </tr>
+              `;
+            });
+          } else {
+            printHTML += `<tr><td colspan="5" class="text-center">Rincian analisa tidak ditemukan</td></tr>`;
           }
+
+          printHTML += `</tbody></table>`;
         }
       });
 
