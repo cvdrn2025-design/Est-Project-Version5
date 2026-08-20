@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-v1.8'; // Versi v1.8: Perbaikan pencocokan AHS & update index.html
+const CACHE_NAME = 'sicermat-v2.0'; // Versi v2.0: Sinkronisasi pembaruan multi-fallback AHS index.html
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -31,7 +31,7 @@ self.addEventListener('activate', (e) => {
 self.addEventListener('fetch', (e) => {
   const requestUrl = new URL(e.request.url);
 
-  // NETWORK-FIRST KHUSUS LIBRARY AHS (master-data.js)
+  // NETWORK-FIRST KHUSUS MASTER DATA (master-data.js)
   if (requestUrl.pathname.includes('master-data.js')) {
     e.respondWith(
       fetch(e.request)
