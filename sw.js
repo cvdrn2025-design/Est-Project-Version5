@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-v1.4'; // Versi dinaikkan ke v1.4
+const CACHE_NAME = 'sicermat-v1.5'; // Versi dinaikkan ke v1.5 untuk memuat pembaruan layout RAB & cetak AHS
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -53,4 +53,3 @@ self.addEventListener('fetch', (e) => {
     })
   );
 });
-
