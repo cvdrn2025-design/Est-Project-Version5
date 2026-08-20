@@ -224,7 +224,6 @@ function updateHargaDasar(type, index, value) {
   else if (type === 'alat') masterAlat[index].harga = val;
   else if (type === 'upah') masterUpah[index].harga = val;
 
-  // Sinkronisasi ulang kalkulasi RAB & AHS jika fungsi utama tersedia
   if (typeof calculateRAB === 'function') calculateRAB();
   if (typeof renderAhsLibrary === 'function') renderAhsLibrary();
 }
@@ -238,7 +237,7 @@ function updateAHSCoeff(ahsIndex, detailIndex, value) {
   }
 }
 
-// 5. RENDER PANEL HARGA DASAR (DENGAN INPUT EDITABLE & TANPA "RP")
+// 5. RENDER PANEL HARGA DASAR (INPUT ANGKA TANPA "RP")
 function renderPriceTable(type) {
   let targetBodyId, searchInputId, dataList;
 
@@ -266,11 +265,8 @@ function renderPriceTable(type) {
     if (!searchVal || item.nama.toLowerCase().includes(searchVal)) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td class="align-middle">
-          <div class="fw-medium">${item.nama}</div>
-          <small class="text-muted">Satuan: ${item.satuan}</small>
-        </td>
-        <td class="text-end align-middle" style="width: 160px;">
+        <td>${item.nama}</td>
+        <td class="text-end" style="width: 160px;">
           <input type="number" class="form-control form-control-sm text-end" 
                  value="${item.harga}" 
                  onchange="updateHargaDasar('${type}', ${index}, this.value)"
@@ -304,14 +300,14 @@ function renderAhsLibrary() {
     ahs.details.forEach((det, detIndex) => {
       detailsHtml += `
         <tr>
-          <td class="align-middle">${det.name}</td>
-          <td class="align-middle text-center" style="width: 110px;">
+          <td>${det.name}</td>
+          <td class="text-center" style="width: 100px;">
             <input type="number" step="0.001" min="0" class="form-control form-control-sm text-center" 
                    value="${det.coeff}" 
                    onchange="updateAHSCoeff(${ahsIndex}, ${detIndex}, this.value)">
           </td>
-          <td class="align-middle text-center" style="width: 70px;">${det.unit}</td>
-          <td class="align-middle text-end">Rp ${(det.price || 0).toLocaleString('id-ID')}</td>
+          <td class="text-center">${det.unit}</td>
+          <td class="text-end">Rp ${(det.price || 0).toLocaleString('id-ID')}</td>
         </tr>
       `;
     });
