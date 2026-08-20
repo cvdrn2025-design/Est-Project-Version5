@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-v1.3';
+const CACHE_NAME = 'sicermat-v1.4'; // Versi dinaikkan ke v1.4
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -15,7 +15,7 @@ self.addEventListener('install', (e) => {
   self.skipWaiting();
 });
 
-// Activate & Hapus Cache Versi Lama
+// Activate & Hapus Cache Versi Lama Otomatis
 self.addEventListener('activate', (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
@@ -36,13 +36,12 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       fetch(e.request)
         .then((networkResponse) => {
-          // Update cache lokal dengan data terbaru dari internet
           return caches.open(CACHE_NAME).then((cache) => {
             cache.put(e.request, networkResponse.clone());
             return networkResponse;
           });
         })
-        .catch(() => caches.match(e.request)) // Fallback ke cache jika offline
+        .catch(() => caches.match(e.request))
     );
     return;
   }
