@@ -95,41 +95,113 @@
       color: #475569;
       text-decoration: underline;
     }
+
+    /* ==========================================
+       GAYA TAMPILAN KHUSUS CETAK (PRINT CSS)
+       ========================================== */
+    @media print {
+      body {
+        background-color: #ffffff !important;
+        color: #000000 !important;
+        font-size: 12pt;
+      }
+
+      /* Sembunyikan elemen non-cetak */
+      .no-print,
+      .btn,
+      #panelHargaDasarCard,
+      .modal,
+      .modal-backdrop,
+      th:last-child,
+      td:last-child {
+        display: none !important;
+      }
+
+      /* Hilangkan border card dan shadow untuk print */
+      .card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      /* Format Input menjadi teks datar saat dicetak */
+      .table input, #profitMargin {
+        border: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        outline: none !important;
+        padding: 0 !important;
+        width: auto !important;
+      }
+
+      .table-responsive-custom {
+        overflow: visible !important;
+      }
+
+      /* Header Proyek dan Tabel Cetak */
+      .print-header {
+        margin-bottom: 20px;
+        border-bottom: 2px solid #000;
+        padding-bottom: 10px;
+      }
+
+      /* Footer Cetak */
+      .print-footer {
+        display: block !important;
+        margin-top: 30px;
+        padding-top: 10px;
+        border-top: 1px solid #ccc;
+        font-size: 9pt;
+        color: #555;
+        text-align: center;
+      }
+    }
+
+    .print-footer {
+      display: none;
+    }
   </style>
 </head>
 <body>
 
-  <!-- Header Clean dengan Logo Besar -->
-  <div class="container text-center my-4">
+  <!-- Header Clean dengan Logo Besar (Sembunyi Saat Cetak) -->
+  <div class="container text-center my-4 no-print">
     <img src="icon.png" alt="Logo SiCerMat" width="512" height="512" style="max-width: 250px; width: 100%; height: auto; object-fit: contain;" class="img-fluid drop-shadow">
   </div>
 
   <div class="container mb-5">
-    <!-- Panel Tombol Utama Proyek -->
-    <div class="card p-3 mb-4">
+    <!-- Panel Tombol Utama Proyek (Sembunyi Saat Cetak) -->
+    <div class="card p-3 mb-4 no-print">
       <div class="row g-2 justify-content-center">
-        <div class="col-12 col-md-4">
+        <div class="col-6 col-md-3">
           <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="openProjectModal()">
             ➕ Proyek Baru
           </button>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-3">
           <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="saveProjectExcel()">
             💾 Save Proyek
           </button>
         </div>
-        <div class="col-6 col-md-4">
+        <div class="col-6 col-md-3">
           <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">
             📂 Open Proyek
           </button>
           <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="openProjectExcel(event)">
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="printRAB()">
+            🖨️ Cetak RAB
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Informasi & Tabel Rincian RAB -->
     <div class="card p-3 p-md-4 mb-4">
-      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+      <!-- Header Proyek -->
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom print-header">
         <div>
           <h5 class="fw-bold text-dark mb-1" id="displayProjectName">Proyek: Unnamed Project</h5>
           <small class="text-muted">
@@ -137,11 +209,11 @@
             Lokasi: <span id="displayProjectLocation" class="fw-semibold">-</span>
           </small>
         </div>
-        <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
+        <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0 no-print" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
       </div>
 
       <!-- Posisi Tombol Library AHS & Tambah Item Manual (Di atas Tabel) -->
-      <div class="row g-2 mb-3">
+      <div class="row g-2 mb-3 no-print">
         <div class="col-12 col-sm-6 col-md-3">
           <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">
             📚 Library AHS
@@ -165,7 +237,7 @@
               <th style="min-width: 80px;">Satuan</th>
               <th style="min-width: 130px;">Harga Satuan (Rp)</th>
               <th style="min-width: 140px;">Total Harga (Rp)</th>
-              <th style="min-width: 60px;" class="text-center">Aksi</th>
+              <th style="min-width: 60px;" class="text-center no-print">Aksi</th>
             </tr>
           </thead>
           <tbody id="rabTableBody">
@@ -196,10 +268,15 @@
           </div>
         </div>
       </div>
+
+      <!-- Footer Keterangan Otomatis Saat Dicetak -->
+      <div class="print-footer" id="printFooterText">
+        RAB dibuat menggunakan Platform Aplikasi SiCerMat dicetak secara otomatis <span id="printDate"></span>
+      </div>
     </div>
 
     <!-- Panel Harga Dasar (Accordion Monochrome) -->
-    <div class="card p-3 p-md-4">
+    <div class="card p-3 p-md-4 no-print" id="panelHargaDasarCard">
       <h5 class="card-title fw-bold text-dark mb-3">🏷️ Panel Harga Dasar</h5>
 
       <div class="accordion accordion-flush" id="accordionHargaDasar">
@@ -443,7 +520,7 @@
         <td><input type="text" class="form-control form-control-sm text-center" value="${unit}"></td>
         <td><input type="number" class="form-control form-control-sm text-end" value="${price}" onchange="calculateRow(this)"></td>
         <td class="text-end fw-bold row-total">Rp ${(vol * price).toLocaleString('id-ID')}</td>
-        <td class="text-center"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
+        <td class="text-center no-print"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
       `;
       tbody.appendChild(tr);
       updateRowNumbers();
@@ -488,6 +565,17 @@
       document.getElementById('subtotalVal').innerText = 'Rp ' + Math.round(subtotal).toLocaleString('id-ID');
       document.getElementById('ppnVal').innerText = 'Rp ' + Math.round(ppn).toLocaleString('id-ID');
       document.getElementById('grandTotalVal').innerText = 'Rp ' + Math.round(grandTotal).toLocaleString('id-ID');
+    }
+
+    /* Fungsi Cetak RAB */
+    function printRAB() {
+      const today = new Date();
+      const day = String(today.getDate()).padStart(2, '0');
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const year = today.getFullYear();
+      
+      document.getElementById('printDate').innerText = `${day}/${month}/${year}`;
+      window.print();
     }
 
     /* Export Excel Functionality */
