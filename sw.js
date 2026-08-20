@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-v1.7'; // Versi v1.7: Pembaruan proporsi lebar kolom Harga Satuan & Total Harga
+const CACHE_NAME = 'sicermat-v1.8'; // Versi v1.8: Perbaikan pencocokan AHS & update index.html
 const STATIC_ASSETS = [
   './',
   './index.html',
