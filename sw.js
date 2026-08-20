@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-v1.6'; // Versi v1.6: Penyesuaian lebar kolom Uraian Pekerjaan & pengabaian item manual pada cetak AHS
+const CACHE_NAME = 'sicermat-v1.7'; // Versi v1.7: Pembaruan proporsi lebar kolom Harga Satuan & Total Harga
 const STATIC_ASSETS = [
   './',
   './index.html',
