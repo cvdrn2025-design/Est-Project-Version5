@@ -1144,24 +1144,32 @@
 // 9. FITUR SALIN USER ID (UNTUK PELANGGAN)
 // ============================================================
 function copyUserID() {
-    // Ambil ID dari localStorage
-    let userID = localStorage.getItem('sicermat_user_id');
-    
-    // Jika ID belum ada (misal user baru), buatkan ID baru dulu
-    if (!userID) {
-        userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem('sicermat_user_id', userID);
-    }
+    try {
+        // Ambil ID dari localStorage, jika belum ada buat baru
+        let userID = localStorage.getItem('sicermat_user_id');
+        if (!userID) {
+            userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('sicermat_user_id', userID);
+        }
 
-    // Salin ID ke clipboard
-    navigator.clipboard.writeText(userID).then(() => {
-        alert("✅ ID Aktivasi berhasil disalin!\n\nKode Anda: " + userID + 
-              "\n\nSilakan kirim kode ini ke Admin WhatsApp untuk mengaktifkan akses Premium Anda.");
-    }).catch(err => {
-        // Fallback untuk browser lama yang tidak mendukung clipboard API
-        prompt("Silakan salin kode di bawah ini secara manual:", userID);
-    });
-              }
+        // Coba fitur copy otomatis modern
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(userID).then(() => {
+                alert("✅ ID Aktivasi berhasil disalin!\n\nKode Anda: " + userID + 
+                      "\n\nSilakan kirim kode ini ke Admin WhatsApp.");
+            });
+        } else {
+            // Fallback untuk browser yang tidak mendukung clipboard API
+            prompt("Silakan salin kode di bawah ini secara manual:", userID);
+        }
+    } catch (error) {
+        // Jika error tak terduga, tampilkan ID lewat prompt agar user tetap bisa mendapatkannya
+        console.error("Error saat menyalin ID:", error);
+        alert("Terjadi kesalahan. Silakan salin ID secara manual di bawah.");
+        let userID = localStorage.getItem('sicermat_user_id');
+        prompt("Kode ID Aktivasi Anda:", userID);
+    }
+}
   </script>
   <div class="container text-center my-3 no-print">
   <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="copyUserID()">
