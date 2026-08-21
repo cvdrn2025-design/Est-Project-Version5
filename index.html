@@ -513,14 +513,17 @@
         currentProjectKey = null; renderSavedProjectsDropdown();
       }
     }
-    function openAHSModal() { 
-      if (!hasCheckedPremium) { checkAHSVersionAndPremium(); }
-      if (latestVersionInfo && parseFloat(latestVersionInfo.version) > parseFloat(CURRENT_AHS_VERSION) && !isUserPremium) {
-          showPremiumPaywall(latestVersionInfo);
-          return;
-      }
-      filterAHSList(); 
-      ahsModalInstance.show(); 
+    function openAHSModal() {
+    // Selalu buka modal, tapi tandai status premium
+    if (!hasCheckedPremium) checkAHSVersionAndPremium();
+    
+    // Jika belum premium, tampilkan tampilan terkunci (locked view)
+    if (!isUserPremium) {
+        filterAHSList(true); // Parameter true = mode terkunci
+    } else {
+        filterAHSList(false); // Mode normal untuk premium
+    }
+    ahsModalInstance.show();
     }
     function openProjectModal() {
       document.getElementById('inputProjectName').value = currentProject.name;
