@@ -4,18 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Premium SiCerMat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background-color: #f8fafc; color: #0f172a; margin: 0; }
-        .container { max-width: 400px; margin: 40px auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .container { max-width: 420px; margin: 40px auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         h2 { margin-bottom: 5px; color: #0f172a; }
         .sub { font-size: 14px; color: #64748b; margin-bottom: 20px; display: block; }
-        img { max-width: 100%; height: auto; margin: 15px 0; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; }
-        p { font-size: 14px; color: #475569; line-height: 1.5; }
-        .btn-success { background-color: #198754; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px; }
+        .qris-box { border: 2px dashed #e2e8f0; border-radius: 12px; padding: 10px; margin: 15px 0; background: #f8fafc; }
+        img { max-width: 100%; height: auto; border-radius: 8px; }
+        .merchant-info { background: #f1f5f9; border-radius: 10px; padding: 10px; margin: 10px 0; font-size: 14px; color: #475569; }
+        .id-box { background: #f1f5f9; border: 2px dashed #94a3b8; padding: 12px; border-radius: 10px; margin: 15px 0; font-family: monospace; font-size: 1.1rem; word-break: break-all; }
+        .btn-copy { background: #0f172a; color: white; border: none; padding: 10px 20px; border-radius: 8px; margin: 5px; cursor: pointer; font-weight: 600; }
+        .btn-success { background-color: #198754; color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; font-weight: bold; display: block; margin-top: 15px; }
         .btn-success:hover { background-color: #157347; }
         .error-msg { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin: 10px 0; }
-        .id-box { background: #f1f5f9; border: 2px dashed #94a3b8; padding: 10px; border-radius: 8px; margin: 15px 0; font-family: monospace; font-size: 1.1rem; word-break: break-all; }
-        .btn-copy { background: #0f172a; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin: 5px; cursor: pointer; }
+        .back-link { display: block; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -27,13 +30,24 @@
             ⚠️ Gambar QRIS tidak ditemukan. Pastikan file <b>qris.png</b> sudah di-upload.
         </div>
 
-        <!-- Menggunakan qris.png sesuai repo -->
-        <img src="qris.png" alt="QRIS SiCerMat" onerror="document.getElementById('errorMessage').style.display='block'">
+        <!-- QRIS Merchant -->
+        <div class="qris-box">
+            <img src="qris.png" alt="QRIS SiCerMat" onerror="document.getElementById('errorMessage').style.display='block'">
+        </div>
 
-        <p style="font-size: 14px; color: #475569; line-height: 1.5;">
-            <strong>Nominal:</strong> Rp 250.000 (Lifetime Access)<br>
-            <small>Silakan scan QRIS di atas menggunakan GoPay, OVO, Dana, atau Mobile Banking.<br>
-            Setelah transfer, <b>kirim bukti transfer dan ID Aktivasi Anda ke WhatsApp Admin</b>.</small>
+        <!-- Info Merchant -->
+        <div class="merchant-info">
+            <strong>Toko Keysha Collecting</strong><br>
+            NMID: ID1022148620076<br>
+            A01
+        </div>
+
+        <p class="mb-0" style="font-size: 15px; font-weight: 600; color: #0f172a;">
+            💰 Nominal: <span style="font-size: 22px; font-weight: 800; color: #198754;">Rp 250.000</span>
+        </p>
+        <p class="text-muted" style="font-size: 13px;">
+            (Lifetime Access)<br>
+            Silakan scan QRIS di atas menggunakan GoPay, OVO, Dana, atau Mobile Banking.
         </p>
 
         <!-- ID Aktivasi User -->
@@ -46,10 +60,11 @@
            class="btn-success">
            💬 Kirim Bukti Transfer & ID ke WhatsApp Admin
         </a>
+
+        <a href="index.html" class="back-link">← Kembali ke Aplikasi</a>
     </div>
 
     <script>
-        // Ambil ID dari localStorage (sama seperti di index.html)
         function getUserID() {
             let userID = localStorage.getItem('sicermat_user_id');
             if (!userID) {
