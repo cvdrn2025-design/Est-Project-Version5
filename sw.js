@@ -1,10 +1,12 @@
-const CACHE_NAME = 'sicermat-cache-v100';
+const CACHE_NAME = 'sicermat-cache-v100'; // Update versi agar sinkron dengan index.html
 const urlsToCache = [
   './',
   './index.html',
   './manifest.json',
   './icon.png',
   './icon-192.png',
+  './qris-payment.html',
+  './qris.png',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'
@@ -38,11 +40,11 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: cache first, tapi jangan cache master-data.js agar update selalu terbaca
+// Fetch: strategi caching yang lebih cerdas
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // Jangan cache master-data.js
+  // Jangan cache master-data.js (data AHS) agar update selalu terbaca
   if (url.pathname.endsWith('master-data.js')) {
     event.respondWith(
       fetch(event.request).catch(() => {
@@ -52,7 +54,37 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Cache first untuk yang lain
+  // Jangan cache ahs-version.json (sistem versi premium) agar selalu update
+  if (url.pathname.endsWith('ahs-version.json')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // Jangan cache qris-payment.html (halaman pembayaran) agar selalu update
+  if (url.pathname.endsWith('qris-payment.html')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // Jangan cache qris.png (gambar QRIS) agar selalu update
+  if (url.pathname.endsWith('qris.png')) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
+    );
+    return;
+  }
+
+  // Untuk file lain: cache first, fallback ke network
   event.respondWith(
     caches.match(event.request)
       .then(response => {
@@ -60,6 +92,7 @@ self.addEventListener('fetch', event => {
           return response;
         }
         return fetch(event.request).catch(() => {
+          // Fallback halaman utama jika offline
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
