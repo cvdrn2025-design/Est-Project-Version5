@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SiCerMat - Estimasi RAB & AHS</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0f172a">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <style>
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; color: #0f172a; }
+    .card { border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
+    .table-responsive-custom { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .master-table-container { max-height: 240px; overflow-y: auto; }
+    #rabTable { min-width: 860px; width: 100%; table-layout: fixed; }
+    #rabTable th:nth-child(1), #rabTable td:nth-child(1) { width: 45px; text-align: center; } 
+    #rabTable th:nth-child(2), #rabTable td:nth-child(2) { width: auto; text-align: left; }    
+    #rabTable th:nth-child(3), #rabTable td:nth-child(3) { width: 95px; text-align: right; }  
+    #rabTable th:nth-child(4), #rabTable td:nth-child(4) { width: 75px; text-align: center; } 
+    #rabTable th:nth-child(5), #rabTable td:nth-child(5) { width: 160px; text-align: right; } 
+    #rabTable th:nth-child(6), #rabTable td:nth-child(6) { width: 160px; text-align: right; } 
+    #rabTable th:nth-child(7), #rabTable td:nth-child(7) { width: 50px; text-align: center; } 
+    #rabTable input.form-control-sm { width: 100%; box-sizing: border-box; }
+    .btn-mono-primary { background-color: #0f172a; color: #ffffff; border: 1px solid #0f172a; }
+    .btn-mono-primary:hover { background-color: #334155; color: #ffffff; }
+    .btn-mono-secondary { background-color: #475569; color: #ffffff; border: 1px solid #475569; }
+    .btn-mono-secondary:hover { background-color: #1e293b; color: #ffffff; }
+    .btn-mono-outline { background-color: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; }
+    .btn-mono-outline:hover { background-color: #f1f5f9; color: #0f172a; }
+    .btn-mono-danger { background-color: #ffffff; color: #dc2626; border: 1px solid #cbd5e1; }
+    .btn-mono-danger:hover { background-color: #dc2626; color: #ffffff; }
+    .btn-added { background-color: #16a34a !important; color: #ffffff !important; border-color: #16a34a !important; font-weight: 600; }
+    .btn-komponen { color: #0f172a; text-decoration: none; font-weight: 600; font-size: 0.9rem; }
+    .print-only { display: none; }
+    .btn-ahs-update { background-color: #198754; color: #ffffff; border-radius: 50px; padding: 5px 16px; font-weight: 600; font-size: 0.8rem; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
+    .btn-ahs-update:hover { background-color: #157347; color: #ffffff; transform: scale(1.02); }
+    .btn-ahs-print { background-color: #0d6efd; color: #ffffff; border-radius: 50px; padding: 5px 16px; font-weight: 600; font-size: 0.8rem; border: none; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: all 0.2s ease; }
+    .btn-ahs-print:hover { background-color: #0b5ed7; color: #ffffff; transform: scale(1.02); }
+    .ahs-header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+    @media print {
+      body { background-color: #ffffff !important; color: #000000 !important; font-size: 10pt; }
+      .no-print, .btn, #panelHargaDasarCard, .modal, .modal-backdrop { display: none !important; }
+      .print-only { display: inline !important; }
+      .card { border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
+      #rabTable { min-width: 100% !important; width: 100% !important; table-layout: auto !important; border-collapse: collapse !important; }
+      #rabTable th, #rabTable td { border: 1px solid #000000 !important; padding: 5px 8px !important; font-size: 9.5pt !important; }
+      #rabTable input { border: none !important; background: transparent !important; box-shadow: none !important; outline: none !important; width: 100% !important; }
+      .table-responsive-custom { overflow: visible !important; }
+      .print-header { margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 8px; }
+      .print-footer { display: block !important; margin-top: 25px; padding-top: 8px; border-top: 1px solid #aaa; font-size: 8.5pt; color: #444; text-align: center; }
+    }
+    .print-footer { display: none; }
+  </style>
+</head>
+<body>
+
+  <!-- Header Logo -->
+  <div class="container text-center my-4 no-print">
+    <img src="icon.png" alt="Logo SiCerMat" style="max-width: 220px; width: 100%; height: auto;" class="img-fluid">
+  </div>
+
+  <div class="container mb-5">
+    <!-- Panel Tombol Utama Proyek -->
+    <div class="card p-3 mb-4 no-print">
+      <div class="row g-2 justify-content-center">
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="startNewProject()">➕ Proyek Baru</button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="saveCurrentProject()">💾 Simpan Proyek</button>
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="document.getElementById('excelFileInput').click()">📂 Open Proyek</button>
+          <input type="file" id="excelFileInput" accept=".xlsx, .xls" class="d-none" onchange="openProjectExcel(event)">
+        </div>
+        <div class="col-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="printRAB()">🖨️ Cetak RAB</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel Proyek Tersimpan -->
+    <div class="card p-3 mb-4 no-print" id="savedProjectsPanel">
+      <div class="row g-2 align-items-center">
+        <div class="col-md-8">
+          <label for="savedProjectsSelect" class="form-label mb-0 fw-bold">Proyek Tersimpan</label>
+          <select id="savedProjectsSelect" class="form-select form-select-sm" onchange="loadSelectedProject()">
+            <option value="">-- Pilih Proyek --</option>
+          </select>
+        </div>
+        <div class="col-md-4 d-flex gap-2 mt-2 mt-md-0">
+          <button class="btn btn-sm btn-mono-secondary" onclick="saveCurrentProject()">💾 Simpan ke Lokal</button>
+          <button class="btn btn-sm btn-mono-secondary" onclick="renameProject()">✏️ Ganti</button>
+          <button class="btn btn-sm btn-mono-danger" onclick="deleteProject()">🗑️ Hapus</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabel RAB -->
+    <div class="card p-3 p-md-4 mb-4">
+      <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom print-header">
+        <div>
+          <h5 class="fw-bold text-dark mb-1" id="displayProjectName">Proyek: Unnamed Project</h5>
+          <small class="text-muted">
+            Pemilik: <span id="displayProjectOwner" class="fw-semibold">-</span> | 
+            Lokasi: <span id="displayProjectLocation" class="fw-semibold">-</span>
+          </small>
+        </div>
+        <button class="btn btn-sm btn-mono-outline mt-2 mt-md-0 no-print" onclick="openProjectModal()">✏️ Edit Info Proyek</button>
+      </div>
+
+      <div class="row g-2 mb-3 no-print">
+        <div class="col-12 col-sm-6 col-md-3">
+          <button class="btn btn-mono-primary w-100 py-2 fw-bold btn-sm" onclick="openAHSModal()">📚 Library AHS</button>
+        </div>
+        <div class="col-12 col-sm-6 col-md-3">
+          <button class="btn btn-mono-outline w-100 py-2 fw-bold btn-sm" onclick="addManualRow()">➕ Tambah Item Manual</button>
+        </div>
+      </div>
+
+      <div class="text-center my-3">
+        <h5 class="fw-bold text-uppercase mb-0 tracking-wide">RENCANA ANGGARAN BIAYA (RAB)</h5>
+      </div>
+
+      <div class="table-responsive table-responsive-custom">
+        <table class="table table-bordered align-middle" id="rabTable">
+          <thead class="table-light align-middle">
+            <tr>
+              <th>No</th>
+              <th>Uraian Pekerjaan</th>
+              <th>Volume</th>
+              <th>Satuan</th>
+              <th>Harga Satuan (Rp)</th>
+              <th>Total Harga (Rp)</th>
+              <th class="no-print">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="rabTableBody"></tbody>
+          <tfoot id="rabTableFoot">
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">Subtotal:</td>
+              <td class="text-end fw-bold" id="subtotalVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">PPN 11%:</td>
+              <td class="text-end fw-bold" id="ppnVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+            <tr>
+              <td colspan="5" class="text-end fw-semibold">
+                Margin Keuntungan (%):
+                <input type="number" id="profitMargin" class="form-control form-control-sm d-inline-block text-end ms-1 no-print" style="width: 70px;" value="10" onchange="calculateGrandTotal()">
+                <span class="print-only ms-1" id="printMarginVal">10%</span>
+              </td>
+              <td class="text-end fw-bold" id="marginAmountVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+            <tr class="table-light fw-bold">
+              <td colspan="5" class="text-end fs-6">Grand Total:</td>
+              <td class="text-end fs-6 text-dark" id="grandTotalVal">0,00</td>
+              <td class="no-print"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <div class="print-footer" id="printFooterText">
+        RAB dibuat menggunakan Platform Aplikasi SiCerMat dicetak secara otomatis <span id="printDate"></span>
+      </div>
+    </div>
+
+    <!-- Panel Harga Dasar -->
+    <div class="card p-3 p-md-4 no-print" id="panelHargaDasarCard">
+      <div class="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
+        <h5 class="card-title fw-bold text-dark mb-0">🏷️ Panel Harga Dasar</h5>
+        <div class="d-flex gap-2 flex-wrap">
+          <input type="file" id="importMasterFile" accept=".xlsx, .xls" class="d-none" onchange="importMasterDataExcel(event)">
+          <button class="btn btn-sm btn-mono-outline" onclick="syncAHSToMaster()" title="Sinkronisasi komponen AHS ke Panel Harga">🔄 Sync AHS</button>
+          <button class="btn btn-sm btn-mono-outline" onclick="document.getElementById('importMasterFile').click()" title="Import Data Harga Dasar dari Excel">📥</button>
+          <button class="btn btn-sm btn-mono-outline" onclick="saveMasterDataExcel()" title="Simpan Data Harga Dasar ke Excel">💾</button>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-mono-outline" data-bs-toggle="dropdown" title="Cetak Opsional">🖨️</button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#" onclick="printMasterData('bahan')">📄 Cetak Bahan</a></li>
+              <li><a class="dropdown-item" href="#" onclick="printMasterData('alat')">📄 Cetak Alat</a></li>
+              <li><a class="dropdown-item" href="#" onclick="printMasterData('upah')">📄 Cetak Upah</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" onclick="printMasterData('semua')">📑 Cetak Semua</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="accordion accordion-flush" id="accordionHargaDasar">
+        <div class="accordion-item border-bottom">
+          <h2 class="accordion-header" id="headingBahan">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseBahan">▶ 🔍 Lihat Komponen Bahan</button>
+          </h2>
+          <div id="collapseBahan" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchBahan" class="form-control form-control-sm w-50" placeholder="Cari bahan..." onkeyup="renderPriceTable('bahan')">
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('bahan')">➕ Tambah Bahan</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama Material</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="materialPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item border-bottom">
+          <h2 class="accordion-header" id="headingAlat">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAlat">▶ 🔍 Lihat Komponen Alat</button>
+          </h2>
+          <div id="collapseAlat" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchAlat" class="form-control form-control-sm w-50" placeholder="Cari alat..." onkeyup="renderPriceTable('alat')">
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('alat')">➕ Tambah Alat</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama Peralatan</th><th>Harga Satuan (Rp)</th></tr></thead>
+                  <tbody id="equipmentPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="headingUpah">
+            <button class="accordion-button collapsed py-2 px-0 bg-transparent btn-komponen shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUpah">▶ 🔍 Lihat Komponen Upah</button>
+          </h2>
+          <div id="collapseUpah" class="accordion-collapse collapse" data-bs-parent="#accordionHargaDasar">
+            <div class="accordion-body px-0 pt-2">
+              <div class="d-flex justify-content-between mb-2">
+                <input type="text" id="searchUpah" class="form-control form-control-sm w-50" placeholder="Cari upah..." onkeyup="renderPriceTable('upah')">
+                <button class="btn btn-sm btn-mono-outline" onclick="addMasterItem('upah')">➕ Tambah Upah</button>
+              </div>
+              <div class="master-table-container">
+                <table class="table table-sm table-bordered mb-0">
+                  <thead class="table-light"><tr><th>Nama</th><th>Harga Satuan (Rp)</th><th>Aksi</th></tr></thead>
+                  <tbody id="laborPriceTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Informasi Proyek -->
+  <div class="modal fade" id="projectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title fw-bold">🏗️ Informasi Proyek</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+          <div class="mb-3"><label class="form-label fw-bold">Nama Proyek</label><input type="text" id="inputProjectName" class="form-control" placeholder="Contoh: Pembangunan Rumah Type 45"></div>
+          <div class="mb-3"><label class="form-label">Nama Pemilik Proyek</label><input type="text" id="inputProjectOwner" class="form-control" placeholder="Contoh: Bp. Ahmad"></div>
+          <div class="mb-3"><label class="form-label">Lokasi Proyek</label><input type="text" id="inputProjectLocation" class="form-control" placeholder="Contoh: Samarinda, Kalimantan Timur"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-mono-outline" data-bs-dismiss="modal">Batal</button>
+          <button type="button" class="btn btn-mono-primary" onclick="saveProjectInfo()">Simpan Info Proyek</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Library AHS -->
+  <div class="modal fade" id="ahsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-header align-items-center border-bottom-0 pb-0">
+          <h5 class="modal-title fw-bold">📚 Library AHS</h5>
+          <div class="ahs-header-actions ms-auto me-2 no-print">
+            <button class="btn btn-ahs-update btn-sm" onclick="syncAHSPrices()">🔄 Perbarui Harga</button>
+            <button class="btn btn-ahs-print btn-sm" onclick="printSelectedAHS()">🖨️ Cetak AHS</button>
+          </div>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-2 mb-3">
+            <div class="col-md-4">
+              <select id="ahsCategoryFilter" class="form-select" onchange="filterAHSList()">
+                <option value="ALL">🚩 Semua Kategori</option>
+                <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
+                <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
+                <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
+                <option value="Pekerjaan Beton">Pekerjaan Beton</option>
+                <option value="Pekerjaan Atap">Pekerjaan Atap</option>
+                <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
+                <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
+                <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
+                <option value="Pekerjaan Landscape">Pekerjaan Landscape</option>
+              </select>
+            </div>
+            <div class="col-md-8">
+              <input type="text" id="ahsSearch" class="form-control" placeholder="Cari nama pekerjaan atau kode AHS..." onkeyup="filterAHSList()">
+            </div>
+          </div>
+          <div class="table-responsive table-responsive-custom">
+            <table class="table table-hover align-middle">
+              <thead class="table-light">
+                <tr><th style="min-width: 140px;">Kode / Kategori</th><th style="min-width: 300px;">Deskripsi Pekerjaan & Rincian Komponen Analisa</th><th style="min-width: 180px;" class="text-center">Aksi & Harga Total</th></tr>
+              </thead>
+              <tbody id="ahsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts External -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+  <!-- Load Master Data -->
+  <script src="master-data.js?v=20260912"></script>
+
+  <!-- Service Worker -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('Service Worker SiCerMat Aktif'))
+          .catch(err => console.log('Gagal mendaftarkan Service Worker:', err));
+      });
+    }
+                  </script>
+<script>
+  // ============================================================
+  // 1. KONFIGURASI FIREBASE
+  // ============================================================
+  const firebaseConfig = {
+    apiKey: "AIzaSyBLqBuHKh8jOJ1yoDnctadcFgrdOwJ1kqA",
+    authDomain: "sicermat-db.firebaseapp.com",
+    databaseURL: "https://sicermat-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "sicermat-db",
+    storageBucket: "sicermat-db.firebasestorage.app",
+    messagingSenderId: "158019957886",
+    appId: "1:158019957886:web:fdce9473c3783b4932142f"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
+
+  // ============================================================
+  // 2. VARIABEL GLOBAL
+  // ============================================================
+  let ahsModalInstance, projectModalInstance;
+  let currentProject = { name: "Proyek Bangunan A", owner: "-", location: "-" };
+  let projectsStore = JSON.parse(localStorage.getItem('sicermat_projects')) || {};
+  let currentProjectKey = null;
+
+  let isUserPremium = false;
+  const CURRENT_AHS_VERSION = '1.0';
+  let latestVersionInfo = null;
+  let hasCheckedPremium = false;
+
+  // ============================================================
+  // 3. FUNGSI UTILITY
+  // ============================================================
+  function parseIndoNumber(val) { if (typeof val === 'number') return val; if (!val) return 0; let cleaned = val.toString().replace(/\./g, '').replace(',', '.'); return parseFloat(cleaned) || 0; }
+  function formatNumber(num, decimals = 2) { const n = parseFloat(num) || 0; return n.toLocaleString('id-ID', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }); }
+  function cleanJobTitle(title) { if (!title) return ''; return title.replace(/^\s*1\s*(m2|m3|m'|m²|m³|m|kg|bh|ls|unit|titik|poh|btg|set)?\s*/i, '').trim(); }
+  function getAHSId(item, index) { return item.code || item.kode || item.id || `AHS-INDEX-${index}`; }
+
+  // ============================================================
+  // 4. FUNGSI MANAJEMEN PROYEK
+  // ============================================================
+  function renderSavedProjectsDropdown() {
+    const select = document.getElementById('savedProjectsSelect'); if (!select) return;
+    select.innerHTML = '<option value="">-- Pilih Proyek --</option>';
+    for (let key in projectsStore) { const opt = document.createElement('option'); opt.value = key; opt.textContent = key; select.appendChild(opt); }
+  }
+  function saveCurrentProject() {
+    const name = currentProject.name.trim(); if (!name) { alert('Harap isi Nama Proyek terlebih dahulu!'); return; }
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    const rabItems = [];
+    rows.forEach(row => {
+      rabItems.push({
+        ahsId: row.dataset.ahsId || '', title: row.querySelector('.input-title').value,
+        volume: parseIndoNumber(row.querySelector('.input-volume').value),
+        unit: row.querySelector('.input-unit').value,
+        price: parseIndoNumber(row.querySelector('.input-price').value)
+      });
+    });
+    projectsStore[name] = { name, owner: currentProject.owner, location: currentProject.location, margin: document.getElementById('profitMargin').value, rabItems };
+    localStorage.setItem('sicermat_projects', JSON.stringify(projectsStore));
+    renderSavedProjectsDropdown(); alert('Proyek "' + name + '" berhasil disimpan ke lokal!');
+  }
+  function loadSelectedProject() {
+    const select = document.getElementById('savedProjectsSelect'); const key = select.value;
+    if (!key || !projectsStore[key]) return;
+    const proj = projectsStore[key];
+    currentProject.name = proj.name; currentProject.owner = proj.owner || '-'; currentProject.location = proj.location || '-';
+    document.getElementById('profitMargin').value = proj.margin || 10;
+    updateProjectHeader();
+    document.getElementById('rabTableBody').innerHTML = '';
+    if (Array.isArray(proj.rabItems)) {
+      proj.rabItems.forEach(item => { addItemRow(item.title, item.volume, item.unit, item.price, item.ahsId, false); });
+    }
+    calculateGrandTotal(); currentProjectKey = key;
+  }
+  function renameProject() {
+    const select = document.getElementById('savedProjectsSelect'); const oldKey = select.value;
+    if (!oldKey) { alert('Pilih proyek yang ingin diganti nama!'); return; }
+    const newName = prompt('Masukkan nama proyek baru:', oldKey);
+    if (newName && newName !== oldKey) {
+      projectsStore[newName] = projectsStore[oldKey]; projectsStore[newName].name = newName;
+      delete projectsStore[oldKey];
+      localStorage.setItem('sicermat_projects', JSON.stringify(projectsStore));
+      renderSavedProjectsDropdown();
+      if (currentProjectKey === oldKey) { currentProjectKey = newName; currentProject.name = newName; updateProjectHeader(); }
+      alert('Nama proyek berhasil diubah!');
+    }
+  }
+  function deleteProject() {
+    const select = document.getElementById('savedProjectsSelect'); const key = select.value;
+    if (!key) { alert('Pilih proyek yang ingin dihapus!'); return; }
+    if (confirm('Yakin ingin menghapus proyek "' + key + '"?')) {
+      delete projectsStore[key];
+      localStorage.setItem('sicermat_projects', JSON.stringify(projectsStore));
+      renderSavedProjectsDropdown();
+      if (currentProjectKey === key) startNewProject();
+    }
+  }
+
+  // ============================================================
+  // 5. FUNGSI RAB
+  // ============================================================
+  function saveToLocalStorage() {
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    const rabItems = [];
+    rows.forEach(row => {
+      rabItems.push({
+        ahsId: row.dataset.ahsId || '', title: row.querySelector('.input-title').value,
+        volume: parseIndoNumber(row.querySelector('.input-volume').value),
+        unit: row.querySelector('.input-unit').value,
+        price: parseIndoNumber(row.querySelector('.input-price').value)
+      });
+    });
+    localStorage.setItem('sicermat_rab_data', JSON.stringify({ project: currentProject, margin: document.getElementById('profitMargin').value, rabItems }));
+  }
+  function loadFromLocalStorage() {
+    const saved = localStorage.getItem('sicermat_rab_data'); if (!saved) return;
+    try {
+      const appData = JSON.parse(saved);
+      if (appData.project) currentProject = appData.project;
+      if (appData.margin) document.getElementById('profitMargin').value = appData.margin;
+      updateProjectHeader();
+      document.getElementById('rabTableBody').innerHTML = '';
+      if (Array.isArray(appData.rabItems)) {
+        appData.rabItems.forEach(item => { addItemRow(item.title, item.volume, item.unit, item.price, item.ahsId, false); });
+      }
+      calculateGrandTotal();
+    } catch(e) { console.error("Gagal membaca LocalStorage:", e); }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    ahsModalInstance = new bootstrap.Modal(document.getElementById('ahsModal'));
+    projectModalInstance = new bootstrap.Modal(document.getElementById('projectModal'));
+    checkAHSVersionAndPremium();
+    renderPriceTable('bahan'); renderPriceTable('alat'); renderPriceTable('upah');
+    updateProjectHeader(); loadFromLocalStorage(); renderSavedProjectsDropdown();
+  });
+
+  function startNewProject() {
+    if (confirm("Apakah Anda yakin ingin membuat Proyek Baru?\n\nSeluruh data RAB saat ini akan dikosongkan.")) {
+      currentProject = { name: "Proyek Baru", owner: "-", location: "-" };
+      document.getElementById('profitMargin').value = 10;
+      document.getElementById('rabTableBody').innerHTML = '';
+      updateProjectHeader(); calculateGrandTotal(); localStorage.removeItem('sicermat_rab_data');
+      currentProjectKey = null; renderSavedProjectsDropdown();
+    }
+  }
+  function openAHSModal() { 
+    if (!hasCheckedPremium) { checkAHSVersionAndPremium(); }
+    try {
+      if (latestVersionInfo && parseFloat(latestVersionInfo.version) > parseFloat(CURRENT_AHS_VERSION) && !isUserPremium) {
+          showPremiumPaywall(latestVersionInfo);
+          return;
+      }
+    } catch (e) { console.error('Error cek versi:', e); }
+    filterAHSList(); 
+    ahsModalInstance.show(); 
+  }
+  function openProjectModal() {
+    document.getElementById('inputProjectName').value = currentProject.name;
+    document.getElementById('inputProjectOwner').value = currentProject.owner;
+    document.getElementById('inputProjectLocation').value = currentProject.location;
+    projectModalInstance.show();
+  }
+  function saveProjectInfo() {
+    currentProject.name = document.getElementById('inputProjectName').value || "Unnamed Project";
+    currentProject.owner = document.getElementById('inputProjectOwner').value || "-";
+    currentProject.location = document.getElementById('inputProjectLocation').value || "-";
+    updateProjectHeader(); saveToLocalStorage(); projectModalInstance.hide();
+  }
+  function updateProjectHeader() {
+    document.getElementById('displayProjectName').innerText = "Proyek: " + currentProject.name;
+    document.getElementById('displayProjectOwner').innerText = currentProject.owner;
+    document.getElementById('displayProjectLocation').innerText = currentProject.location;
+  }
+  function updateRowNumbers() {
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    rows.forEach((row, index) => { row.cells[0].innerText = index + 1; });
+  }
+  function handleFocusNumber(input) { let val = parseIndoNumber(input.value); input.value = val === 0 ? '' : val; }
+  function handleBlurVolume(input) { let val = parseIndoNumber(input.value); input.value = formatNumber(val, 2); calculateRow(input); }
+  function handleBlurPrice(input) { let val = parseIndoNumber(input.value); input.value = formatNumber(val, 2); calculateRow(input); }
+  function getActiveAHSIdsInRAB() {
+    const activeIds = new Set(); const activeTitles = new Set();
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    rows.forEach(row => {
+      if (row.dataset.ahsId) activeIds.add(row.dataset.ahsId);
+      const titleVal = row.querySelector('.input-title')?.value;
+      if (titleVal) activeTitles.add(cleanJobTitle(titleVal).toLowerCase());
+    });
+    return { activeIds, activeTitles };
+  }
+  function addItemRow(title = '', vol = 1, unit = 'm2', price = 0, ahsId = '', autoSave = true) {
+    const cleanTitle = cleanJobTitle(title);
+    const tbody = document.getElementById('rabTableBody');
+    const tr = document.createElement('tr');
+    if (ahsId) tr.dataset.ahsId = ahsId;
+    const numVol = parseIndoNumber(vol); const numPrice = parseIndoNumber(price);
+    tr.innerHTML = `
+      <td class="text-center fw-bold text-muted"></td>
+      <td><input type="text" class="form-control form-control-sm input-title" value="${cleanTitle}" onchange="saveToLocalStorage()"></td>
+      <td><input type="text" class="form-control form-control-sm text-end input-volume" value="${formatNumber(numVol, 2)}" onfocus="handleFocusNumber(this)" onblur="handleBlurVolume(this)"></td>
+      <td><input type="text" class="form-control form-control-sm text-center input-unit" value="${unit}" onchange="saveToLocalStorage()"></td>
+      <td><input type="text" class="form-control form-control-sm text-end input-price" value="${formatNumber(numPrice, 2)}" onfocus="handleFocusNumber(this)" onblur="handleBlurPrice(this)"></td>
+      <td class="text-end fw-bold row-total">${formatNumber(numVol * numPrice, 2)}</td>
+      <td class="text-center no-print"><button class="btn btn-sm btn-mono-danger" onclick="deleteRow(this)">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+    updateRowNumbers(); calculateGrandTotal();
+    if (autoSave) saveToLocalStorage();
+  }
+  function addManualRow() { addItemRow('Pekerjaan Manual', 1, 'ls', 0, ''); }
+  function selectAHSItem(index, btnElem) {
+    if (typeof ahsDatabase === 'undefined' || !ahsDatabase[index]) { alert('Data AHS tidak ditemukan.'); return; }
+    const item = ahsDatabase[index]; const itemId = getAHSId(item, index);
+    let unitPrice = 0;
+    if (item.details && item.details.length > 0) {
+      unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
+    } else { unitPrice = item.totalPrice || item.harga || 0; }
+    addItemRow(item.title || item.nama, 1, item.unit || item.satuan || 'm2', unitPrice, itemId, true);
+    if (btnElem) { btnElem.className = 'btn btn-sm btn-added w-100'; btnElem.innerHTML = '✓ Ditambahkan'; }
+  }
+  function updateRABPricesFromAHS() {
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    rows.forEach(row => {
+      const ahsId = row.dataset.ahsId;
+      if (ahsId) {
+        const ahsItemIndex = ahsDatabase.findIndex((item, idx) => getAHSId(item, idx) === ahsId);
+        if (ahsItemIndex !== -1) {
+          const item = ahsDatabase[ahsItemIndex];
+          let unitPrice = 0;
+          if (item.details && item.details.length > 0) {
+            unitPrice = item.details.reduce((sum, d) => sum + ((parseFloat(d.coeff) || 0) * (parseFloat(d.price) || 0)), 0);
+          }
+          const priceInput = row.querySelector('.input-price');
+          if (priceInput) { priceInput.value = formatNumber(unitPrice, 2); calculateRow(priceInput); }
+        }
+      }
+    });
+  }
+  function calculateRow(inputElem) {
+    const row = inputElem.closest('tr');
+    const volVal = parseIndoNumber(row.querySelector('.input-volume').value);
+    const priceVal = parseIndoNumber(row.querySelector('.input-price').value);
+    const total = volVal * priceVal;
+    row.querySelector('.row-total').innerText = formatNumber(total, 2);
+    calculateGrandTotal(); saveToLocalStorage();
+  }
+  function deleteRow(btn) {
+    btn.closest('tr').remove();
+    updateRowNumbers(); calculateGrandTotal(); saveToLocalStorage();
+  }
+  function calculateGrandTotal() {
+    let subtotal = 0;
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    rows.forEach(row => {
+      const volVal = parseIndoNumber(row.querySelector('.input-volume').value);
+      const priceVal = parseIndoNumber(row.querySelector('.input-price').value);
+      subtotal += volVal * priceVal;
+    });
+    const ppn = subtotal * 0.11;
+    const marginPercent = parseIndoNumber(document.getElementById('profitMargin').value) || 0;
+    const marginVal = subtotal * (marginPercent / 100);
+    const grandTotal = subtotal + ppn + marginVal;
+    document.getElementById('subtotalVal').innerText = formatNumber(subtotal, 2);
+    document.getElementById('ppnVal').innerText = formatNumber(ppn, 2);
+    document.getElementById('marginAmountVal').innerText = formatNumber(marginVal, 2);
+    document.getElementById('printMarginVal').innerText = marginPercent + '%';
+    document.getElementById('grandTotalVal').innerText = formatNumber(grandTotal, 2);
+    saveToLocalStorage();
+  }
+
+  // ============================================================
+  // 6. LOGIKA LABEL KOMPONEN & RENDER AHS
+  // ============================================================
+  function getJenisKomponen(nama) {
+    if (!nama) return 'Upah';
+    if (masterBahan.some(b => b.nama === nama)) return 'Bahan';
+    if (masterAlat.some(a => a.nama === nama)) return 'Alat';
+    return 'Upah';
+  }
+
+  function filterAHSList() {
+    const category = document.getElementById('ahsCategoryFilter').value;
+    const search = (document.getElementById('ahsSearch').value || '').toLowerCase().trim();
+    const tbody = document.getElementById('ahsTableBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) {
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Memuat data AHS...</td></tr>';
+      return;
+    }
+
+    const { activeIds, activeTitles } = getActiveAHSIdsInRAB();
+    let renderedCount = 0;
+
+    ahsDatabase.forEach((item, index) => {
+      const itemCategory = item.category || item.kategori || '';
+      const itemTitle = item.title || item.nama || '';
+      const itemCode = item.code || item.kode || `AHS-${index + 1}`;
+      const itemId = getAHSId(item, index);
+
+      const matchCat = (category === 'ALL' || itemCategory === category);
+      const matchSearch = (!search || itemTitle.toLowerCase().includes(search) || itemCode.toLowerCase().includes(search));
+
+      if (matchCat && matchSearch) {
+        renderedCount++;
+        const isAdded = activeIds.has(itemId) || activeTitles.has(cleanJobTitle(itemTitle).toLowerCase());
+
+        let groupedDetails = { 'Bahan': [], 'Alat': [], 'Upah': [] };
+        let totalPrice = 0;
+        if (item.details && item.details.length > 0) {
+          item.details.forEach((d) => {
+            const jenis = getJenisKomponen(d.name || d.nama);
+            if (groupedDetails[jenis]) groupedDetails[jenis].push(d);
+            totalPrice += (d.coeff || 0) * (d.price || 0);
+          });
+        } else {
+          totalPrice = item.totalPrice || item.harga || 0;
+        }
+
+        let detailRows = '';
+        const urutanJenis = ['Bahan', 'Alat', 'Upah'];
+        urutanJenis.forEach(jenis => {
+          const list = groupedDetails[jenis];
+          if (list.length > 0) {
+            detailRows += `<div class="fw-bold text-dark mt-2 mb-1 border-bottom pb-1">📌 ${jenis}</div>`;
+            list.forEach((d, detIndex) => {
+              detailRows += `
+                <div class="small text-muted d-flex align-items-center justify-content-between py-1 border-bottom gap-2">
+                  <span style="flex: 2;">• ${d.name || d.nama}</span>
+                  <div style="flex: 1;" class="d-flex align-items-center">
+                    <input type="number" step="0.001" min="0" class="form-control form-control-sm text-center" value="${d.coeff || 0}" onchange="updateAHSCoeff(${index}, ${detIndex}, this.value)">
+                  </div>
+                  <span style="flex: 0.5;" class="text-center">${d.unit || ''}</span>
+                  <span style="flex: 1.5;" class="text-end">Rp ${formatNumber(d.price || 0, 2)}</span>
+                </div>
+              `;
+            });
+          }
+        });
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>
+            <span class="badge bg-dark mb-1">${itemCode}</span>
+            <div class="small fw-semibold text-secondary">${itemCategory || '-'}</div>
+          </td>
+          <td>
+            <div class="fw-bold text-dark mb-1">${itemTitle}</div>
+            <div class="mt-2 bg-light p-2 rounded">${detailRows}</div>
+          </td>
+          <td class="text-center align-middle">
+            <div class="fw-bold text-primary mb-2">Rp ${formatNumber(totalPrice, 2)} / ${item.unit || item.satuan || 'm2'}</div>
+            <button class="btn btn-sm ${isAdded ? 'btn-added' : 'btn-mono-primary'} w-100" onclick="selectAHSItem(${index}, this)">
+              ${isAdded ? '✓ Ditambahkan' : '➕ Tambahkan'}
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+
+    if (renderedCount === 0) {
+      tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">AHS tidak ditemukan.</td></tr>';
+    }
+  }
+
+  // ============================================================
+  // 7. FITUR PREMIUM & FUNGSI TAMBAHAN
+  // ============================================================
+  function activateAdminPremium() {
+    localStorage.setItem('sicermat_user_id', 'admin_sicermat');
+    isUserPremium = true;
+    hasCheckedPremium = true;
+    alert("✅ Akses Premium Admin telah diaktifkan! Aplikasi akan melakukan refresh ulang.");
+    updatePremiumUI();
+    location.reload();
+  }
+
+  function checkAHSVersionAndPremium() {
+    let currentUserId = localStorage.getItem('sicermat_user_id');
+    if (!currentUserId) {
+      currentUserId = generateUserId();
+      localStorage.setItem('sicermat_user_id', currentUserId);
+      console.log("🆕 Membuat User ID baru:", currentUserId);
+    }
+    console.log("🆔 User ID saat ini:", currentUserId);
+
+    if (currentUserId === 'admin_sicermat') {
+      isUserPremium = true;
+      console.log("🔑 Master Key Admin terdeteksi! Akses PREMIUM otomatis diberikan.");
+      hasCheckedPremium = true;
+      updatePremiumUI();
+      return;
+    }
+
+    fetch('ahs-version.json?v=' + new Date().getTime())
+      .then(response => response.json())
+      .then(data => {
+        latestVersionInfo = data;
+        console.log("📄 Versi AHS dari file JSON:", data.version);
+        
+        const userRef = database.ref('premiumUsers/' + currentUserId);
+        userRef.once('value').then(snapshot => {
+          const userData = snapshot.val();
+          console.log("📦 Data user dari Firebase:", userData);
+
+          if (userData && userData.isPremium === true) {
+            isUserPremium = true;
+            console.log("✅ User adalah PREMIUM!");
+          } else {
+            isUserPremium = false;
+            console.log("❌ User adalah FREE (belum premium).");
+          }
+          hasCheckedPremium = true;
+          updatePremiumUI();
+        }).catch(err => {
+          console.error("Gagal cek premium di Firebase:", err);
+          hasCheckedPremium = true;
+          updatePremiumUI();
+        });
+      })
+      .catch(err => {
+        console.error("Gagal membaca file versi AHS:", err);
+        hasCheckedPremium = true;
+        updatePremiumUI();
+      });
+  }
+
+  function generateUserId() {
+    return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+  }
+
+  function showPremiumPaywall(versionInfo) {
+    if (confirm(
+      `🚀 Versi AHS Baru Tersedia!\n\n` +
+      `Versi: ${versionInfo.version}\n` +
+      `Pesan: ${versionInfo.message}\n\n` +
+      `💰 Harga Upgrade Sekali Bayar: Rp ${formatNumber(versionInfo.price || 50000, 0)}\n\n` +
+      `Klik "OK" untuk melanjutkan ke halaman pembayaran. Setelah pembayaran, AHS baru akan terbuka otomatis.\n` +
+      `Klik "Batal" untuk tetap menggunakan AHS Versi ${CURRENT_AHS_VERSION} (Gratis).`
+    )) {
+      window.open('https://cvdrn2025-design.github.io/Est-Project-Version5/qris-payment.html', '_blank');
+      console.log("Pengguna menolak upgrade.");
+    }
+  }
+
+  // ============================================================
+  // 8. LOGIKA HARGA & DATABASE LAINNYA
+  // ============================================================
+  function loadMasterDataFromFirebase() {
+    const ref = database.ref('masterData');
+    ref.once('value').then(snapshot => {
+      const data = snapshot.val();
+      if (data) {
+        masterBahan.splice(0, masterBahan.length, ...(data.bahan || []));
+        masterAlat.splice(0, masterAlat.length, ...(data.alat || []));
+        masterUpah.splice(0, masterUpah.length, ...(data.upah || []));
+      } else {
+        initializeFirebaseFromLocal();
+      }
+      renderPriceTable('bahan'); renderPriceTable('alat'); renderPriceTable('upah');
+      if (typeof updateRABPricesFromAHS === 'function') updateRABPricesFromAHS();
+    }).catch(error => {
+      console.error('Gagal membaca Firebase:', error);
+      loadMasterData();
+      renderPriceTable('bahan'); renderPriceTable('alat'); renderPriceTable('upah');
+    });
+  }
+
+  function initializeFirebaseFromLocal() {
+    loadMasterData();
+    const ref = database.ref('masterData');
+    ref.set({ bahan: masterBahan, alat: masterAlat, upah: masterUpah })
+      .then(() => console.log('Data awal berhasil disimpan ke Firebase.'))
+      .catch(err => console.error('Gagal inisialisasi Firebase:', err));
+  }
+
+  function updateHargaDasar(type, index, value) {
+    const val = parseFloat(value) || 0;
+    let compName = '';
+    let arr = type === 'bahan' ? masterBahan : type === 'alat' ? masterAlat : masterUpah;
+    arr[index].harga = val;
+    compName = arr[index].nama;
+
+    ahsDatabase.forEach(ahs => {
+      if (ahs.details) {
+        ahs.details.forEach(d => {
+          if ((d.name || d.nama) === compName) d.price = val;
+        });
+      }
+    });
+
+    const ref = database.ref('masterData/' + type + '/' + index + '/harga');
+    ref.set(val).then(() => console.log('Harga terupdate ke Firebase:', compName, val))
+      .catch(err => console.error('Gagal update Firebase:', err));
+
+    persistMasterData();
+    if (typeof updateRABPricesFromAHS === 'function') updateRABPricesFromAHS();
+    if (typeof filterAHSList === 'function') filterAHSList();
+  }
+
+  function renderPriceTable(type) {
+    let targetBodyId, searchInputId, dataList;
+    if (type === 'bahan') { targetBodyId = 'materialPriceTable'; searchInputId = 'searchBahan'; dataList = masterBahan; }
+    else if (type === 'alat') { targetBodyId = 'equipmentPriceTable'; searchInputId = 'searchAlat'; dataList = masterAlat; }
+    else if (type === 'upah') { targetBodyId = 'laborPriceTable'; searchInputId = 'searchUpah'; dataList = masterUpah; }
+
+    const tbody = document.getElementById(targetBodyId);
+    const searchVal = (document.getElementById(searchInputId)?.value || '').toLowerCase();
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    dataList.forEach((item, index) => {
+      if (!searchVal || item.nama.toLowerCase().includes(searchVal)) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td style="width: 50%;">${item.nama}</td>
+          <td style="width: 30%;"><input type="number" class="form-control form-control-sm text-end" value="${item.harga}" onchange="updateHargaDasar('${type}', ${index}, this.value)" min="0" step="100"></td>
+          <td style="width: 20%; text-align: center;">
+            <button class="btn btn-sm btn-mono-danger" onclick="deleteMasterItem('${type}', ${index})">🗑️</button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      }
+    });
+    if (tbody.children.length === 0) tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted">Data tidak ditemukan</td></tr>';
+  }
+
+  function deleteMasterItem(type, index) {
+    if (!confirm('Apakah Anda yakin ingin menghapus item ini dari Panel Harga Dasar?')) return;
+    let arr = type === 'bahan' ? masterBahan : type === 'alat' ? masterAlat : masterUpah;
+    arr.splice(index, 1);
+    const ref = database.ref('masterData/' + type);
+    ref.set(arr).then(() => console.log('Item dihapus dari Firebase.'))
+      .catch(err => console.error('Gagal hapus di Firebase:', err));
+    persistMasterData(); renderPriceTable(type);
+    if (typeof updateRABPricesFromAHS === 'function') updateRABPricesFromAHS();
+  }
+
+  function addMasterItem(type) {
+    const nama = prompt("Masukkan nama item baru:");
+    if (!nama) return;
+    const harga = parseFloat(prompt("Masukkan harga satuan (angka):")) || 0;
+    const satuan = prompt("Masukkan satuan (contoh: m3, kg, OH, sak):", "m3") || "unit";
+    const newItem = { nama, harga, satuan };
+    let arr = type === 'bahan' ? masterBahan : type === 'alat' ? masterAlat : masterUpah;
+    arr.push(newItem);
+    const ref = database.ref('masterData/' + type);
+    ref.set(arr).then(() => console.log('Item baru ditambahkan ke Firebase.'))
+      .catch(err => console.error('Gagal tambah di Firebase:', err));
+    persistMasterData(); renderPriceTable(type);
+  }
+
+  function syncAHSToMaster() {
+    if (typeof ahsDatabase === 'undefined' || ahsDatabase.length === 0) { alert('Database AHS kosong!'); return; }
+    let addedBahan = 0, addedAlat = 0, addedUpah = 0;
+    const upahKeywords = ['tukang', 'pekerja', 'kepala', 'mandor', 'kuli', 'tenaga'];
+    const bahanKeywords = ['beton', 'semen', 'pasir', 'batu', 'kayu', 'paku', 'baut', 'mur', 'sekrup', 'pipa', 'atap', 'spandek', 'genteng', 'onduline', 'nok', 'talang', 'wiremesh', 'besi', 'baja', 'keramik', 'cat', 'plamuur', 'grc', 'multiplek', 'floordeck', 'ready mix', 'ulir', 'polos', 'kaca', 'paving', 'grass', 'vinyl', 'parket', 'kanopi', 'tandon', 'septictank', 'wastafel', 'pagar', 'precast', 'bata', 'granit', 'gypsum', 'aluminium', 'kunci', 'engsel', 'hollow', 'roof', 'lampu', 'saklar', 'stop kontak', 'mcb', 'panel', 'grounding', 'trafo', 'exhaust', 'ac', 'pompa', 'floor drain', 'kloset', 'dus', 'fitting', 'kabel', 'isolasi', 'aksesoris', 'tiang', 'pile', 'spun'];
+    const alatKeywords = ['sewa', 'molen', 'stamper', 'vibrator', 'excavator', 'pancang', 'pompa', 'scaffolding', 'compactor', 'mixer', 'crane', 'loader'];
+
+    ahsDatabase.forEach(item => {
+      if (item.details && item.details.length > 0) {
+        item.details.forEach(d => {
+          const nama = d.name || d.nama; if (!nama) return;
+          if (!masterBahan.some(b => b.nama === nama) && !masterAlat.some(a => a.nama === nama) && !masterUpah.some(u => u.nama === nama)) {
+            let targetArray = masterBahan; let namaLower = nama.toLowerCase();
+            if (upahKeywords.some(kw => namaLower.includes(kw))) { targetArray = masterUpah; } 
+            else if (alatKeywords.some(kw => namaLower.includes(kw))) { targetArray = masterAlat; } 
+            else if (bahanKeywords.some(kw => namaLower.includes(kw))) { targetArray = masterBahan; }
+            targetArray.push({ nama: nama, harga: d.price || 0, satuan: d.unit || 'unit' });
+            if (targetArray === masterBahan) addedBahan++; else if (targetArray === masterAlat) addedAlat++; else if (targetArray === masterUpah) addedUpah++;
+          }
+        });
+      }
+    });
+
+    const updates = {}; updates['bahan'] = masterBahan; updates['alat'] = masterAlat; updates['upah'] = masterUpah;
+    database.ref('masterData').update(updates).then(() => console.log('Sync AHS selesai, data disimpan ke Firebase.')).catch(err => console.error('Gagal sync ke Firebase:', err));
+    persistMasterData(); renderPriceTable('bahan'); renderPriceTable('alat'); renderPriceTable('upah');
+    if (typeof updateRABPricesFromAHS === 'function') updateRABPricesFromAHS();
+    if (ahsModalInstance._isShown) filterAHSList();
+    alert(`Sinkronisasi AHS ke Panel Harga selesai!\nBahan baru: ${addedBahan}\nAlat baru: ${addedAlat}\nUpah baru: ${addedUpah}`);
+  }
+
+  function persistMasterData() {
+    localStorage.setItem('sicermat_master_data', JSON.stringify({ bahan: masterBahan, alat: masterAlat, upah: masterUpah }));
+  }
+  function loadMasterData() {
+    const saved = localStorage.getItem('sicermat_master_data');
+    if (saved) { try { const data = JSON.parse(saved); masterBahan.splice(0, masterBahan.length, ...data.bahan); masterAlat.splice(0, masterAlat.length, ...data.alat); masterUpah.splice(0, masterUpah.length, ...data.upah); } catch (e) { console.warn('Gagal memuat master data dari localStorage, gunakan default.'); } }
+  }
+
+  function syncAHSPrices() {
+    if (typeof ahsDatabase === 'undefined' || ahsDatabase.length === 0) { alert('Database AHS kosong!'); return; }
+    let updatedCount = 0;
+    ahsDatabase.forEach(item => {
+      if (item.details && item.details.length > 0) {
+        item.details.forEach(d => {
+          const name = d.name || d.nama;
+          const found = masterBahan.find(b => b.nama === name) || masterAlat.find(a => a.nama === name) || masterUpah.find(u => u.nama === name);
+          if (found) { d.price = found.harga; updatedCount++; }
+        });
+      }
+    });
+    filterAHSList();
+    if (typeof updateRABPricesFromAHS === 'function') updateRABPricesFromAHS();
+    alert(`Sinkronisasi selesai! ${updatedCount} komponen berhasil diperbarui harganya.`);
+  }
+
+  function saveMasterDataExcel() {
+    if (typeof masterBahan === 'undefined' || typeof masterAlat === 'undefined' || typeof masterUpah === 'undefined') { alert('Data master belum dimuat!'); return; }
+    const wb = XLSX.utils.book_new();
+    const sheetBahan = XLSX.utils.aoa_to_sheet([['Nama Bahan', 'Harga Satuan (Rp)', 'Satuan']]);
+    masterBahan.forEach(b => { XLSX.utils.sheet_add_aoa(sheetBahan, [[b.nama, b.harga, b.satuan]], { origin: -1 }); });
+    XLSX.utils.book_append_sheet(wb, sheetBahan, 'Bahan');
+    const sheetAlat = XLSX.utils.aoa_to_sheet([['Nama Alat', 'Harga Satuan (Rp)', 'Satuan']]);
+    masterAlat.forEach(a => { XLSX.utils.sheet_add_aoa(sheetAlat, [[a.nama, a.harga, a.satuan]], { origin: -1 }); });
+    XLSX.utils.book_append_sheet(wb, sheetAlat, 'Alat');
+    const sheetUpah = XLSX.utils.aoa_to_sheet([['Nama Upah', 'Harga Satuan (Rp)', 'Satuan']]);
+    masterUpah.forEach(u => { XLSX.utils.sheet_add_aoa(sheetUpah, [[u.nama, u.harga, u.satuan]], { origin: -1 }); });
+    XLSX.utils.book_append_sheet(wb, sheetUpah, 'Upah');
+    XLSX.writeFile(wb, 'Data_Harga_Dasar_SiCerMat.xlsx');
+  }
+
+  function printMasterData(type) {
+    let dataList = [], title = '';
+    if (type === 'bahan') { dataList = masterBahan; title = 'Bahan'; }
+    else if (type === 'alat') { dataList = masterAlat; title = 'Alat'; }
+    else if (type === 'upah') { dataList = masterUpah; title = 'Upah'; }
+    else if (type === 'semua') {
+      let combinedHTML = `<html><head><title>Data Harga Dasar - Semua</title><style>body { font-family: Arial; padding: 20px; } table { width: 100%; border-collapse: collapse; margin-bottom: 30px; } th, td { border: 1px solid #000; padding: 6px; text-align: left; } th { background: #eee; } .text-end { text-align: right; } h3 { margin-top: 20px; }</style></head><body><h1 style="text-align:center;">Data Harga Dasar SiCerMat</h1><hr>`;
+      combinedHTML += `<h3>1. Bahan</h3><table><thead><tr><th>No</th><th>Nama</th><th>Harga (Rp)</th><th>Satuan</th></tr></thead><tbody>`;
+      masterBahan.forEach((b, i) => { combinedHTML += `<tr><td>${i+1}</td><td>${b.nama}</td><td class="text-end">${formatNumber(b.harga)}</td><td>${b.satuan}</td></tr>`; });
+      combinedHTML += `</tbody></table>`;
+      combinedHTML += `<h3>2. Alat</h3><table><thead><tr><th>No</th><th>Nama</th><th>Harga (Rp)</th><th>Satuan</th></tr></thead><tbody>`;
+      masterAlat.forEach((a, i) => { combinedHTML += `<tr><td>${i+1}</td><td>${a.nama}</td><td class="text-end">${formatNumber(a.harga)}</td><td>${a.satuan}</td></tr>`; });
+      combinedHTML += `</tbody></table>`;
+      combinedHTML += `<h3>3. Upah</h3><table><thead><tr><th>No</th><th>Nama</th><th>Harga (Rp)</th><th>Satuan</th></tr></thead><tbody>`;
+      masterUpah.forEach((u, i) => { combinedHTML += `<tr><td>${i+1}</td><td>${u.nama}</td><td class="text-end">${formatNumber(u.harga)}</td><td>${u.satuan}</td></tr>`; });
+      combinedHTML += `</tbody></table></body></html>`;
+      const printWin = window.open('', '_blank');
+      printWin.document.write(combinedHTML); printWin.document.close(); printWin.focus();
+      setTimeout(() => { printWin.print(); }, 400);
+      return;
+    }
+    let html = `<html><head><title>Data Harga Dasar - ${title}</title><style>body { font-family: Arial; padding: 20px; } table { width: 100%; border-collapse: collapse; } th, td { border: 1px solid #000; padding: 6px; text-align: left; } th { background: #eee; } .text-end { text-align: right; }</style></head><body><h1 style="text-align:center;">Data Harga Dasar - ${title}</h1><hr><table><thead><tr><th>No</th><th>Nama</th><th>Harga Satuan (Rp)</th><th>Satuan</th></tr></thead><tbody>`;
+    dataList.forEach((item, i) => { html += `<tr><td>${i+1}</td><td>${item.nama}</td><td class="text-end">${formatNumber(item.harga)}</td><td>${item.satuan}</td></tr>`; });
+    html += `</tbody></table></body></html>`;
+    const printWin = window.open('', '_blank');
+    printWin.document.write(html); printWin.document.close(); printWin.focus();
+    setTimeout(() => { printWin.print(); }, 400);
+  }
+
+  function printRAB() {
+    const today = new Date();
+    document.getElementById('printDate').innerText = `${String(today.getDate()).padStart(2, '0')}/${String(today.getMonth() + 1).padStart(2, '0')}/${today.getFullYear()}`;
+    window.print();
+  }
+
+  function printSelectedAHS() {
+    const { activeIds, activeTitles } = getActiveAHSIdsInRAB();
+    if (typeof ahsDatabase === 'undefined' || ahsDatabase.length === 0) { alert('Database AHS belum dimuat atau kosong.'); return; }
+    const selectedAHSList = ahsDatabase.filter((item, index) => {
+      const itemId = getAHSId(item, index);
+      const itemTitle = cleanJobTitle(item.title || item.nama || '').toLowerCase();
+      return activeIds.has(itemId) || activeTitles.has(itemTitle);
+    });
+    if (selectedAHSList.length === 0) { alert('Tidak ditemukan item AHS dari Library yang aktif pada tabel RAB untuk dicetak.'); return; }
+
+    let printHTML = `<html><head><title>Analisa Harga Satuan Pekerjaan (AHSP)</title><style>
+      body { font-family: 'Segoe UI', Arial, sans-serif; padding: 20px; color: #000; }
+      h4, h5 { text-align: center; margin: 4px 0; }
+      .header-info { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; text-align: center; font-size: 10pt; }
+      table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 9.5pt; page-break-inside: avoid; }
+      th, td { border: 1px solid #000; padding: 5px 8px; }
+      th { background-color: #f1f5f9; }
+      .text-end { text-align: right; }
+      .text-center { text-align: center; }
+      .fw-bold { font-weight: bold; }
+      .group-header { background-color: #e2e8f0; font-weight: bold; text-align: left; padding: 4px 8px; }
+    </style></head><body>
+    <h4>ANALISA HARGA SATUAN PEKERJAAN (AHSP)</h4>
+    <h5>PROYEK: ${(currentProject.name || 'Unnamed Project').toUpperCase()}</h5>
+    <div class="header-info">Pemilik: ${currentProject.owner || '-'} | Lokasi: ${currentProject.location || '-'}</div>`;
+
+    selectedAHSList.forEach(matchAHS => {
+      let totalPriceAnalisa = 0;
+      if (matchAHS.details && matchAHS.details.length > 0) {
+        totalPriceAnalisa = matchAHS.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
+      } else {
+        totalPriceAnalisa = matchAHS.totalPrice || matchAHS.harga || 0;
+      }
+      const unitAHS = matchAHS.unit || matchAHS.satuan || 'satuan';
+
+      printHTML += `<table><thead><tr style="background-color: #e2e8f0;"><td colspan="6" class="fw-bold">Pekerjaan: ${matchAHS.title || matchAHS.nama} (${matchAHS.code || matchAHS.kode || 'AHS'})</td></tr><tr><th style="width: 40px;" class="text-center">No</th><th>Uraian Komponen / Spesifikasi</th><th style="width: 90px;" class="text-end">Koefisien</th><th style="width: 70px;" class="text-center">Satuan</th><th style="width: 130px;" class="text-end">Harga Satuan (Rp)</th><th style="width: 130px;" class="text-end">Jumlah Harga (Rp)</th></tr></thead><tbody>`;
+      let idx = 1;
+      if (matchAHS.details && matchAHS.details.length > 0) {
+        let groupedDetails = { 'Bahan': [], 'Alat': [], 'Upah': [] };
+        matchAHS.details.forEach(d => {
+          const jenis = getJenisKomponen(d.name || d.nama);
+          if (groupedDetails[jenis]) groupedDetails[jenis].push(d);
+        });
+        const urutanJenis = ['Bahan', 'Alat', 'Upah'];
+        urutanJenis.forEach(jenis => {
+          const list = groupedDetails[jenis];
+          if (list.length > 0) {
+            printHTML += `<tr><td colspan="6" class="group-header">📌 ${jenis}</td></tr>`;
+            list.forEach(d => {
+              const rowTotal = (d.coeff || 0) * (d.price || 0);
+              printHTML += `<tr><td class="text-center">${idx++}</td><td>${d.name || d.nama}</td><td class="text-end">${formatNumber(d.coeff || 0, 4)}</td><td class="text-center">${d.unit || '-'}</td><td class="text-end">${formatNumber(d.price || 0, 2)}</td><td class="text-end">${formatNumber(rowTotal, 2)}</td></tr>`;
+            });
+          }
+        });
+      } else { printHTML += `<tr><td colspan="6" class="text-center">Rincian analisa tidak ditemukan</td></tr>`; }
+      printHTML += `<tr style="font-weight: bold; background-color: #f8f9fa;"><td colspan="5" class="text-end">Total Harga Analisa (AHSP) / ${unitAHS}:</td><td class="text-end">Rp ${formatNumber(totalPriceAnalisa, 2)}</td></tr>`;
+      printHTML += `</tbody></table>`;
+    });
+    printHTML += `</body></html>`;
+    const printWin = window.open('', '_blank');
+    printWin.document.write(printHTML); printWin.document.close(); printWin.focus();
+    setTimeout(() => { printWin.print(); }, 400);
+  }
+
+  // ============================================================
+  // 9. FUNGSI UNTUK FILE EXCEL
+  // ============================================================
+  function saveProjectExcel() {
+    const margin = parseIndoNumber(document.getElementById('profitMargin').value) || 0;
+    const data = [
+      ["INFORMASI PROYEK"], ["Nama Proyek", currentProject.name], ["Pemilik Proyek", currentProject.owner],
+      ["Lokasi Proyek", currentProject.location], ["Margin Keuntungan (%)", margin], [],
+      ["RINCIAN ANGGARAN BIAYA (RAB)"], ["No", "Uraian Pekerjaan", "Volume", "Satuan", "Harga Satuan (Rp)", "Total Harga (Rp)"]
+    ];
+    const rows = document.querySelectorAll('#rabTableBody tr');
+    rows.forEach((row, idx) => {
+      const title = row.querySelector('.input-title').value;
+      const vol = parseIndoNumber(row.querySelector('.input-volume').value);
+      const unit = row.querySelector('.input-unit').value;
+      const price = parseIndoNumber(row.querySelector('.input-price').value);
+      data.push([idx + 1, title, vol, unit, price, vol * price]);
+    });
+    const ws = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "RAB Proyek");
+    XLSX.writeFile(wb, `${currentProject.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_RAB.xlsx`);
+  }
+  function openProjectExcel(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const json = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+      if (json.length > 0) {
+        json.forEach(row => {
+          if (row[0] === "Nama Proyek") currentProject.name = row[1] || "Unnamed Project";
+          if (row[0] === "Pemilik Proyek") currentProject.owner = row[1] || "-";
+          if (row[0] === "Lokasi Proyek") currentProject.location = row[1] || "-";
+          if (row[0] === "Margin Keuntungan (%)") document.getElementById('profitMargin').value = row[1] || 10;
+        });
+        updateProjectHeader();
+        document.getElementById('rabTableBody').innerHTML = '';
+        let isTableData = false;
+        json.forEach(row => {
+          if (row[1] === "Uraian Pekerjaan" || row[0] === "Uraian Pekerjaan") { isTableData = true; return; }
+          if (isTableData && row.length >= 4) {
+            const title = row[1] || row[0];
+            const vol = parseFloat(row[2] || row[1]) || 0;
+            const unit = row[3] || row[2] || 'ls';
+            const price = parseFloat(row[4] || row[3]) || 0;
+            if (title) addItemRow(title, vol, unit, price, '', false);
+          }
+        });
+        calculateGrandTotal(); saveToLocalStorage();
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    event.target.value = '';
+  }
+
+  // ============================================================
+  // 10. FUNGSI TAMBAHAN YANG HILANG (PERBAIKAN BUG)
+  // ============================================================
+  function updatePremiumUI() {
+    const premiumStatus = document.getElementById('premiumStatus');
+    const copyIDContainer = document.getElementById('copyIDContainer');
+    
+    if (isUserPremium) {
+        if (premiumStatus) premiumStatus.style.display = 'block';
+        if (copyIDContainer) copyIDContainer.style.display = 'none';
+    } else {
+        if (premiumStatus) premiumStatus.style.display = 'none';
+        if (copyIDContainer) copyIDContainer.style.display = 'block';
+    }
+  }
+
+  function updateAHSCoeff(index, detIndex, newVal) {
+    if (typeof ahsDatabase !== 'undefined' && ahsDatabase[index] && ahsDatabase[index].details) {
+        ahsDatabase[index].details[detIndex].coeff = parseFloat(newVal) || 0;
+        if (typeof filterAHSList === 'function') filterAHSList();
+        if (typeof updateRABPricesFromAHS === 'function') updateRABPricesFromAHS();
+    }
+  }
+
+  function copyUserID() {
+      let userID = localStorage.getItem('sicermat_user_id');
+      if (!userID) {
+          userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+          localStorage.setItem('sicermat_user_id', userID);
+      }
+      prompt("Salin kode ID Aktivasi Anda di bawah ini:", userID);
+      alert("✅ ID Aktivasi Anda: " + userID + "\n\nSilakan salin kode di atas, lalu kirim ke Admin WhatsApp.");
+  }
+</script>
+
+  <!-- Tombol Salin ID Aktivasi untuk Akses Premium -->
+  <div id="copyIDContainer" class="container text-center my-3 no-print">
+    <button class="btn btn-mono-secondary w-100 py-2 fw-bold btn-sm" onclick="copyUserID()">
+      🔑 Salin ID Aktivasi untuk Akses Premium
+    </button>
+    <small class="text-muted d-block mt-1">
+      Klik tombol ini untuk menyalin ID Anda, lalu kirim ke Admin setelah pembayaran.
+    </small>
+  </div>
+
+  <!-- Status Premium (Hanya muncul jika sudah premium) -->
+  <div id="premiumStatus" class="container text-center my-3 no-print" style="display: none;">
+    <div class="alert alert-success d-flex align-items-center justify-content-center" role="alert">
+      <span class="me-2">✅</span> User Premium Active
+    </div>
+  </div>
+
+</body>
+</html>
