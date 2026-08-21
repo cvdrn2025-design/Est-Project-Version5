@@ -13,6 +13,8 @@
         p { font-size: 14px; color: #475569; line-height: 1.5; }
         .btn-success { background-color: #198754; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px; }
         .btn-success:hover { background-color: #157347; }
+        .btn-secondary { background-color: #475569; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; }
+        .btn-secondary:hover { background-color: #1e293b; }
         .error-msg { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin: 10px 0; }
     </style>
 </head>
@@ -34,13 +36,32 @@
             <small>Silakan scan QRIS di atas menggunakan GoPay, OVO, Dana, atau Mobile Banking.<br>
             Setelah transfer, <b>kirim bukti transfer dan ID Aktivasi Anda ke WhatsApp Admin</b>.</small>
         </p>
+
+        <!-- Tombol Salin ID Aktivasi -->
+        <button class="btn-secondary" onclick="copyUserID()">
+            📋 Salin ID Aktivasi
+        </button>
+        <br>
         
-        <!-- Tombol Chat Admin (Ganti 6282145111853 dengan nomor WhatsApp Anda) -->
+        <!-- Tombol Chat Admin -->
         <a href="https://wa.me/6282145111853?text=Halo%20Admin%2C%20saya%20sudah%20bayar%20premium%2C%20berikut%20ID%20aktivasi%20saya%3A" 
            target="_blank" 
            class="btn-success">
            💬 Kirim Bukti Transfer & ID ke WhatsApp Admin
         </a>
     </div>
+
+    <script>
+        // Fungsi Salin ID Aktivasi dari halaman pembayaran
+        function copyUserID() {
+            let userID = localStorage.getItem('sicermat_user_id');
+            if (!userID) {
+                userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('sicermat_user_id', userID);
+            }
+            prompt("Salin kode ID Aktivasi Anda di bawah ini:", userID);
+            alert("✅ ID Aktivasi Anda: " + userID + "\n\nSilakan salin kode di atas, lalu kirim ke Admin WhatsApp.");
+        }
+    </script>
 </body>
 </html>
