@@ -1229,16 +1229,19 @@
     // 10. FITUR UPDATE UI PREMIUM
     // ============================================================
     function updatePremiumUI() {
-        const copyIDContainer = document.getElementById('copyIDContainer');
-        const premiumStatus = document.getElementById('premiumStatus');
+  const copyIDContainer = document.getElementById('copyIDContainer');
+  const premiumStatus = document.getElementById('premiumStatus');
 
-        if (isUserPremium) {
-            if (copyIDContainer) copyIDContainer.style.display = 'none';
-            if (premiumStatus) premiumStatus.style.display = 'block';
-        } else {
-            if (copyIDContainer) copyIDContainer.style.display = 'block';
-            if (premiumStatus) premiumStatus.style.display = 'none';
-        }
+  if (isUserPremium) {
+    if (copyIDContainer) copyIDContainer.style.display = 'none';
+    if (premiumStatus) premiumStatus.style.display = 'block';
+  } else {
+    if (copyIDContainer) copyIDContainer.style.display = 'block';
+    if (premiumStatus) premiumStatus.style.display = 'none';
+  }
+
+  // TAMBAHKAN BARIS INI (untuk menampilkan jumlah AHS per kategori dengan ikon kunci)
+  updateCategoryCounts();
     }
   </script>
 </body>
