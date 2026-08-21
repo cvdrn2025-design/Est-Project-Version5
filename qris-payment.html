@@ -5,31 +5,42 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Premium SiCerMat</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background-color: #f8fafc; color: #0f172a; }
-        h2 { margin-bottom: 10px; }
-        .container { max-width: 400px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        img { max-width: 100%; height: auto; margin: 20px 0; border: 1px solid #e2e8f0; border-radius: 8px; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background-color: #f8fafc; color: #0f172a; margin: 0; }
+        .container { max-width: 400px; margin: 40px auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        h2 { margin-bottom: 5px; color: #0f172a; }
+        .sub { font-size: 14px; color: #64748b; margin-bottom: 20px; display: block; }
+        img { max-width: 100%; height: auto; margin: 15px 0; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; }
         p { font-size: 14px; color: #475569; line-height: 1.5; }
-        .btn-close { display: inline-block; margin-top: 20px; padding: 10px 20px; background-color: #0f172a; color: white; text-decoration: none; border-radius: 8px; }
+        .btn-success { background-color: #198754; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px; }
+        .btn-success:hover { background-color: #157347; }
+        .error-msg { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin: 10px 0; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>💳 Pembayaran Premium</h2>
-        <p>Silakan scan QRIS di bawah ini menggunakan aplikasi pembayaran Anda (GoPay, OVO, Dana, Mobile Banking).</p>
+        <h2>💳 Upgrade Premium</h2>
+        <span class="sub">Akses AHS Versi 2.0</span>
         
+        <!-- Jika gambar gagal dimuat, tulisan ini akan muncul -->
+        <div id="errorMessage" class="error-msg">
+            ⚠️ Gambar QRIS tidak ditemukan. Pastikan file <b>qris.png</b> sudah di-upload ke GitHub.
+        </div>
+
         <!-- GANTI 'qris.png' DENGAN NAMA FILE QRIS ANDA -->
-        <img src="qris.png" alt="QRIS SiCerMat">
+        <img src="qris.png" alt="QRIS SiCerMat" onerror="document.getElementById('errorMessage').style.display='block'">
         
-        <p><strong>Nominal:</strong> Rp 50.000 (Sekali Bayar)<br>
-        <small>Setelah transfer, kirim bukti pembayaran ke Admin untuk aktivasi akun.</small></p>
-        <!-- Tombol Chat Admin WhatsApp -->
-<a href="https://wa.me/6282145111853?text=Halo%20Admin%2C%20saya%20sudah%20bayar%20premium%2C%20berikut%20ID%20aktivasi%20saya%3A" 
-   target="_blank" 
-   class="btn btn-success btn-lg w-100 mt-3">
-   💬 Kirim Bukti Transfer & ID ke WhatsApp Admin
-</a>
-        <a href="https://25-design.github.io/Est-Project-Version5/" class="btn-close">Kembali ke Aplikasi</a>
+        <p style="font-size: 14px; color: #475569; line-height: 1.5;">
+            <strong>Nominal:</strong> Rp 50.000 (Sekali Bayar)<br>
+            <small>Silakan scan QRIS di atas menggunakan GoPay, OVO, Dana, atau Mobile Banking.<br>
+            Setelah transfer, <b>kirim bukti transfer dan ID Aktivasi Anda ke WhatsApp Admin</b>.</small>
+        </p>
+        
+        <!-- Tombol Chat Admin (Ganti 6281234567890 dengan nomor WhatsApp Anda) -->
+        <a href="https://wa.me/6281234567890?text=Halo%20Admin%2C%20saya%20sudah%20bayar%20premium%2C%20berikut%20ID%20aktivasi%20saya%3A" 
+           target="_blank" 
+           class="btn-success">
+           💬 Kirim Bukti Transfer & ID ke WhatsApp Admin
+        </a>
     </div>
 </body>
 </html>
