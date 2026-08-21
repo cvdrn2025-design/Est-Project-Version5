@@ -1,67 +1,131 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembayaran Premium SiCerMat</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background-color: #f8fafc; color: #0f172a; margin: 0; }
-        .container { max-width: 400px; margin: 40px auto; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        h2 { margin-bottom: 5px; color: #0f172a; }
-        .sub { font-size: 14px; color: #64748b; margin-bottom: 20px; display: block; }
-        img { max-width: 100%; height: auto; margin: 15px 0; border: 1px solid #e2e8f0; border-radius: 8px; padding: 5px; }
-        p { font-size: 14px; color: #475569; line-height: 1.5; }
-        .btn-success { background-color: #198754; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 15px; }
-        .btn-success:hover { background-color: #157347; }
-        .btn-secondary { background-color: #475569; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block; margin-top: 10px; }
-        .btn-secondary:hover { background-color: #1e293b; }
-        .error-msg { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin: 10px 0; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pembayaran Premium SiCerMat</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background-color: #f8fafc; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    .card { border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
+    .qris-img { max-width: 100%; height: auto; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .btn-wa { background-color: #25D366; color: #fff; font-weight: 600; }
+    .btn-wa:hover { background-color: #1ebe57; color: #fff; }
+    .btn-copy { background-color: #0f172a; color: #fff; font-weight: 600; }
+    .btn-copy:hover { background-color: #334155; color: #fff; }
+    .id-box { background-color: #f1f5f9; border: 2px dashed #94a3b8; border-radius: 10px; padding: 12px; font-family: monospace; font-size: 1.1rem; word-break: break-all; }
+    .price-tag { font-size: 2rem; font-weight: 800; color: #0f172a; }
+    .step-num { width: 32px; height: 32px; background-color: #0f172a; color: #fff; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.9rem; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>💳 Upgrade Premium</h2>
-        <span class="sub">Akses AHS Versi 2.0</span>
-        
-        <!-- Jika gambar gagal dimuat, tulisan ini akan muncul -->
-        <div id="errorMessage" class="error-msg">
-            ⚠️ Gambar QRIS tidak ditemukan. Pastikan file <b>qris.png</b> sudah di-upload ke GitHub.
-        </div>
 
-        <!-- GANTI 'qris.png' DENGAN NAMA FILE QRIS ANDA -->
-        <img src="qris.png" alt="QRIS SiCerMat" onerror="document.getElementById('errorMessage').style.display='block'">
-        
-        <p style="font-size: 14px; color: #475569; line-height: 1.5;">
-            <strong>Nominal:</strong> Rp 50.000 (Sekali Bayar)<br>
-            <small>Silakan scan QRIS di atas menggunakan GoPay, OVO, Dana, atau Mobile Banking.<br>
-            Setelah transfer, <b>kirim bukti transfer dan ID Aktivasi Anda ke WhatsApp Admin</b>.</small>
-        </p>
+<div class="container py-5" style="max-width: 560px;">
+  <div class="text-center mb-4">
+    <img src="icon.png" alt="SiCerMat" style="max-width: 160px; height: auto;">
+    <h4 class="fw-bold mt-2">Upgrade Premium SiCerMat</h4>
+    <p class="text-muted">Aktifkan akses AHS lengkap</p>
+  </div>
 
-        <!-- Tombol Salin ID Aktivasi -->
-        <button class="btn-secondary" onclick="copyUserID()">
-            📋 Salin ID Aktivasi
-        </button>
-        <br>
-        
-        <!-- Tombol Chat Admin -->
-        <a href="https://wa.me/6282145111853?text=Halo%20Admin%2C%20saya%20sudah%20bayar%20premium%2C%20berikut%20ID%20aktivasi%20saya%3A" 
-           target="_blank" 
-           class="btn-success">
-           💬 Kirim Bukti Transfer & ID ke WhatsApp Admin
-        </a>
+  <!-- Kartu Harga -->
+  <div class="card p-4 mb-4 text-center">
+    <h6 class="text-uppercase text-muted mb-1">Harga Premium</h6>
+    <div class="price-tag">Rp 250.000</div>
+    <span class="badge bg-success mt-2">Lifetime Access</span>
+  </div>
+
+  <!-- Kartu QRIS -->
+  <div class="card p-4 mb-4">
+    <h5 class="fw-bold text-center mb-3">📱 Scan QRIS untuk Pembayaran</h5>
+    <div class="text-center mb-3">
+      <img src="qris-keysha.jpg" alt="QRIS Toko Keysha Collecting" class="qris-img" style="max-width: 320px;">
     </div>
+    <div class="text-center small text-muted">
+      <div><strong>Toko Keysha Collecting</strong></div>
+      <div>NMID: ID1022148620076</div>
+      <div>A01</div>
+    </div>
+  </div>
 
-    <script>
-        // Fungsi Salin ID Aktivasi dari halaman pembayaran
-        function copyUserID() {
-            let userID = localStorage.getItem('sicermat_user_id');
-            if (!userID) {
-                userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                localStorage.setItem('sicermat_user_id', userID);
-            }
-            prompt("Salin kode ID Aktivasi Anda di bawah ini:", userID);
-            alert("✅ ID Aktivasi Anda: " + userID + "\n\nSilakan salin kode di atas, lalu kirim ke Admin WhatsApp.");
-        }
-    </script>
+  <!-- Kartu ID Aktivasi -->
+  <div class="card p-4 mb-4">
+    <h6 class="fw-bold mb-2">🔑 ID Aktivasi Anda</h6>
+    <div class="id-box text-center mb-3" id="userIDDisplay">Memuat...</div>
+    <div class="row g-2">
+      <div class="col-6">
+        <button class="btn btn-copy w-100" onclick="copyUserID()">📋 Salin ID</button>
+      </div>
+      <div class="col-6">
+        <button class="btn btn-wa w-100" onclick="kirimKeWhatsApp()">💬 Kirim ke Admin</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Instruksi -->
+  <div class="card p-4">
+    <h6 class="fw-bold mb-3">📌 Langkah Pembayaran:</h6>
+    <div class="d-flex align-items-start mb-2">
+      <span class="step-num me-2">1</span>
+      <div>Scan QRIS di atas menggunakan aplikasi <strong>GoPay, OVO, DANA, ShopeePay, atau Mobile Banking</strong>.</div>
+    </div>
+    <div class="d-flex align-items-start mb-2">
+      <span class="step-num me-2">2</span>
+      <div>Transfer sebesar <strong>Rp 250.000</strong> ke Toko Keysha Collecting.</div>
+    </div>
+    <div class="d-flex align-items-start mb-2">
+      <span class="step-num me-2">3</span>
+      <div><strong>Salin ID Aktivasi</strong> Anda (di atas).</div>
+    </div>
+    <div class="d-flex align-items-start">
+      <span class="step-num me-2">4</span>
+      <div>Klik <strong>Kirim ke Admin</strong>, lalu paste ID Aktivasi dan bukti transfer ke WhatsApp Admin.</div>
+    </div>
+  </div>
+
+  <div class="text-center mt-4">
+    <a href="index.html" class="btn btn-outline-secondary btn-sm">← Kembali ke Aplikasi</a>
+  </div>
+</div>
+
+<script>
+  // Ambil user ID dari localStorage (sama seperti di index.html)
+  function getUserID() {
+    let userID = localStorage.getItem('sicermat_user_id');
+    if (!userID) {
+      userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem('sicermat_user_id', userID);
+    }
+    return userID;
+  }
+
+  // Tampilkan ID di halaman
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('userIDDisplay').innerText = getUserID();
+  });
+
+  // Salin ID ke clipboard
+  function copyUserID() {
+    const userID = getUserID();
+    navigator.clipboard.writeText(userID).then(() => {
+      alert('✅ ID Aktivasi berhasil disalin!\n\nID: ' + userID);
+    }).catch(() => {
+      prompt('Salin ID Aktivasi Anda:', userID);
+    });
+  }
+
+  // Kirim ke WhatsApp Admin
+  function kirimKeWhatsApp() {
+    const userID = getUserID();
+    const message = 
+      'Halo Admin, saya sudah melakukan pembayaran Premium SiCerMat.\n\n' +
+      '💰 Harga: Rp 250.000\n' +
+      '🔑 ID Aktivasi: ' + userID + '\n\n' +
+      'Mohon aktivasi akun Premium saya. Terima kasih!';
+    
+    const waLink = 'https://wa.me/6282145111853?text=' + encodeURIComponent(message);
+    window.open(waLink, '_blank');
+  }
+</script>
+
 </body>
 </html>
