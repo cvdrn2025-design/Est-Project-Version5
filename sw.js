@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v100'; // Update versi agar sinkron dengan index.html
+const CACHE_NAME = 'sicermat-cache-v101';
 const urlsToCache = [
   './',
   './index.html',
