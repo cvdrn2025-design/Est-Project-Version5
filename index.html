@@ -1251,6 +1251,157 @@
         // Opsional: Tampilkan notifikasi bahwa ID sudah siap disalin
         alert("✅ ID Aktivasi Anda: " + userID + "\n\nSilakan salin kode di atas, lalu kirim ke Admin WhatsApp.");
     }
+    // ============================================================
+// FITUR PENGUNCIAN AHS & PENGHITUNGAN KATEGORI (ANTI-GAGAL)
+// ============================================================
+
+function updateCategoryCounts() {
+    if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) return;
+
+    const counts = {};
+    ahsDatabase.forEach(item => {
+        const cat = item.category || 'Lainnya';
+        counts[cat] = (counts[cat] || 0) + 1;
+    });
+
+    const select = document.getElementById('ahsCategoryFilter');
+    if (!select) return;
+
+    const lockSymbol = isUserPremium ? '' : ' 🔒';
+    for (let i = 0; i < select.options.length; i++) {
+        const opt = select.options[i];
+        const catValue = opt.value;
+
+        if (catValue === 'ALL') {
+            const total = Object.values(counts).reduce((a, b) => a + b, 0);
+            opt.text = `🚩 Semua Kategori (${total})${lockSymbol}`;
+        } else {
+            const count = counts[catValue] || 0;
+            opt.text = `${opt.textContent.replace(/\s*\(\d+\)$/, '')} (${count})${lockSymbol}`;
+        }
+    }
+}
+
+function filterAHSList(isLocked = false) {
+    const category = document.getElementById('ahsCategoryFilter').value;
+    const search = (document.getElementById('ahsSearch').value || '').toLowerCase().trim();
+    const tbody = document.getElementById('ahsTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Memuat data AHS...</td></tr>';
+        return;
+    }
+
+    const { activeIds, activeTitles } = getActiveAHSIdsInRAB();
+    let renderedCount = 0;
+
+    ahsDatabase.forEach((item, index) => {
+        const itemCategory = item.category || item.kategori || '';
+        const itemTitle = item.title || item.nama || '';
+        const itemCode = item.code || item.kode || `AHS-${index + 1}`;
+        const itemId = getAHSId(item, index);
+
+        const matchCat = (category === 'ALL' || itemCategory === category);
+        const matchSearch = (!search || itemTitle.toLowerCase().includes(search) || itemCode.toLowerCase().includes(search));
+
+        if (matchCat && matchSearch) {
+            renderedCount++;
+
+            // Tampilan untuk pengguna NON-PREMIUM (hanya judul, kunci, dan jumlah)
+            if (!isUserPremium) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><span class="badge bg-dark mb-1">${itemCode}</span><div class="small fw-semibold text-secondary">${itemCategory || '-'}</div></td>
+                    <td><div class="fw-bold text-dark mb-1">🔒 ${itemTitle}</div><div class="text-muted small">Konten terkunci. Upgrade ke Premium untuk melihat rincian.</div></td>
+                    <td class="text-center align-middle"><div class="fw-bold text-secondary mb-2">Rp 🔒</div><button class="btn btn-sm btn-secondary w-100" disabled>🔒 Premium Only</button></td>
+                `;
+                tbody.appendChild(tr);
+                return;
+            }
+
+            // Tampilan normal untuk PREMIUM USER (semua detail)
+            let groupedDetails = { 'Bahan': [], 'Alat': [], 'Upah': [] };
+            let totalPrice = 0;
+            if (item.details && item.details.length > 0) {
+                item.details.forEach((d) => {
+                    const jenis = getJenisKomponen(d.name || d.nama);
+                    if (groupedDetails[jenis]) groupedDetails[jenis].push(d);
+                    totalPrice += (d.coeff || 0) * (d.price || 0);
+                });
+            } else {
+                totalPrice = item.totalPrice || item.harga || 0;
+            }
+
+            let detailRows = '';
+            const urutanJenis = ['Bahan', 'Alat', 'Upah'];
+            urutanJenis.forEach(jenis => {
+                const list = groupedDetails[jenis];
+                if (list.length > 0) {
+                    detailRows += `<div class="fw-bold text-dark mt-2 mb-1 border-bottom pb-1">📌 ${jenis}</div>`;
+                    list.forEach((d, detIndex) => {
+                        detailRows += `
+                            <div class="small text-muted d-flex align-items-center justify-content-between py-1 border-bottom gap-2">
+                                <span style="flex: 2;">• ${d.name || d.nama}</span>
+                                <div style="flex: 1;" class="d-flex align-items-center">
+                                    <input type="number" step="0.001" min="0" class="form-control form-control-sm text-center" value="${d.coeff || 0}" onchange="updateAHSCoeff(${index}, ${detIndex}, this.value)">
+                                </div>
+                                <span style="flex: 0.5;" class="text-center">${d.unit || ''}</span>
+                                <span style="flex: 1.5;" class="text-end">Rp ${formatNumber(d.price || 0, 2)}</span>
+                            </div>
+                        `;
+                    });
+                }
+            });
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><span class="badge bg-dark mb-1">${itemCode}</span><div class="small fw-semibold text-secondary">${itemCategory || '-'}</div></td>
+                <td><div class="fw-bold text-dark mb-1">${itemTitle}</div><div class="mt-2 bg-light p-2 rounded">${detailRows}</div></td>
+                <td class="text-center align-middle">
+                    <div class="fw-bold text-primary mb-2">Rp ${formatNumber(totalPrice, 2)} / ${item.unit || item.satuan || 'm2'}</div>
+                    <button class="btn btn-sm ${isAdded ? 'btn-added' : 'btn-mono-primary'} w-100" onclick="selectAHSItem(${index}, this)">${isAdded ? '✓ Ditambahkan' : '➕ Tambahkan'}</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        }
+    });
+
+    if (renderedCount === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">AHS tidak ditemukan.</td></tr>';
+    }
+}
+
+// Panggil fungsi ini SEBELUM membuka Library AHS
+function openAHSModal() {
+    if (!hasCheckedPremium) checkAHSVersionAndPremium();
+    
+    if (!isUserPremium) {
+        filterAHSList(true); // Mode terkunci
+    } else {
+        filterAHSList(false); // Mode normal
+    }
+    ahsModalInstance.show();
+}
+
+// Perbarui jumlah kategori setiap kali status premium berubah
+function updatePremiumUI() {
+    const copyIDContainer = document.getElementById('copyIDContainer');
+    const premiumStatus = document.getElementById('premiumStatus');
+
+    if (isUserPremium) {
+        if (copyIDContainer) copyIDContainer.style.display = 'none';
+        if (premiumStatus) premiumStatus.style.display = 'block';
+    } else {
+        if (copyIDContainer) copyIDContainer.style.display = 'block';
+        if (premiumStatus) premiumStatus.style.display = 'none';
+    }
+
+    // TAMBAHKAN BARIS INI
+    updateCategoryCounts();
+    }
   </script>
 
 </body>
