@@ -12,7 +12,6 @@
         .sub { font-size: 14px; color: #64748b; margin-bottom: 20px; display: block; }
         .qris-box { border: 2px dashed #e2e8f0; border-radius: 12px; padding: 10px; margin: 15px 0; background: #f8fafc; }
         img { max-width: 100%; height: auto; border-radius: 8px; }
-        .merchant-info { background: #f1f5f9; border-radius: 10px; padding: 10px; margin: 10px 0; font-size: 14px; color: #475569; }
         .id-box { background: #f1f5f9; border: 2px dashed #94a3b8; padding: 12px; border-radius: 10px; margin: 15px 0; font-family: monospace; font-size: 1.1rem; word-break: break-all; }
         .btn-copy { background: #0f172a; color: white; border: none; padding: 10px 20px; border-radius: 8px; margin: 5px; cursor: pointer; font-weight: 600; }
         .btn-success { background-color: #198754; color: white; padding: 14px 25px; border-radius: 10px; text-decoration: none; font-weight: bold; display: block; margin-top: 15px; }
@@ -47,8 +46,9 @@
         <div class="id-box" id="userIDDisplay">Memuat ID...</div>
         <button class="btn-copy" onclick="copyUserID()">📋 Salin ID</button>
 
-        <!-- Tombol Chat Admin -->
-        <a href="https://wa.me/6282145111853?text=Halo%20Admin%2C%20saya%20sudah%20bayar%20premium%2C%20berikut%20ID%20aktivasi%20saya%3A" 
+        <!-- Tombol Chat Admin (template WA otomatis) -->
+        <a href="#" 
+           id="waLink" 
            target="_blank" 
            class="btn-success">
            💬 Kirim Bukti Transfer & ID ke WhatsApp Admin
@@ -68,7 +68,17 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('userIDDisplay').innerText = getUserID();
+            const userID = getUserID();
+            document.getElementById('userIDDisplay').innerText = userID;
+
+            // Update link WhatsApp dengan template pesan baru
+            const waLink = document.getElementById('waLink');
+            waLink.href = 'https://wa.me/6282145111853?text=' + 
+                encodeURIComponent(
+                    'Halo Admin, berikut bukti pembayaran top up Premium dan ID aktivasi saya: ' + 
+                    userID + 
+                    '. Mohon segera di aktifkan, Terima kasih.'
+                );
         });
 
         function copyUserID() {
