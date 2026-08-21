@@ -513,11 +513,17 @@
       }
     }
     function openAHSModal() { 
-      if (!hasCheckedPremium) { checkAHSVersionAndPremium(); }
-      if (latestVersionInfo && parseFloat(latestVersionInfo.version) > parseFloat(CURRENT_AHS_VERSION) && !isUserPremium) {
-          showPremiumPaywall(latestVersionInfo);
-          return;
-      }
+  if (!hasCheckedPremium) { checkAHSVersionAndPremium(); }
+  
+  // Jika user BELUM premium, tampilkan AHS terkunci
+  if (!isUserPremium) {
+      filterAHSList(true); // Parameter true = mode terkunci
+  } else {
+      filterAHSList(false); // Mode normal untuk premium
+  }
+  
+  ahsModalInstance.show(); 
+    }
       filterAHSList(); 
       ahsModalInstance.show(); 
     }
