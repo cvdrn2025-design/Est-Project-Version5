@@ -865,23 +865,19 @@
 
     // Fungsi untuk menyembunyikan tombol dan menampilkan status premium
     function updatePremiumUI() {
-      const adminContainer = document.getElementById('adminPremiumContainer');
-      const copyIDContainer = document.getElementById('copyIDContainer');
-      const premiumStatus = document.getElementById('premiumStatus');
+    const copyIDContainer = document.getElementById('copyIDContainer');
+    const premiumStatus = document.getElementById('premiumStatus');
 
-      if (isUserPremium) {
-        // Sembunyikan tombol admin & salin ID
-        if (adminContainer) adminContainer.style.display = 'none';
+    if (isUserPremium) {
         if (copyIDContainer) copyIDContainer.style.display = 'none';
-        // Tampilkan status premium
         if (premiumStatus) premiumStatus.style.display = 'block';
-      } else {
-        // Tampilkan tombol admin & salin ID
-        if (adminContainer) adminContainer.style.display = 'block';
+    } else {
         if (copyIDContainer) copyIDContainer.style.display = 'block';
-        // Sembunyikan status premium
         if (premiumStatus) premiumStatus.style.display = 'none';
-      }
+    }
+
+    // TAMBAHKAN BARIS INI
+    updateCategoryCounts();
     }
 
     function generateUserId() {
