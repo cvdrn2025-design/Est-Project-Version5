@@ -582,14 +582,21 @@
     }
     function addManualRow() { addItemRow('Pekerjaan Manual', 1, 'ls', 0, ''); }
     function selectAHSItem(index, btnElem) {
-      if (typeof ahsDatabase === 'undefined' || !ahsDatabase[index]) { alert('Data AHS tidak ditemukan.'); return; }
-      const item = ahsDatabase[index]; const itemId = getAHSId(item, index);
-      let unitPrice = 0;
-      if (item.details && item.details.length > 0) {
-        unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
-      } else { unitPrice = item.totalPrice || item.harga || 0; }
-      addItemRow(item.title || item.nama, 1, item.unit || item.satuan || 'm2', unitPrice, itemId, true);
-      if (btnElem) { btnElem.className = 'btn btn-sm btn-added w-100'; btnElem.innerHTML = '✓ Ditambahkan'; }
+  // Jika user BELUM premium, tampilkan pop-up pembayaran
+  if (!isUserPremium) {
+      showPremiumPaywall({ version: "2.0", message: "Akses Premium diperlukan untuk melihat rincian AHS." });
+      return; // Jangan tambahkan ke RAB
+  }
+  
+  // Jika sudah premium, lanjutkan proses normal
+  if (typeof ahsDatabase === 'undefined' || !ahsDatabase[index]) { alert('Data AHS tidak ditemukan.'); return; }
+  const item = ahsDatabase[index]; const itemId = getAHSId(item, index);
+  let unitPrice = 0;
+  if (item.details && item.details.length > 0) {
+    unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
+  } else { unitPrice = item.totalPrice || item.harga || 0; }
+  addItemRow(item.title || item.nama, 1, item.unit || item.satuan || 'm2', unitPrice, itemId, true);
+  if (btnElem) { btnElem.className = 'btn btn-sm btn-added w-100'; btnElem.innerHTML = '✓ Ditambahkan'; }
     }
     function updateRABPricesFromAHS() {
       const rows = document.querySelectorAll('#rabTableBody tr');
