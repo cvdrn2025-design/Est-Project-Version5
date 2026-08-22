@@ -104,6 +104,9 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
+  <!-- Load master-data.js agar admin bisa baca kategori -->
+  <script src="master-data.js?v=20260912"></script>
+
   <script>
     // ============================================================
     // PASSWORD ADMIN (GANTI SESUAI KEINGINAN ANDA)
@@ -126,19 +129,52 @@
     const database = firebase.database();
 
     // ============================================================
-    // MAPPING KODE UNIK KE KATEGORI
+    // MAPPING KATEGORI (STATIS - DEFAULT)
     // ============================================================
-    const CATEGORY_MAP = {
-      'NEWAHSPRPN001': 'Pekerjaan Persiapan',
-      'NEWAHSTNHN001': 'Pekerjaan Tanah',
-      'NEWAHSPNDN001': 'Pekerjaan Pondasi',
-      'NEWAHSBTNN001': 'Pekerjaan Beton',
-      'NEWAHSATPN001': 'Pekerjaan Atap',
-      'NEWAHSFINN001': 'Pekerjaan Finishing/Arsitektur',
-      'NEWAHSMEKN001': 'Pekerjaan Mekanikal & Elektrikal',
-      'NEWAHSPLBN001': 'Pekerjaan Plumbing',
-      'NEWAHSJLNN001': 'Pekerjaan Jalan dan Jembatan'
+    const CATEGORY_ABBR_MAP = {
+      "Pekerjaan Persiapan": "PRP",
+      "Pekerjaan Tanah": "TNH",
+      "Pekerjaan Pondasi": "PND",
+      "Pekerjaan Beton": "BTN",
+      "Pekerjaan Atap": "ATP",
+      "Pekerjaan Finishing/Arsitektur": "FIN",
+      "Pekerjaan Mekanikal & Elektrikal": "MEK",
+      "Pekerjaan Plumbing": "PLB",
+      "Pekerjaan Jalan dan Jembatan": "JLN",
+      "Lainnya": "GEN"
     };
+
+    // ============================================================
+    // FUNGSI DINAMIS: BACA KATEGORI DARI master-data.js
+    // ============================================================
+    function getCategoryAbbreviation(category) {
+      return CATEGORY_ABBR_MAP[category] || "GEN";
+    }
+
+    function getCategoryMapFromMasterData() {
+      const categoryMap = {};
+      
+      if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
+        ahsDatabase.forEach(item => {
+          const cat = item.category || 'Lainnya';
+          const code = item.code || '';
+          
+          if (item.isNew === true) {
+            const abbr = getCategoryAbbreviation(cat);
+            const serial = String(item.version || 1).padStart(3, '0');
+            categoryMap[`NEWAHS${abbr}N${serial}`] = cat;
+          }
+        });
+      }
+      
+      return categoryMap;
+    }
+
+    // Fungsi utama yang dipakai untuk validasi kode unik
+    function getCategoryFromCode(code) {
+      const categoryMap = getCategoryMapFromMasterData();
+      return categoryMap[code] || null;
+    }
 
     // ============================================================
     // LOGIN & LOGOUT
@@ -212,11 +248,6 @@
 
     function getAddonCode() {
       return document.getElementById('addonCode').value.trim();
-    }
-
-    // Validasi kode unik → kategori
-    function getCategoryFromCode(code) {
-      return CATEGORY_MAP[code] || null;
     }
 
     function checkUserStatus() {
