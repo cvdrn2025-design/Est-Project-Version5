@@ -4,7 +4,8 @@
 // - Badge NEW dengan animasi
 // - Pop-up Add-on dengan kode unik
 // - Cek akses ke Firebase Realtime Database
-// - Header tabel disembunyikan saat kategori terkunci
+// - Header tabel tersembunyi saat kategori terkunci
+// - User Premium hanya akses AHS lama, AHS baru harus add-on
 // ============================================================
 
 // 1. Mapping kategori ke singkatan (untuk kode unik)
@@ -146,9 +147,10 @@ function renderLockedCategoriesWithNew() {
     // Cek akses user ke kategori ini
     checkUserPremiumAccess((isPremium) => {
       if (isPremium) {
-        // ============ USER PREMIUM: TAMPILKAN AHS LENGKAP ============
-        const ahsItems = categories[cat];
-        ahsItems.forEach((item, index) => {
+        // ============ USER PREMIUM: TAMPILKAN AHS LAMA SAJA ============
+        // AHS baru (isNew) TIDAK ditampilkan karena harus add-on
+        const oldItems = categories[cat].filter(item => !item.isNew);
+        oldItems.forEach((item, index) => {
           let unitPrice = 0;
           if (item.details && item.details.length > 0) {
             unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
@@ -178,7 +180,7 @@ function renderLockedCategoriesWithNew() {
           const hasAccess = hasAddon || hasNewCat;
 
           if (hasAccess) {
-            // User sudah punya akses kategori ini → tampilkan AHS lengkap
+            // User sudah punya akses kategori ini → tampilkan SEMUA AHS (lama + baru)
             const ahsItems = categories[cat];
             ahsItems.forEach((item, index) => {
               let unitPrice = 0;
