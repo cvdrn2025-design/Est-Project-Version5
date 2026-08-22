@@ -2,7 +2,7 @@ const CACHE_NAME = 'sicermat-cache-v7';
 const urlsToCache = [
   './',
   './index.html',
-  './admin.html',          // Opsional
+  './admin.html',          // Opsional (tidak diakses user biasa)
   './qris-payment.html',
   './qris-addon.html',
   './qris-newcat.html',
