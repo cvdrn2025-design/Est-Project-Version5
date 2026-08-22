@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v7';
+const CACHE_NAME = 'sicermat-cache-v8';
 const urlsToCache = [
   './',
   './index.html',
@@ -6,7 +6,7 @@ const urlsToCache = [
   './qris-payment.html',
   './qris-addon.html',
   './qris-newcat.html',
-  './addon-notification.js',  // File baru
+  './addon-notification.js',
   './manifest.json',
   './icon.png',
   './icon-192.png',
@@ -23,7 +23,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v7 dibuka');
+        console.log('Cache SiCerMat v8 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
