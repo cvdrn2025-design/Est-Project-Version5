@@ -15,6 +15,16 @@
     .btn-warning { background-color: #f59e0b; color: white; }
     .form-control:focus { box-shadow: 0 0 0 0.2rem rgba(15,23,42,0.1); border-color: #0f172a; }
     .lock-screen { text-align: center; padding: 40px; }
+    
+    /* ===== KUSTOM: TOMBOL AKTIVASI SAMA TINGGI ===== */
+    .btn-activation {
+      height: 55px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
   </style>
 </head>
 <body>
@@ -78,16 +88,16 @@
           <input type="text" id="addonCode" class="form-control" placeholder="Contoh: NEWAHSPRPN001 atau NEWAHSJLNN001">
         </div>
 
-        <!-- Tombol Aktivasi (ukuran sama) -->
+        <!-- Tombol Aktivasi (sama tinggi) -->
         <div class="row g-2">
           <div class="col-6">
-            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="activatePremium()">✅ Aktifkan Premium</button>
+            <button class="btn btn-primary btn-activation w-100" onclick="activatePremium()">✅ Aktifkan Premium</button>
           </div>
           <div class="col-6">
-            <button class="btn btn-warning w-100 py-2 fw-bold" onclick="activateAddonSelected()">🚀 Aktifkan Add-on Selected</button>
+            <button class="btn btn-warning btn-activation w-100" onclick="activateAddonSelected()">🚀 Aktifkan Add-on Selected</button>
           </div>
           <div class="col-12 mt-2">
-            <button class="btn btn-success w-100 py-2 fw-bold" onclick="activateAddonNewCategory()">🏗️ Aktifkan Add-on Newcat</button>
+            <button class="btn btn-success btn-activation w-100" onclick="activateAddonNewCategory()">🏗️ Aktifkan Add-on Newcat</button>
           </div>
         </div>
       </div>
