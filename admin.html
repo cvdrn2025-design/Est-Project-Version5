@@ -1,295 +1,329 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin SiCerMat - Kontrol Penuh</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-        .container { max-width: 650px; margin: 40px auto; }
-        .card { border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .btn-primary { background-color: #0f172a; border: none; }
-        .btn-primary:hover { background-color: #334155; }
-        .btn-success { background-color: #198754; }
-        .btn-warning { background-color: #f59e0b; color: white; }
-        .btn-danger { background-color: #dc2626; }
-        .form-control:focus { box-shadow: 0 0 0 0.2rem rgba(15,23,42,0.1); border-color: #0f172a; }
-        .lock-screen { text-align: center; padding: 40px; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin SiCerMat - Aktivasi Akses</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
+    .container { max-width: 600px; margin: 40px auto; }
+    .card { border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+    .btn-primary { background-color: #0f172a; border: none; }
+    .btn-primary:hover { background-color: #334155; }
+    .btn-success { background-color: #198754; }
+    .btn-warning { background-color: #f59e0b; color: white; }
+    .form-control:focus { box-shadow: 0 0 0 0.2rem rgba(15,23,42,0.1); border-color: #0f172a; }
+    .lock-screen { text-align: center; padding: 40px; }
+  </style>
 </head>
 <body>
 
-    <!-- ==== LAYAR LOGIN ADMIN ==== -->
-    <div id="loginScreen" class="container">
-        <div class="card p-4">
-            <div class="lock-screen">
-                <div style="font-size: 3rem; margin-bottom: 15px;">🔐</div>
-                <h4 class="fw-bold mb-3">Login Admin</h4>
-                <input type="password" id="adminPassword" class="form-control mb-3" placeholder="Masukkan Password Admin">
-                <button class="btn btn-primary w-100 py-2 fw-bold" onclick="loginAdmin()">🔓 Masuk</button>
-                <div id="loginError" class="text-danger mt-2 small" style="display: none;">❌ Password salah!</div>
-            </div>
-        </div>
+  <!-- ==== LAYAR LOGIN ADMIN ==== -->
+  <div id="loginScreen" class="container">
+    <div class="card p-4">
+      <div class="lock-screen">
+        <div style="font-size: 3rem; margin-bottom: 15px;">🔐</div>
+        <h4 class="fw-bold mb-3">Login Admin</h4>
+        <input type="password" id="adminPassword" class="form-control mb-3" placeholder="Masukkan Password Admin">
+        <button class="btn btn-primary w-100 py-2 fw-bold" onclick="loginAdmin()">🔓 Masuk</button>
+        <div id="loginError" class="text-danger mt-2 small" style="display: none;">❌ Password salah!</div>
+      </div>
     </div>
+  </div>
 
-    <!-- ==== DASHBOARD ADMIN (Hanya muncul setelah login) ==== -->
-    <div id="adminPanel" class="container" style="display: none;">
-        <div class="card p-4 mb-4">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h3 class="fw-bold mb-0">🔐 Admin SiCerMat</h3>
-                <button class="btn btn-outline-danger btn-sm" onclick="logoutAdmin()">🚪 Logout</button>
-            </div>
-            
-            <!-- ==== PENGATURAN AHS (KONTROL DARI ADMIN) ==== -->
-            <div class="card p-3 mb-4">
-                <h6 class="fw-bold mb-3">📦 Pengaturan AHS</h6>
-                
-                <div class="mb-2">
-                    <label class="form-label fw-bold">Versi AHS</label>
-                    <input type="text" id="ahsVersion" class="form-control" placeholder="contoh: 3.0">
-                </div>
-                
-                <div class="mb-2">
-                    <label class="form-label fw-bold">Harga Premium</label>
-                    <input type="number" id="ahsPrice" class="form-control" placeholder="contoh: 100000">
-                </div>
-                
-                <div class="mb-2">
-                    <label class="form-label fw-bold">Pesan/Deskripsi</label>
-                    <input type="text" id="ahsMessage" class="form-control" placeholder="contoh: Versi Premium AHS 3.0">
-                </div>
-                
-                <button class="btn btn-primary w-100 py-2 fw-bold" onclick="updateAHSVersion()">💾 Simpan Pengaturan</button>
-            </div>
-            
-            <!-- ==== AKTIVASI AKSES USER ==== -->
-            <div class="card p-3 mb-4">
-                <h6 class="fw-bold mb-3">🔑 Aktivasi Akses User</h6>
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">User ID</label>
-                    <input type="text" id="userId" class="form-control" placeholder="Masukkan User ID (contoh: user_1787341363761_yibmn2te)" oninput="checkUserStatus()">
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Kategori</label>
-                    <select id="category" class="form-select" onchange="checkUserStatus()">
-                        <option value="">-- Pilih Kategori --</option>
-                        <option value="Pekerjaan Persiapan">Pekerjaan Persiapan</option>
-                        <option value="Pekerjaan Tanah">Pekerjaan Tanah</option>
-                        <option value="Pekerjaan Pondasi">Pekerjaan Pondasi</option>
-                        <option value="Pekerjaan Beton">Pekerjaan Beton</option>
-                        <option value="Pekerjaan Atap">Pekerjaan Atap</option>
-                        <option value="Pekerjaan Finishing/Arsitektur">Pekerjaan Finishing/Arsitektur</option>
-                        <option value="Pekerjaan Mekanikal & Elektrikal">Pekerjaan Mekanikal & Elektrikal</option>
-                        <option value="Pekerjaan Plumbing">Pekerjaan Plumbing</option>
-                        <option value="Pekerjaan Jalan dan Jembatan">Pekerjaan Jalan dan Jembatan</option>
-                    </select>
-                </div>
-                
-                <div class="row g-2">
-                    <div class="col-6">
-                        <button class="btn btn-primary w-100 py-2 fw-bold" onclick="activatePremium()">✅ Aktifkan Premium</button>
-                    </div>
-                    <div class="col-6">
-                        <button class="btn btn-warning w-100 py-2 fw-bold" onclick="activateAddon()">🚀 Aktifkan Add-on</button>
-                    </div>
-                    <div class="col-12 mt-2">
-                        <button class="btn btn-success w-100 py-2 fw-bold" onclick="activateNewCategory()">🏗️ Aktifkan Kategori Baru</button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- ==== STATUS USER ==== -->
-            <div class="card p-3">
-                <h6 class="fw-bold mb-2">📊 Status User:</h6>
-                <div id="statusDisplay" class="small text-muted">Belum ada pengecekan</div>
-            </div>
+  <!-- ==== DASHBOARD ADMIN (Hanya muncul setelah login) ==== -->
+  <div id="adminPanel" class="container" style="display: none;">
+    <div class="card p-4 mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="fw-bold mb-0">🔐 Admin SiCerMat</h3>
+        <button class="btn btn-outline-danger btn-sm" onclick="logoutAdmin()">🚪 Logout</button>
+      </div>
+
+      <!-- ==== PENGATURAN AHS ==== -->
+      <div class="card p-3 mb-4">
+        <h6 class="fw-bold mb-3">📦 Pengaturan AHS</h6>
+
+        <div class="mb-2">
+          <label class="form-label fw-bold">Versi AHS</label>
+          <input type="text" id="ahsVersion" class="form-control" placeholder="contoh: 3.0">
         </div>
+
+        <div class="mb-2">
+          <label class="form-label fw-bold">Harga Premium</label>
+          <input type="number" id="ahsPrice" class="form-control" placeholder="contoh: 100000">
+        </div>
+
+        <div class="mb-2">
+          <label class="form-label fw-bold">Pesan/Deskripsi</label>
+          <input type="text" id="ahsMessage" class="form-control" placeholder="contoh: Versi Premium AHS 3.0">
+        </div>
+
+        <button class="btn btn-primary w-100 py-2 fw-bold" onclick="updateAHSVersion()">💾 Simpan Pengaturan</button>
+      </div>
+
+      <!-- ==== AKTIVASI AKSES USER ==== -->
+      <div class="card p-3 mb-4">
+        <h6 class="fw-bold mb-3">🔑 Aktivasi Akses User</h6>
+
+        <!-- User ID (untuk semua aktivasi) -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">🔑 User ID</label>
+          <input type="text" id="userId" class="form-control" placeholder="Masukkan User ID (contoh: user_1787341363761_yibmn2te)" oninput="checkUserStatus()">
+        </div>
+
+        <!-- Kode Unik (untuk Add-on Selected & New Category) -->
+        <div class="mb-3">
+          <label class="form-label fw-bold">🔑 Kode Unik Add-on (dari User)</label>
+          <input type="text" id="addonCode" class="form-control" placeholder="Contoh: NEWAHSPRPN001 atau NEWAHSJLNN001">
+        </div>
+
+        <!-- Tombol Aktivasi -->
+        <div class="row g-2">
+          <div class="col-6">
+            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="activatePremium()">✅ Aktifkan Premium</button>
+          </div>
+          <div class="col-6">
+            <button class="btn btn-warning w-100 py-2 fw-bold" onclick="activateAddonSelected()">🚀 Aktifkan Add-on Selected</button>
+          </div>
+          <div class="col-12 mt-2">
+            <button class="btn btn-success w-100 py-2 fw-bold" onclick="activateAddonNewCategory()">🏗️ Aktifkan Add-on Newcat</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==== STATUS USER ==== -->
+      <div class="card p-3">
+        <h6 class="fw-bold mb-2">📊 Status User:</h6>
+        <div id="statusDisplay" class="small text-muted">Belum ada pengecekan</div>
+      </div>
     </div>
+  </div>
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-    <script>
-        // ============================================================
-        // PASSWORD ADMIN (GANTI SESUAI KEINGINAN ANDA)
-        // ============================================================
-        const ADMIN_PASSWORD = 'Admin123!';  // <-- GANTI DENGAN PASSWORD ANDA
+  <script>
+    // ============================================================
+    // PASSWORD ADMIN (GANTI SESUAI KEINGINAN ANDA)
+    // ============================================================
+    const ADMIN_PASSWORD = 'Admin123!';
 
-        // ============================================================
-        // KONFIGURASI FIREBASE (SAMA SEPERTI index.html)
-        // ============================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyBLqBuHKh8jOJ1yoDnctadcFgrdOwJ1kqA",
-            authDomain: "sicermat-db.firebaseapp.com",
-            databaseURL: "https://sicermat-db-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "sicermat-db",
-            storageBucket: "sicermat-db.firebasestorage.app",
-            messagingSenderId: "158019957886",
-            appId: "1:158019957886:web:fdce9473c3783b4932142f"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const database = firebase.database();
+    // ============================================================
+    // KONFIGURASI FIREBASE (SAMA SEPERTI index.html)
+    // ============================================================
+    const firebaseConfig = {
+      apiKey: "AIzaSyBLqBuHKh8jOJ1yoDnctadcFgrdOwJ1kqA",
+      authDomain: "sicermat-db.firebaseapp.com",
+      databaseURL: "https://sicermat-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "sicermat-db",
+      storageBucket: "sicermat-db.firebasestorage.app",
+      messagingSenderId: "158019957886",
+      appId: "1:158019957886:web:fdce9473c3783b4932142f"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
 
-        // ============================================================
-        // LOGIN & LOGOUT
-        // ============================================================
-        function loginAdmin() {
-            const password = document.getElementById('adminPassword').value;
-            if (password === ADMIN_PASSWORD) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('adminPanel').style.display = 'block';
-                localStorage.setItem('sicermat_admin_logged_in', 'true');
-                loadAHSVersion();  // Muat pengaturan AHS saat login
-            } else {
-                document.getElementById('loginError').style.display = 'block';
-            }
+    // ============================================================
+    // MAPPING KODE UNIK KE KATEGORI
+    // ============================================================
+    const CATEGORY_MAP = {
+      'NEWAHSPRPN001': 'Pekerjaan Persiapan',
+      'NEWAHSTNHN001': 'Pekerjaan Tanah',
+      'NEWAHSPNDN001': 'Pekerjaan Pondasi',
+      'NEWAHSBTNN001': 'Pekerjaan Beton',
+      'NEWAHSATPN001': 'Pekerjaan Atap',
+      'NEWAHSFINN001': 'Pekerjaan Finishing/Arsitektur',
+      'NEWAHSMEKN001': 'Pekerjaan Mekanikal & Elektrikal',
+      'NEWAHSPLBN001': 'Pekerjaan Plumbing',
+      'NEWAHSJLNN001': 'Pekerjaan Jalan dan Jembatan'
+    };
+
+    // ============================================================
+    // LOGIN & LOGOUT
+    // ============================================================
+    function loginAdmin() {
+      const password = document.getElementById('adminPassword').value;
+      if (password === ADMIN_PASSWORD) {
+        document.getElementById('loginScreen').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        localStorage.setItem('sicermat_admin_logged_in', 'true');
+        loadAHSVersion();
+      } else {
+        document.getElementById('loginError').style.display = 'block';
+      }
+    }
+
+    function logoutAdmin() {
+      localStorage.removeItem('sicermat_admin_logged_in');
+      document.getElementById('adminPanel').style.display = 'none';
+      document.getElementById('loginScreen').style.display = 'block';
+      document.getElementById('adminPassword').value = '';
+      document.getElementById('loginError').style.display = 'none';
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('sicermat_admin_logged_in') === 'true') {
+        loginAdmin();
+      }
+    });
+
+    // ============================================================
+    // PENGATURAN AHS
+    // ============================================================
+    function loadAHSVersion() {
+      const ref = database.ref('settings/ahs-version');
+      ref.once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          document.getElementById('ahsVersion').value = data.version || '';
+          document.getElementById('ahsPrice').value = data.price || '';
+          document.getElementById('ahsMessage').value = data.message || '';
         }
+      }).catch(err => {
+        console.error('Gagal membaca settings:', err);
+      });
+    }
 
-        function logoutAdmin() {
-            localStorage.removeItem('sicermat_admin_logged_in');
-            document.getElementById('adminPanel').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('adminPassword').value = '';
-            document.getElementById('loginError').style.display = 'none';
+    function updateAHSVersion() {
+      const version = document.getElementById('ahsVersion').value;
+      const price = document.getElementById('ahsPrice').value;
+      const message = document.getElementById('ahsMessage').value;
+      
+      const ref = database.ref('settings/ahs-version');
+      ref.set({
+        version: version,
+        price: parseInt(price),
+        message: message
+      }).then(() => {
+        alert('✅ Pengaturan AHS berhasil disimpan!');
+      }).catch(err => {
+        alert('❌ Gagal: ' + err.message);
+      });
+    }
+
+    // ============================================================
+    // FUNGSI AKTIVASI
+    // ============================================================
+    function getUserId() {
+      return document.getElementById('userId').value.trim();
+    }
+
+    function getAddonCode() {
+      return document.getElementById('addonCode').value.trim();
+    }
+
+    // Validasi kode unik → kategori
+    function getCategoryFromCode(code) {
+      return CATEGORY_MAP[code] || null;
+    }
+
+    function checkUserStatus() {
+      const userId = getUserId();
+      if (!userId) {
+        document.getElementById('statusDisplay').innerHTML = 'Belum ada pengecekan';
+        return;
+      }
+
+      const userRef = database.ref('usersPremium/' + userId);
+      userRef.once('value').then(snapshot => {
+        const data = snapshot.val();
+        if (data) {
+          const premium = data.activated === true ? '✅ Aktif' : '❌ Tidak Aktif';
+          const addon = data.addon ? Object.keys(data.addon).join(', ') : '-';
+          const newCat = data['addon-newcat'] ? Object.keys(data['addon-newcat']).join(', ') : '-';
+          
+          document.getElementById('statusDisplay').innerHTML = `
+            <strong>User ID:</strong> ${userId}<br>
+            <strong>Premium:</strong> ${premium}<br>
+            <strong>Add-on:</strong> ${addon}<br>
+            <strong>Kategori Baru:</strong> ${newCat}
+          `;
+        } else {
+          document.getElementById('statusDisplay').innerHTML = '❌ User tidak ditemukan di database';
         }
+      }).catch(err => {
+        document.getElementById('statusDisplay').innerHTML = '⚠️ Error: ' + err.message;
+      });
+    }
 
-        // Cek apakah admin sudah login saat halaman dimuat
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('sicermat_admin_logged_in') === 'true') {
-                loginAdmin();
-            }
-        });
+    // ============================================================
+    // FUNGSI AKTIVASI PREMIUM
+    // ============================================================
+    function activatePremium() {
+      const userId = getUserId();
+      if (!userId) {
+        alert('Masukkan User ID terlebih dahulu!');
+        return;
+      }
 
-        // ============================================================
-        // PENGATURAN AHS (DARI ADMIN)
-        // ============================================================
-        function loadAHSVersion() {
-            const ref = database.ref('settings/ahs-version');
-            ref.once('value').then(snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    document.getElementById('ahsVersion').value = data.version || '';
-                    document.getElementById('ahsPrice').value = data.price || '';
-                    document.getElementById('ahsMessage').value = data.message || '';
-                }
-            }).catch(err => {
-                console.error('Gagal membaca settings:', err);
-            });
-        }
+      const ref = database.ref('usersPremium/' + userId + '/activated');
+      ref.set(true).then(() => {
+        alert('✅ Premium berhasil diaktifkan untuk User: ' + userId);
+        checkUserStatus();
+      }).catch(err => {
+        alert('❌ Gagal: ' + err.message);
+      });
+    }
 
-        function updateAHSVersion() {
-            const version = document.getElementById('ahsVersion').value;
-            const price = document.getElementById('ahsPrice').value;
-            const message = document.getElementById('ahsMessage').value;
-            
-            const ref = database.ref('settings/ahs-version');
-            ref.set({
-                version: version,
-                price: parseInt(price),
-                message: message
-            }).then(() => {
-                alert('✅ Pengaturan AHS berhasil disimpan!');
-            }).catch(err => {
-                alert('❌ Gagal: ' + err.message);
-            });
-        }
+    // ============================================================
+    // FUNGSI AKTIVASI ADD-ON SELECTED
+    // ============================================================
+    function activateAddonSelected() {
+      const userId = getUserId();
+      const code = getAddonCode();
 
-        // ============================================================
-        // FUNGSI CEK STATUS USER
-        // ============================================================
-        function getUserId() {
-            return document.getElementById('userId').value.trim();
-        }
+      if (!userId || !code) {
+        alert('Masukkan User ID dan Kode Unik!');
+        return;
+      }
 
-        function getCategory() {
-            return document.getElementById('category').value;
-        }
+      // Validasi kode unik
+      const category = getCategoryFromCode(code);
+      if (!category) {
+        alert('❌ Kode unik tidak valid!');
+        return;
+      }
 
-        function checkUserStatus() {
-            const userId = getUserId();
-            if (!userId) {
-                document.getElementById('statusDisplay').innerHTML = 'Belum ada pengecekan';
-                return;
-            }
+      // Kategori lama (addon)
+      const ref = database.ref('usersPremium/' + userId + '/addon/' + category);
+      ref.set(true).then(() => {
+        alert('✅ Add-on Selected kategori "' + category + '" berhasil diaktifkan untuk User: ' + userId);
+        checkUserStatus();
+      }).catch(err => {
+        alert('❌ Gagal: ' + err.message);
+      });
+    }
 
-            const userRef = database.ref('usersPremium/' + userId);
-            userRef.once('value').then(snapshot => {
-                const data = snapshot.val();
-                if (data) {
-                    const premium = data.activated === true ? '✅ Aktif' : '❌ Tidak Aktif';
-                    const addon = data.addon ? Object.keys(data.addon).join(', ') : '-';
-                    const newCat = data['addon-newcat'] ? Object.keys(data['addon-newcat']).join(', ') : '-';
-                    
-                    document.getElementById('statusDisplay').innerHTML = `
-                        <strong>User ID:</strong> ${userId}<br>
-                        <strong>Premium:</strong> ${premium}<br>
-                        <strong>Add-on:</strong> ${addon}<br>
-                        <strong>Kategori Baru:</strong> ${newCat}
-                    `;
-                } else {
-                    document.getElementById('statusDisplay').innerHTML = '❌ User tidak ditemukan di database';
-                }
-            }).catch(err => {
-                document.getElementById('statusDisplay').innerHTML = '⚠️ Error: ' + err.message;
-            });
-        }
+    // ============================================================
+    // FUNGSI AKTIVASI ADD-ON NEW CATEGORY
+    // ============================================================
+    function activateAddonNewCategory() {
+      const userId = getUserId();
+      const code = getAddonCode();
 
-        // ============================================================
-        // FUNGSI AKTIVASI
-        // ============================================================
-        function activatePremium() {
-            const userId = getUserId();
-            if (!userId) {
-                alert('Masukkan User ID terlebih dahulu!');
-                return;
-            }
+      if (!userId || !code) {
+        alert('Masukkan User ID dan Kode Unik!');
+        return;
+      }
 
-            const ref = database.ref('usersPremium/' + userId + '/activated');
-            ref.set(true).then(() => {
-                alert('✅ Premium berhasil diaktifkan untuk User: ' + userId);
-                checkUserStatus();
-            }).catch(err => {
-                alert('❌ Gagal: ' + err.message);
-            });
-        }
+      // Validasi kode unik
+      const category = getCategoryFromCode(code);
+      if (!category) {
+        alert('❌ Kode unik tidak valid!');
+        return;
+      }
 
-        function activateAddon() {
-            const userId = getUserId();
-            const category = getCategory();
-            if (!userId || !category) {
-                alert('Masukkan User ID dan pilih kategori!');
-                return;
-            }
-
-            const ref = database.ref('usersPremium/' + userId + '/addon/' + category);
-            ref.set(true).then(() => {
-                alert('✅ Add-on kategori "' + category + '" berhasil diaktifkan untuk User: ' + userId);
-                checkUserStatus();
-            }).catch(err => {
-                alert('❌ Gagal: ' + err.message);
-            });
-        }
-
-        function activateNewCategory() {
-            const userId = getUserId();
-            const category = getCategory();
-            if (!userId || !category) {
-                alert('Masukkan User ID dan pilih kategori!');
-                return;
-            }
-
-            const ref = database.ref('usersPremium/' + userId + '/addon-newcat/' + category);
-            ref.set(true).then(() => {
-                alert('✅ Kategori baru "' + category + '" berhasil diaktifkan untuk User: ' + userId);
-                checkUserStatus();
-            }).catch(err => {
-                alert('❌ Gagal: ' + err.message);
-            });
-        }
-    </script>
+      // Kategori baru (addon-newcat)
+      const ref = database.ref('usersPremium/' + userId + '/addon-newcat/' + category);
+      ref.set(true).then(() => {
+        alert('✅ Add-on New Category "' + category + '" berhasil diaktifkan untuk User: ' + userId);
+        checkUserStatus();
+      }).catch(err => {
+        alert('❌ Gagal: ' + err.message);
+      });
+    }
+  </script>
 </body>
 </html>
