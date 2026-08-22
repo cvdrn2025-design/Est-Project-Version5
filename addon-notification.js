@@ -1,9 +1,9 @@
 // ============================================================
-// SISTEM NOTIFIKASI ADD-ON AHS (TERBARU)
+// SISTEM NOTIFIKASI ADD-ON AHS (FIREBASE INTEGRATION)
 // - Kompatibel dengan 3 tier pembayaran
 // - Badge NEW dengan animasi
 // - Pop-up Add-on dengan kode unik
-// - Nomor seri otomatis bertambah
+// - Cek akses ke Firebase Realtime Database
 // ============================================================
 
 // 1. Mapping kategori ke singkatan (untuk kode unik)
@@ -47,24 +47,62 @@ function markAHSAsSeen(ahsCode) {
   }
 }
 
-// 6. Kumpulkan item AHS baru yang belum dilihat
-function getUnseenNewAHS() {
-  if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) return [];
+// 6. Ambil user ID dari localStorage
+function getCurrentUserId() {
+  let userId = localStorage.getItem('sicermat_user_id');
+  if (!userId) {
+    userId = generateUserId();
+    localStorage.setItem('sicermat_user_id', userId);
+  }
+  return userId;
+}
+
+// 7. Generate user ID baru
+function generateUserId() {
+  return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// 8. Cek akses premium user di Firebase
+function checkUserPremiumAccess(callback) {
+  const userId = getCurrentUserId();
+  const premiumRef = database.ref('usersPremium/' + userId + '/activated');
   
-  return ahsDatabase.filter(item => {
-    return item.isNew === true && !hasSeenNewAHS(item.code);
+  premiumRef.once('value').then(snapshot => {
+    callback(snapshot.val() === true);
+  }).catch(err => {
+    console.error('Gagal cek premium:', err);
+    callback(false);
   });
 }
 
-// 7. Hitung jumlah AHS baru per kategori
-function getNewCountByCategory(category) {
-  if (typeof ahsDatabase === 'undefined' || !Array.isArray(ahsDatabase)) return 0;
-  return ahsDatabase.filter(item => item.category === category && item.isNew === true).length;
+// 9. Cek akses add-on per kategori di Firebase
+function checkAddonAccess(category, callback) {
+  const userId = getCurrentUserId();
+  const addonRef = database.ref('usersPremium/' + userId + '/addon/' + category);
+  
+  addonRef.once('value').then(snapshot => {
+    callback(snapshot.val() === true);
+  }).catch(err => {
+    console.error('Gagal cek add-on:', err);
+    callback(false);
+  });
 }
 
-// 8. Tentukan halaman pembayaran berdasarkan tipe add-on
+// 10. Cek akses kategori baru di Firebase
+function checkNewCategoryAccess(category, callback) {
+  const userId = getCurrentUserId();
+  const newCatRef = database.ref('usersPremium/' + userId + '/addon-newcat/' + category);
+  
+  newCatRef.once('value').then(snapshot => {
+    callback(snapshot.val() === true);
+  }).catch(err => {
+    console.error('Gagal cek kategori baru:', err);
+    callback(false);
+  });
+}
+
+// 11. Tentukan halaman pembayaran berdasarkan tipe add-on
 function getPaymentPage(category) {
-  // Jika kategori sudah ada di daftar kategori lama (bukan kategori baru)
   const existingCategories = [
     "Pekerjaan Persiapan",
     "Pekerjaan Tanah",
@@ -83,7 +121,7 @@ function getPaymentPage(category) {
   }
 }
 
-// 9. Render kategori dengan badge "NEW"
+// 12. Render kategori dengan badge "NEW" (hanya jika user belum punya akses)
 function renderLockedCategoriesWithNew() {
   const tbody = document.getElementById('ahsTableBody');
   if (!tbody) return;
@@ -99,22 +137,65 @@ function renderLockedCategoriesWithNew() {
   Object.keys(categories).forEach(cat => {
     const count = categories[cat].length;
     const hasNew = categories[cat].some(item => item.isNew === true);
-    const newCount = categories[cat].filter(item => item.isNew === true).length;
 
-    const tr = document.createElement('tr');
-    tr.className = 'locked-category-row';
-    tr.innerHTML = `
-      <td colspan="3" class="p-0">
-        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-          <span class="fw-bold fs-5">
-            (${count}) ${cat} 
-            ${hasNew ? `<span class="badge-new" onclick="showAddOnPopup('${cat}')">NEW</span>` : ''}
-            <span class="category-lock-icon" onclick="showTopUpModal()">🔒</span>
-          </span>
-        </div>
-      </td>
-    `;
-    tbody.appendChild(tr);
+    // Cek akses user ke kategori ini
+    checkUserPremiumAccess((isPremium) => {
+      if (isPremium) {
+        // User premium → tampilkan semua, tidak perlu badge
+        const tr = document.createElement('tr');
+        tr.className = 'locked-category-row';
+        tr.innerHTML = `
+          <td colspan="3" class="p-0">
+            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+              <span class="fw-bold fs-5">(${count}) ${cat} 
+                <span class="category-lock-icon" style="cursor: default;">✅</span>
+              </span>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+        return;
+      }
+
+      // Cek add-on per kategori
+      checkAddonAccess(cat, (hasAddon) => {
+        // Cek kategori baru
+        checkNewCategoryAccess(cat, (hasNewCat) => {
+          const hasAccess = hasAddon || hasNewCat;
+
+          if (hasAccess) {
+            // User sudah punya akses kategori ini
+            const tr = document.createElement('tr');
+            tr.className = 'locked-category-row';
+            tr.innerHTML = `
+              <td colspan="3" class="p-0">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                  <span class="fw-bold fs-5">(${count}) ${cat} 
+                    <span class="category-lock-icon" style="cursor: default;">✅</span>
+                  </span>
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          } else {
+            // User belum punya akses
+            const tr = document.createElement('tr');
+            tr.className = 'locked-category-row';
+            tr.innerHTML = `
+              <td colspan="3" class="p-0">
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                  <span class="fw-bold fs-5">(${count}) ${cat} 
+                    ${hasNew ? `<span class="badge-new" onclick="showAddOnPopup('${cat}')">NEW</span>` : ''}
+                    <span class="category-lock-icon" onclick="showTopUpModal()">🔒</span>
+                  </span>
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
+      });
+    });
   });
 
   if (Object.keys(categories).length === 0) {
@@ -122,69 +203,79 @@ function renderLockedCategoriesWithNew() {
   }
 }
 
-// 10. Fungsi pop-up Add-on AHS
+// 13. Fungsi pop-up Add-on AHS (hanya muncul jika user belum punya akses)
 function showAddOnPopup(category) {
-  // Ambil semua AHS baru di kategori ini
-  const newItems = ahsDatabase.filter(item => item.category === category && item.isNew === true);
-  
-  if (newItems.length === 0) return;
-
-  // Ambil versi terbaru (untuk nomor seri)
-  const latestVersion = Math.max(...newItems.map(item => item.version || 1));
-  const code = generateNewCode(category, latestVersion);
-  const paymentPage = getPaymentPage(category);
-
-  // Bangun HTML isi pop-up
-  let itemListHTML = '';
-  newItems.forEach(item => {
-    itemListHTML += `<div class="d-flex justify-content-between border-bottom py-2">
-      <span>• ${item.title}</span>
-      <span class="text-muted small">${item.unit}</span>
-    </div>`;
-  });
-
-  const modalContent = `
-    <div style="text-align: center;">
-      <h4 class="fw-bold">🚀 Add-on AHS Baru!</h4>
-      <p class="text-muted">Kategori: ${category}</p>
-      
-      <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0;">
-        <strong style="font-size: 1.2rem; color: #0f172a; font-family: monospace;">${code}</strong>
-        <p class="mb-0 mt-2" style="font-size: 0.9rem;">
-          Total ${newItems.length} item AHS baru
-        </p>
-      </div>
-      
-      <div style="text-align: left; margin-bottom: 20px;">
-        <strong>Daftar AHS baru:</strong>
-        ${itemListHTML}
-      </div>
-      
-      <button class="btn btn-success w-100 py-2" onclick="window.location.href='${paymentPage}?addon=' + encodeURIComponent('${code}')">
-        💳 Top Up untuk Akses
-      </button>
-    </div>
-  `;
-
-  // Tampilkan pop-up menggunakan modal yang sudah ada
-  const addOnModal = new bootstrap.Modal(document.getElementById('addOnModal'));
-  document.getElementById('addOnModalBody').innerHTML = modalContent;
-  addOnModal.show();
-
-  // Tandai sudah dilihat (agar badge hilang setelah pop-up ditutup)
-  newItems.forEach(item => {
-    markAHSAsSeen(item.code);
-  });
-
-  // Re-render kategori setelah ditandai
-  setTimeout(() => {
-    if (document.getElementById('ahsModal').classList.contains('show')) {
-      renderLockedCategoriesWithNew();
+  // Cek akses dulu sebelum menampilkan pop-up
+  checkUserPremiumAccess((isPremium) => {
+    if (isPremium) {
+      alert('Anda sudah memiliki akses Premium!');
+      return;
     }
-  }, 500);
+
+    checkAddonAccess(category, (hasAddon) => {
+      checkNewCategoryAccess(category, (hasNewCat) => {
+        if (hasAddon || hasNewCat) {
+          alert('Anda sudah memiliki akses ke kategori ini!');
+          return;
+        }
+
+        // Ambil semua AHS baru di kategori ini
+        const newItems = ahsDatabase.filter(item => item.category === category && item.isNew === true);
+        
+        if (newItems.length === 0) return;
+
+        // Ambil versi terbaru (untuk nomor seri)
+        const latestVersion = Math.max(...newItems.map(item => item.version || 1));
+        const code = generateNewCode(category, latestVersion);
+        const paymentPage = getPaymentPage(category);
+
+        // Bangun HTML isi pop-up
+        let itemListHTML = '';
+        newItems.forEach(item => {
+          itemListHTML += `<div class="d-flex justify-content-between border-bottom py-2">
+            <span>• ${item.title}</span>
+            <span class="text-muted small">${item.unit}</span>
+          </div>`;
+        });
+
+        const modalContent = `
+          <div style="text-align: center;">
+            <h4 class="fw-bold">🚀 Add-on AHS Baru!</h4>
+            <p class="text-muted">Kategori: ${category}</p>
+            
+            <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0;">
+              <strong style="font-size: 1.2rem; color: #0f172a; font-family: monospace;">${code}</strong>
+              <p class="mb-0 mt-2" style="font-size: 0.9rem;">
+                Total ${newItems.length} item AHS baru
+              </p>
+            </div>
+            
+            <div style="text-align: left; margin-bottom: 20px;">
+              <strong>Daftar AHS baru:</strong>
+              ${itemListHTML}
+            </div>
+            
+            <button class="btn btn-success w-100 py-2" onclick="window.location.href='${paymentPage}?addon=' + encodeURIComponent('${code}')">
+              💳 Top Up untuk Akses
+            </button>
+          </div>
+        `;
+
+        // Tampilkan pop-up menggunakan modal yang sudah ada
+        const addOnModal = new bootstrap.Modal(document.getElementById('addOnModal'));
+        document.getElementById('addOnModalBody').innerHTML = modalContent;
+        addOnModal.show();
+
+        // Tandai sudah dilihat (agar badge hilang setelah pop-up ditutup)
+        newItems.forEach(item => {
+          markAHSAsSeen(item.code);
+        });
+      });
+    });
+  });
 }
 
-// 11. Inisialisasi saat halaman dimuat
+// 14. Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
   // Cek apakah modal addOnModal sudah ada di HTML
   if (!document.getElementById('addOnModal')) {
