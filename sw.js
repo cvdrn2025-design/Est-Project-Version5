@@ -1,8 +1,12 @@
-const CACHE_NAME = 'sicermat-cache-v9';
+const CACHE_NAME = 'sicermat-cache-v7';
 const urlsToCache = [
   './',
   './index.html',
+  './admin.html',          // Opsional
   './qris-payment.html',
+  './qris-addon.html',
+  './qris-newcat.html',
+  './addon-notification.js',  // File baru
   './manifest.json',
   './icon.png',
   './icon-192.png',
@@ -14,23 +18,26 @@ const urlsToCache = [
   'https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js'
 ];
 
+// Install: cache aset statis
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v6 dibuka');
+        console.log('Cache SiCerMat v7 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
   );
 });
 
+// Aktifkan: bersihkan cache lama
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(cacheNames => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheName !== CACHE_NAME) {
+            console.log('Menghapus cache lama:', cacheName);
             return caches.delete(cacheName);
           }
         })
@@ -39,20 +46,27 @@ self.addEventListener('activate', event => {
   );
 });
 
+// Fetch: strategi cache first, tetapi untuk file yang sering berubah gunakan network first
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
+  // File yang selalu harus update (jangan di-cache)
   if (url.pathname.endsWith('master-data.js') || url.pathname.endsWith('ahs-version.json')) {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match(event.request))
+      fetch(event.request).catch(() => {
+        return caches.match(event.request);
+      })
     );
     return;
   }
 
+  // Untuk semua request lain: cache first, fallback ke network
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        if (response) return response;
+        if (response) {
+          return response;
+        }
         return fetch(event.request).catch(() => {
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
