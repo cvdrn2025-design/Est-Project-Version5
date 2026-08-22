@@ -121,7 +121,7 @@ function getPaymentPage(category) {
   }
 }
 
-// 12. Render kategori dengan badge "NEW" (hanya jika user belum punya akses)
+// 12. Render kategori dengan badge "NEW" dan AHS lengkap untuk user premium
 function renderLockedCategoriesWithNew() {
   const tbody = document.getElementById('ahsTableBody');
   if (!tbody) return;
@@ -141,44 +141,63 @@ function renderLockedCategoriesWithNew() {
     // Cek akses user ke kategori ini
     checkUserPremiumAccess((isPremium) => {
       if (isPremium) {
-        // User premium → tampilkan semua, tidak perlu badge
-        const tr = document.createElement('tr');
-        tr.className = 'locked-category-row';
-        tr.innerHTML = `
-          <td colspan="3" class="p-0">
-            <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-              <span class="fw-bold fs-5">(${count}) ${cat} 
-                <span class="category-lock-icon" style="cursor: default;">✅</span>
-              </span>
-            </div>
-          </td>
-        `;
-        tbody.appendChild(tr);
+        // ============ USER PREMIUM: TAMPILKAN AHS LENGKAP ============
+        const ahsItems = categories[cat];
+        ahsItems.forEach((item, index) => {
+          let unitPrice = 0;
+          if (item.details && item.details.length > 0) {
+            unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
+          } else {
+            unitPrice = item.totalPrice || item.harga || 0;
+          }
+
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><span class="badge bg-dark mb-1">${item.code || item.kode}</span><div class="small fw-semibold text-secondary">${cat}</div></td>
+            <td><div class="fw-bold text-dark mb-1">${item.title || item.nama}</div><div class="mt-2 bg-light p-2 rounded">${item.details ? item.details.map(d => `<div class="small text-muted">• ${d.name || d.nama} (${d.coeff} ${d.unit})</div>`).join('') : ''}</div></td>
+            <td class="text-center align-middle">
+              <div class="fw-bold text-primary mb-2">Rp ${formatNumber(unitPrice, 2)} / ${item.unit || item.satuan || 'm2'}</div>
+              <button class="btn btn-sm btn-mono-primary w-100" onclick="selectAHSItem(${index}, this)">
+                ➕ Tambahkan
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
         return;
       }
 
-      // Cek add-on per kategori
+      // ============ USER NON-PREMIUM: TAMPILKAN KATEGORI TERKUNCI ============
       checkAddonAccess(cat, (hasAddon) => {
-        // Cek kategori baru
         checkNewCategoryAccess(cat, (hasNewCat) => {
           const hasAccess = hasAddon || hasNewCat;
 
           if (hasAccess) {
-            // User sudah punya akses kategori ini
-            const tr = document.createElement('tr');
-            tr.className = 'locked-category-row';
-            tr.innerHTML = `
-              <td colspan="3" class="p-0">
-                <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                  <span class="fw-bold fs-5">(${count}) ${cat} 
-                    <span class="category-lock-icon" style="cursor: default;">✅</span>
-                  </span>
-                </div>
-              </td>
-            `;
-            tbody.appendChild(tr);
+            // User sudah punya akses kategori ini → tampilkan AHS lengkap
+            const ahsItems = categories[cat];
+            ahsItems.forEach((item, index) => {
+              let unitPrice = 0;
+              if (item.details && item.details.length > 0) {
+                unitPrice = item.details.reduce((sum, d) => sum + ((d.coeff || 0) * (d.price || 0)), 0);
+              } else {
+                unitPrice = item.totalPrice || item.harga || 0;
+              }
+
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td><span class="badge bg-dark mb-1">${item.code || item.kode}</span><div class="small fw-semibold text-secondary">${cat}</div></td>
+                <td><div class="fw-bold text-dark mb-1">${item.title || item.nama}</div><div class="mt-2 bg-light p-2 rounded">${item.details ? item.details.map(d => `<div class="small text-muted">• ${d.name || d.nama} (${d.coeff} ${d.unit})</div>`).join('') : ''}</div></td>
+                <td class="text-center align-middle">
+                  <div class="fw-bold text-primary mb-2">Rp ${formatNumber(unitPrice, 2)} / ${item.unit || item.satuan || 'm2'}</div>
+                  <button class="btn btn-sm btn-mono-primary w-100" onclick="selectAHSItem(${index}, this)">
+                    ➕ Tambahkan
+                  </button>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
           } else {
-            // User belum punya akses
+            // User belum punya akses → tampilkan kategori terkunci
             const tr = document.createElement('tr');
             tr.className = 'locked-category-row';
             tr.innerHTML = `
