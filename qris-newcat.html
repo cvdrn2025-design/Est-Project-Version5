@@ -79,13 +79,9 @@
             document.getElementById('userIDDisplay').innerText = userID;
             document.getElementById('addonCodeDisplay').innerText = 'Kode Kategori Baru: ' + addonCode;
 
-            const waLink = document.getElementById('waLink');
-            waLink.href = 'https://wa.me/6282145111853?text=' + 
-                encodeURIComponent(
-                    'Halo Admin, berikut bukti pembayaran Add-on new Category dan kode unik saya: ' + 
-                    userID + '. Mohon segera di aktifkan. Kategori baru yang diakses: ' + addonCode + 
-                    '. Terima kasih.'
-                );
+            document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
+                'Halo Admin, berikut bukti pembayaran top up Premium dan ID aktivasi saya: ' + userID + '. Mohon segera di aktifkan. Kategori baru yang diakses: ' + addonCode + '. Terima kasih.'
+            );
         });
 
         function copyUserID() {
