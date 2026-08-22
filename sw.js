@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v9';
+const CACHE_NAME = 'sicermat-cache-v10';
 const urlsToCache = [
   './',
   './index.html',
@@ -23,7 +23,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v9 dibuka');
+        console.log('Cache SiCerMat v10 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
