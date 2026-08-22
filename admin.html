@@ -107,6 +107,9 @@
   <!-- Load master-data.js agar admin bisa baca kategori -->
   <script src="master-data.js?v=20260912"></script>
 
+  <!-- Load addon-notification.js agar admin bisa baca singkatan kategori -->
+  <script src="addon-notification.js"></script>
+
   <script>
     // ============================================================
     // PASSWORD ADMIN (GANTI SESUAI KEINGINAN ANDA)
@@ -129,28 +132,8 @@
     const database = firebase.database();
 
     // ============================================================
-    // MAPPING KATEGORI (STATIS - DEFAULT)
-    // ============================================================
-    const CATEGORY_ABBR_MAP = {
-      "Pekerjaan Persiapan": "PRP",
-      "Pekerjaan Tanah": "TNH",
-      "Pekerjaan Pondasi": "PND",
-      "Pekerjaan Beton": "BTN",
-      "Pekerjaan Atap": "ATP",
-      "Pekerjaan Finishing/Arsitektur": "FIN",
-      "Pekerjaan Mekanikal & Elektrikal": "MEK",
-      "Pekerjaan Plumbing": "PLB",
-      "Pekerjaan Jalan dan Jembatan": "JLN",
-      "Lainnya": "GEN"
-    };
-
-    // ============================================================
     // FUNGSI DINAMIS: BACA KATEGORI DARI master-data.js
     // ============================================================
-    function getCategoryAbbreviation(category) {
-      return CATEGORY_ABBR_MAP[category] || "GEN";
-    }
-
     function getCategoryMapFromMasterData() {
       const categoryMap = {};
       
