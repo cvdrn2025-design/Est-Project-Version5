@@ -23,7 +23,7 @@
 <body>
     <div class="container">
         <h2>💳 Upgrade Premium</h2>
-        <span class="sub">Akses AHS Versi 2.0 - Lifetime Access</span>
+        <span class="sub">Akses Semua Kategori AHS - Lifetime Access</span>
 
         <div id="errorMessage" class="error-msg">
             ⚠️ Gambar QRIS tidak ditemukan. Pastikan file <b>qris.png</b> sudah di-upload.
@@ -35,7 +35,7 @@
         </div>
 
         <p class="mb-0" style="font-size: 15px; font-weight: 600; color: #0f172a;">
-            💰 Nominal: <span style="font-size: 22px; font-weight: 800; color: #198754;">Rp 250.000</span>
+            💰 Nominal: <span style="font-size: 22px; font-weight: 800; color: #198754;">Rp 100.000</span>
         </p>
         <p class="text-muted" style="font-size: 13px;">
             (Lifetime Access)<br>
@@ -46,7 +46,7 @@
         <div class="id-box" id="userIDDisplay">Memuat ID...</div>
         <button class="btn-copy" onclick="copyUserID()">📋 Salin ID</button>
 
-        <!-- Tombol Chat Admin (template WA otomatis) -->
+        <!-- Tombol Chat Admin -->
         <a href="#" 
            id="waLink" 
            target="_blank" 
@@ -71,13 +71,11 @@
             const userID = getUserID();
             document.getElementById('userIDDisplay').innerText = userID;
 
-            // Update link WhatsApp dengan template pesan baru
             const waLink = document.getElementById('waLink');
             waLink.href = 'https://wa.me/6282145111853?text=' + 
                 encodeURIComponent(
                     'Halo Admin, berikut bukti pembayaran top up Premium dan ID aktivasi saya: ' + 
-                    userID + 
-                    '. Mohon segera di aktifkan, Terima kasih.'
+                    userID + '. Mohon segera di aktifkan. Terima kasih.'
                 );
         });
 
