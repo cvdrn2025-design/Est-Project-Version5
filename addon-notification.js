@@ -4,6 +4,7 @@
 // - Badge NEW dengan animasi
 // - Pop-up Add-on dengan kode unik
 // - Cek akses ke Firebase Realtime Database
+// - Header tabel disembunyikan saat kategori terkunci
 // ============================================================
 
 // 1. Mapping kategori ke singkatan (untuk kode unik)
@@ -123,6 +124,10 @@ function getPaymentPage(category) {
 
 // 12. Render kategori dengan badge "NEW" dan AHS lengkap untuk user premium
 function renderLockedCategoriesWithNew() {
+  // Sembunyikan header tabel saat mode kategori terkunci
+  const thead = document.getElementById('ahsTableHead');
+  if (thead) thead.style.display = 'none';
+
   const tbody = document.getElementById('ahsTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
