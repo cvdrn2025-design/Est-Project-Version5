@@ -1634,7 +1634,43 @@ const ahsDatabase = [
       { name: "Kepala Tukang", coeff: 0.015, unit: "OH", price: 160000 },
       { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
     ]
-  }
+  },
+   // ============================================================
+// SIMULASI ADD-ON 1: AHS BARU DI KATEGORI LAMA
+// ============================================================
+{
+  code: "AHS-PRP-NEW-01",
+  category: "Pekerjaan Persiapan",
+  title: "Pemasangan Pagar Keliling Proyek",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "Kayu Bekisting / Meranti", coeff: 0.008, unit: "m3", price: 2800000 },
+    { name: "Paku Biasa", coeff: 0.015, unit: "kg", price: 20000 },
+    { name: "Kawat Beton / Bendrat", coeff: 0.050, unit: "kg", price: 25000 },
+    { name: "Pekerja", coeff: 0.200, unit: "OH", price: 110000 },
+    { name: "Tukang Kayu", coeff: 0.100, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+     },
+   // ============================================================
+// SIMULASI ADD-ON 2: KATEGORI BARU + AHS BARU
+// ============================================================
+{
+  code: "AHS-JLN-NEW-01",
+  category: "Pekerjaan Jalan dan Jembatan",
+  title: "Galian Biasa untuk Badan Jalan",
+  unit: "m3",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "Pekerja", coeff: 0.100, unit: "OH", price: 110000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 },
+    { name: "Sewa Excavator", coeff: 0.020, unit: "jam", price: 250000 }
+  ]
+}
 ];
 
 // 3. FUNGSI PENGELOLA HARGA DASAR & AHS
