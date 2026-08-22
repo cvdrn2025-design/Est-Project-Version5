@@ -4,8 +4,7 @@
 // - Badge NEW dengan animasi
 // - Pop-up Add-on dengan kode unik
 // - Cek akses ke Firebase Realtime Database
-// - Header tabel tersembunyi saat kategori terkunci
-// - User Premium hanya akses AHS lama, AHS baru harus add-on
+// - Kode unik terbawa ke halaman pembayaran
 // ============================================================
 
 // 1. Mapping kategori ke singkatan (untuk kode unik)
@@ -246,7 +245,7 @@ function renderLockedCategoriesWithNew() {
   }
 }
 
-// 13. Fungsi pop-up Add-on AHS (hanya muncul jika user belum punya akses)
+// 13. Fungsi pop-up Add-on AHS (kode unik terbawa ke halaman pembayaran)
 function showAddOnPopup(category) {
   // Cek akses dulu sebelum menampilkan pop-up
   checkUserPremiumAccess((isPremium) => {
@@ -298,8 +297,8 @@ function showAddOnPopup(category) {
               ${itemListHTML}
             </div>
             
-            <button class="btn btn-success w-100 py-2" onclick="window.location.href='${paymentPage}?addon=' + encodeURIComponent('${code}')">
-              💳 Top Up untuk Akses
+            <button class="btn btn-success w-100 py-2" onclick="window.open('${paymentPage}?addon=' + encodeURIComponent('${code}'), '_blank')">
+              💳 Top Up untuk Akses (${code})
             </button>
           </div>
         `;
