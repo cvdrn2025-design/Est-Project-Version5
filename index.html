@@ -423,8 +423,21 @@
     let latestVersionInfo = null;
     let hasCheckedPremium = false;
 
-    const PREMIUM_PRICE = 100000;
+    let PREMIUM_PRICE = 100000;  // Default sementara
+    
     const ADMIN_WA_LINK = 'https://wa.me/6282145111853';
+
+    // Baca harga premium dari Firebase (dikontrol oleh admin.html)
+database.ref('settings/ahs-version').once('value').then(snapshot => {
+    const data = snapshot.val();
+    if (data && data.price) {
+        PREMIUM_PRICE = data.price;
+        console.log('✅ Harga premium dari Firebase:', PREMIUM_PRICE);
+    }
+}).catch(err => {
+    console.error('Gagal membaca harga premium dari Firebase:', err);
+});
+    
 
     // ============================================================
     // 3. FUNGSI UTILITY
