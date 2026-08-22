@@ -148,7 +148,7 @@ function renderLockedCategoriesWithNew() {
     checkUserPremiumAccess((isPremium) => {
       if (isPremium) {
         // ============ USER PREMIUM: TAMPILKAN AHS LAMA SAJA ============
-        // AHS baru (isNew) TIDAK ditampilkan karena harus add-on
+        // AHS baru (isNew) TIDAK ditampilkan, tapi badge NEW tetap muncul
         const oldItems = categories[cat].filter(item => !item.isNew);
         oldItems.forEach((item, index) => {
           let unitPrice = 0;
@@ -171,6 +171,23 @@ function renderLockedCategoriesWithNew() {
           `;
           tbody.appendChild(tr);
         });
+
+        // Jika ada AHS baru, tampilkan kategori dengan badge NEW
+        if (hasNew) {
+          const tr = document.createElement('tr');
+          tr.className = 'locked-category-row';
+          tr.innerHTML = `
+            <td colspan="3" class="p-0">
+              <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                <span class="fw-bold fs-5">(${count}) ${cat} 
+                  ${hasNew ? `<span class="badge-new" onclick="showAddOnPopup('${cat}')">NEW</span>` : ''}
+                  <span class="category-lock-icon" style="cursor: pointer;" onclick="showTopUpModal()">🔒</span>
+                </span>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        }
         return;
       }
 
