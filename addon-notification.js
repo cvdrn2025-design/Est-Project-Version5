@@ -1,7 +1,8 @@
 // ============================================================
-// SISTEM NOTIFIKASI ADD-ON AHS BARU
-// - Menampilkan badge "NEW" di kategori
-// - Pop-up Add-on AHS dengan kode unik
+// SISTEM NOTIFIKASI ADD-ON AHS (TERBARU)
+// - Kompatibel dengan 3 tier pembayaran
+// - Badge NEW dengan animasi
+// - Pop-up Add-on dengan kode unik
 // - Nomor seri otomatis bertambah
 // ============================================================
 
@@ -61,7 +62,28 @@ function getNewCountByCategory(category) {
   return ahsDatabase.filter(item => item.category === category && item.isNew === true).length;
 }
 
-// 8. Render kategori dengan badge "NEW"
+// 8. Tentukan halaman pembayaran berdasarkan tipe add-on
+function getPaymentPage(category) {
+  // Jika kategori sudah ada di daftar kategori lama (bukan kategori baru)
+  const existingCategories = [
+    "Pekerjaan Persiapan",
+    "Pekerjaan Tanah",
+    "Pekerjaan Pondasi",
+    "Pekerjaan Beton",
+    "Pekerjaan Atap",
+    "Pekerjaan Finishing/Arsitektur",
+    "Pekerjaan Mekanikal & Elektrikal",
+    "Pekerjaan Plumbing"
+  ];
+
+  if (existingCategories.includes(category)) {
+    return 'qris-addon.html'; // Add-on per kategori (Rp 20.000)
+  } else {
+    return 'qris-newcat.html'; // Kategori baru + AHS baru (Rp 150.000)
+  }
+}
+
+// 9. Render kategori dengan badge "NEW"
 function renderLockedCategoriesWithNew() {
   const tbody = document.getElementById('ahsTableBody');
   if (!tbody) return;
@@ -100,7 +122,7 @@ function renderLockedCategoriesWithNew() {
   }
 }
 
-// 9. Fungsi pop-up Add-on AHS
+// 10. Fungsi pop-up Add-on AHS
 function showAddOnPopup(category) {
   // Ambil semua AHS baru di kategori ini
   const newItems = ahsDatabase.filter(item => item.category === category && item.isNew === true);
@@ -110,6 +132,7 @@ function showAddOnPopup(category) {
   // Ambil versi terbaru (untuk nomor seri)
   const latestVersion = Math.max(...newItems.map(item => item.version || 1));
   const code = generateNewCode(category, latestVersion);
+  const paymentPage = getPaymentPage(category);
 
   // Bangun HTML isi pop-up
   let itemListHTML = '';
@@ -137,7 +160,7 @@ function showAddOnPopup(category) {
         ${itemListHTML}
       </div>
       
-      <button class="btn btn-success w-100 py-2" onclick="window.location.href='qris-payment.html'">
+      <button class="btn btn-success w-100 py-2" onclick="window.location.href='${paymentPage}?addon=' + encodeURIComponent('${code}')">
         💳 Top Up untuk Akses
       </button>
     </div>
@@ -161,7 +184,7 @@ function showAddOnPopup(category) {
   }, 500);
 }
 
-// 10. Inisialisasi saat halaman dimuat
+// 11. Inisialisasi saat halaman dimuat
 document.addEventListener('DOMContentLoaded', function() {
   // Cek apakah modal addOnModal sudah ada di HTML
   if (!document.getElementById('addOnModal')) {
