@@ -5,6 +5,7 @@
 // - Pop-up Add-on dengan kode unik
 // - Cek akses ke Firebase Realtime Database
 // - Kode unik terbawa ke halaman pembayaran
+// - User Premium tetap bisa membeli Add-on untuk AHS baru
 // ============================================================
 
 // 1. Mapping kategori ke singkatan (untuk kode unik)
@@ -247,71 +248,66 @@ function renderLockedCategoriesWithNew() {
 
 // 13. Fungsi pop-up Add-on AHS (kode unik terbawa ke halaman pembayaran)
 function showAddOnPopup(category) {
-  // Cek akses dulu sebelum menampilkan pop-up
-  checkUserPremiumAccess((isPremium) => {
-    if (isPremium) {
-      alert('Anda sudah memiliki akses Premium!');
-      return;
-    }
+  // Cek akses add-on per kategori
+  checkAddonAccess(category, (hasAddon) => {
+    checkNewCategoryAccess(category, (hasNewCat) => {
+      
+      // Jika user sudah punya akses add-on/kategori baru → beri tahu
+      if (hasAddon || hasNewCat) {
+        alert('Anda sudah memiliki akses ke kategori ini!');
+        return;
+      }
 
-    checkAddonAccess(category, (hasAddon) => {
-      checkNewCategoryAccess(category, (hasNewCat) => {
-        if (hasAddon || hasNewCat) {
-          alert('Anda sudah memiliki akses ke kategori ini!');
-          return;
-        }
+      // Ambil semua AHS baru di kategori ini
+      const newItems = ahsDatabase.filter(item => item.category === category && item.isNew === true);
+      
+      if (newItems.length === 0) return;
 
-        // Ambil semua AHS baru di kategori ini
-        const newItems = ahsDatabase.filter(item => item.category === category && item.isNew === true);
-        
-        if (newItems.length === 0) return;
+      // Ambil versi terbaru (untuk nomor seri)
+      const latestVersion = Math.max(...newItems.map(item => item.version || 1));
+      const code = generateNewCode(category, latestVersion);
+      const paymentPage = getPaymentPage(category);
 
-        // Ambil versi terbaru (untuk nomor seri)
-        const latestVersion = Math.max(...newItems.map(item => item.version || 1));
-        const code = generateNewCode(category, latestVersion);
-        const paymentPage = getPaymentPage(category);
+      // Bangun HTML isi pop-up
+      let itemListHTML = '';
+      newItems.forEach(item => {
+        itemListHTML += `<div class="d-flex justify-content-between border-bottom py-2">
+          <span>• ${item.title}</span>
+          <span class="text-muted small">${item.unit}</span>
+        </div>`;
+      });
 
-        // Bangun HTML isi pop-up
-        let itemListHTML = '';
-        newItems.forEach(item => {
-          itemListHTML += `<div class="d-flex justify-content-between border-bottom py-2">
-            <span>• ${item.title}</span>
-            <span class="text-muted small">${item.unit}</span>
-          </div>`;
-        });
-
-        const modalContent = `
-          <div style="text-align: center;">
-            <h4 class="fw-bold">🚀 Add-on AHS Baru!</h4>
-            <p class="text-muted">Kategori: ${category}</p>
-            
-            <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0;">
-              <strong style="font-size: 1.2rem; color: #0f172a; font-family: monospace;">${code}</strong>
-              <p class="mb-0 mt-2" style="font-size: 0.9rem;">
-                Total ${newItems.length} item AHS baru
-              </p>
-            </div>
-            
-            <div style="text-align: left; margin-bottom: 20px;">
-              <strong>Daftar AHS baru:</strong>
-              ${itemListHTML}
-            </div>
-            
-            <button class="btn btn-success w-100 py-2" onclick="window.open('${paymentPage}?addon=' + encodeURIComponent('${code}'), '_blank')">
-              💳 Top Up untuk Akses (${code})
-            </button>
+      const modalContent = `
+        <div style="text-align: center;">
+          <h4 class="fw-bold">🚀 Add-on AHS Baru!</h4>
+          <p class="text-muted">Kategori: ${category}</p>
+          
+          <div style="background: #f1f5f9; border-radius: 12px; padding: 16px; margin: 20px 0;">
+            <strong style="font-size: 1.2rem; color: #0f172a; font-family: monospace;">${code}</strong>
+            <p class="mb-0 mt-2" style="font-size: 0.9rem;">
+              Total ${newItems.length} item AHS baru
+            </p>
           </div>
-        `;
+          
+          <div style="text-align: left; margin-bottom: 20px;">
+            <strong>Daftar AHS baru:</strong>
+            ${itemListHTML}
+          </div>
+          
+          <button class="btn btn-success w-100 py-2" onclick="window.open('${paymentPage}?addon=' + encodeURIComponent('${code}'), '_blank')">
+            💳 Top Up untuk Akses (${code})
+          </button>
+        </div>
+      `;
 
-        // Tampilkan pop-up menggunakan modal yang sudah ada
-        const addOnModal = new bootstrap.Modal(document.getElementById('addOnModal'));
-        document.getElementById('addOnModalBody').innerHTML = modalContent;
-        addOnModal.show();
+      // Tampilkan pop-up menggunakan modal yang sudah ada
+      const addOnModal = new bootstrap.Modal(document.getElementById('addOnModal'));
+      document.getElementById('addOnModalBody').innerHTML = modalContent;
+      addOnModal.show();
 
-        // Tandai sudah dilihat (agar badge hilang setelah pop-up ditutup)
-        newItems.forEach(item => {
-          markAHSAsSeen(item.code);
-        });
+      // Tandai sudah dilihat (agar badge hilang setelah pop-up ditutup)
+      newItems.forEach(item => {
+        markAHSAsSeen(item.code);
       });
     });
   });
