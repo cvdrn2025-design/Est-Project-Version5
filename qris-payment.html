@@ -57,19 +57,64 @@
         <a href="index.html" class="back-link">← Kembali ke Aplikasi</a>
     </div>
 
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <script>
+        // Konfigurasi Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyBLqBuHKh8jOJ1yoDnctadcFgrdOwJ1kqA",
+            authDomain: "sicermat-db.firebaseapp.com",
+            databaseURL: "https://sicermat-db-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "sicermat-db",
+            storageBucket: "sicermat-db.firebasestorage.app",
+            messagingSenderId: "158019957886",
+            appId: "1:158019957886:web:fdce9473c3783b4932142f"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Fungsi getUserID dengan proteksi kehilangan data
         function getUserID() {
             let userID = localStorage.getItem('sicermat_user_id');
+            
             if (!userID) {
-                userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                // Cek URL parameter ?uid=
+                const urlParams = new URLSearchParams(window.location.search);
+                userID = urlParams.get('uid');
+                
+                if (!userID) {
+                    // Buat ID baru jika tidak ada
+                    userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
+                
+                // Simpan ke localStorage agar tidak berubah setelah refresh
                 localStorage.setItem('sicermat_user_id', userID);
             }
+            
             return userID;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
             const userID = getUserID();
             document.getElementById('userIDDisplay').innerText = userID;
+            
+            // === KIRIM STATUS PENDING KE FIREBASE (DENGAN CEK DUPLIKASI) ===
+            const pendingRef = database.ref('pendingPremiumPayments/' + userID);
+            
+            pendingRef.once('value').then(snapshot => {
+                if (!snapshot.exists()) {
+                    // Hanya tulis jika belum ada antrian (anti duplikat)
+                    return pendingRef.set({
+                        status: 'menunggu_pembayaran',
+                        timestamp: Date.now(),
+                        nominal: 100000
+                    });
+                }
+            }).catch(err => console.error('Gagal simpan pending:', err));
+            // ==============================================================
+
             document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
                 'Halo Admin, berikut bukti pembayaran top up Premium dan ID aktivasi saya: ' + userID + '. Mohon segera di aktifkan. Terima kasih.'
             );
