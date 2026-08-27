@@ -7,7 +7,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc; padding: 20px; color: #0f172a; }
-    .container { max-width: 600px; margin: 40px auto; }
+    .container { max-width: 800px; margin: 40px auto; }
     .card { border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
     .btn-primary { background-color: #0f172a; border: none; }
     .btn-primary:hover { background-color: #334155; }
@@ -16,7 +16,6 @@
     .form-control:focus { box-shadow: 0 0 0 0.2rem rgba(15,23,42,0.1); border-color: #0f172a; }
     .lock-screen { text-align: center; padding: 40px; }
     
-    /* ===== KUSTOM: TOMBOL AKTIVASI SAMA TINGGI ===== */
     .btn-activation {
       height: 55px;
       display: flex;
@@ -24,6 +23,10 @@
       justify-content: center;
       font-size: 0.9rem;
       font-weight: 700;
+    }
+
+    .list-group-item {
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -72,23 +75,20 @@
         <button class="btn btn-primary w-100 py-2 fw-bold" onclick="updateAHSVersion()">💾 Simpan Pengaturan</button>
       </div>
 
-      <!-- ==== AKTIVASI AKSES USER ==== -->
+      <!-- ==== AKTIVASI MANUAL ==== -->
       <div class="card p-3 mb-4">
-        <h6 class="fw-bold mb-3">🔑 Aktivasi Akses User</h6>
+        <h6 class="fw-bold mb-3">🔑 Aktivasi Akses User (Manual)</h6>
 
-        <!-- User ID (untuk semua aktivasi) -->
         <div class="mb-3">
           <label class="form-label fw-bold">🔑 User ID</label>
           <input type="text" id="userId" class="form-control" placeholder="Masukkan User ID (contoh: user_1787341363761_yibmn2te)" oninput="checkUserStatus()">
         </div>
 
-        <!-- Kode Unik (untuk Add-on Selected & New Category) -->
         <div class="mb-3">
           <label class="form-label fw-bold">🔑 Kode Unik Add-on (dari User)</label>
           <input type="text" id="addonCode" class="form-control" placeholder="Contoh: NEWAHSPRPN001 atau NEWAHSJLNN001">
         </div>
 
-        <!-- Tombol Aktivasi (sama tinggi) -->
         <div class="row g-2">
           <div class="col-6">
             <button class="btn btn-primary btn-activation w-100" onclick="activatePremium()">✅ Aktifkan Premium</button>
@@ -108,24 +108,38 @@
         <div id="statusDisplay" class="small text-muted">Belum ada pengecekan</div>
       </div>
     </div>
+
+    <!-- ==== ANTRIAN PEMBAYARAN ==== -->
+    <div class="card p-3 mt-4">
+      <h6 class="fw-bold mb-3">📥 Antrian Pembayaran Otomatis</h6>
+
+      <div class="mb-4">
+        <h6 class="fw-bold text-primary">💎 Premium (Lifetime)</h6>
+        <div id="pendingPremiumList" class="text-muted">Memuat data...</div>
+      </div>
+
+      <div class="mb-4">
+        <h6 class="fw-bold text-warning">🚀 Add-on (Selected)</h6>
+        <div id="pendingAddonList" class="text-muted">Memuat data...</div>
+      </div>
+
+      <div>
+        <h6 class="fw-bold text-success">🏗️ New Category (Newcat)</h6>
+        <div id="pendingNewcatList" class="text-muted">Memuat data...</div>
+      </div>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <!-- Load master-data.js agar admin bisa baca kategori -->
+  <!-- Load master-data.js -->
   <script src="master-data.js?v=20260912"></script>
 
   <script>
-    // ============================================================
-    // PASSWORD ADMIN (GANTI SESUAI KEINGINAN ANDA)
-    // ============================================================
     const ADMIN_PASSWORD = 'Admin123!';
 
-    // ============================================================
-    // KONFIGURASI FIREBASE (SAMA SEPERTI index.html)
-    // ============================================================
     const firebaseConfig = {
       apiKey: "AIzaSyBLqBuHKh8jOJ1yoDnctadcFgrdOwJ1kqA",
       authDomain: "sicermat-db.firebaseapp.com",
@@ -138,9 +152,6 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    // ============================================================
-    // MAPPING KATEGORI KE SINGKATAN (UNTUK KODE UNIK)
-    // ============================================================
     const CATEGORY_ABBR_MAP = {
       "Pekerjaan Persiapan": "PRP",
       "Pekerjaan Tanah": "TNH",
@@ -158,17 +169,12 @@
       return CATEGORY_ABBR_MAP[category] || "GEN";
     }
 
-    // ============================================================
-    // FUNGSI DINAMIS: BACA KATEGORI DARI master-data.js
-    // ============================================================
     function getCategoryMapFromMasterData() {
       const categoryMap = {};
-      
       if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
         ahsDatabase.forEach(item => {
           const cat = item.category || 'Lainnya';
           const code = item.code || '';
-          
           if (item.isNew === true) {
             const abbr = getCategoryAbbreviation(cat);
             const serial = String(item.version || 1).padStart(3, '0');
@@ -176,11 +182,9 @@
           }
         });
       }
-      
       return categoryMap;
     }
 
-    // Fungsi utama yang dipakai untuk validasi kode unik
     function getCategoryFromCode(code) {
       const categoryMap = getCategoryMapFromMasterData();
       return categoryMap[code] || null;
@@ -196,6 +200,7 @@
         document.getElementById('adminPanel').style.display = 'block';
         localStorage.setItem('sicermat_admin_logged_in', 'true');
         loadAHSVersion();
+        loadPendingPayments(); // Panggil antrian
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
@@ -227,9 +232,7 @@
           document.getElementById('ahsPrice').value = data.price || '';
           document.getElementById('ahsMessage').value = data.message || '';
         }
-      }).catch(err => {
-        console.error('Gagal membaca settings:', err);
-      });
+      }).catch(err => console.error(err));
     }
 
     function updateAHSVersion() {
@@ -242,23 +245,15 @@
         version: version,
         price: parseInt(price),
         message: message
-      }).then(() => {
-        alert('✅ Pengaturan AHS berhasil disimpan!');
-      }).catch(err => {
-        alert('❌ Gagal: ' + err.message);
-      });
+      }).then(() => alert('✅ Pengaturan AHS berhasil disimpan!'))
+      .catch(err => alert('❌ Gagal: ' + err.message));
     }
 
     // ============================================================
-    // FUNGSI AKTIVASI
+    // FUNGSI MANUAL
     // ============================================================
-    function getUserId() {
-      return document.getElementById('userId').value.trim();
-    }
-
-    function getAddonCode() {
-      return document.getElementById('addonCode').value.trim();
-    }
+    function getUserId() { return document.getElementById('userId').value.trim(); }
+    function getAddonCode() { return document.getElementById('addonCode').value.trim(); }
 
     function checkUserStatus() {
       const userId = getUserId();
@@ -289,81 +284,177 @@
       });
     }
 
-    // ============================================================
-    // FUNGSI AKTIVASI PREMIUM
-    // ============================================================
     function activatePremium() {
       const userId = getUserId();
-      if (!userId) {
-        alert('Masukkan User ID terlebih dahulu!');
-        return;
-      }
+      if (!userId) { alert('Masukkan User ID terlebih dahulu!'); return; }
 
-      const ref = database.ref('usersPremium/' + userId + '/activated');
-      ref.set(true).then(() => {
-        alert('✅ Premium berhasil diaktifkan untuk User: ' + userId);
+      database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
+        alert('✅ Premium berhasil diaktifkan!');
         checkUserStatus();
-      }).catch(err => {
-        alert('❌ Gagal: ' + err.message);
-      });
+      }).catch(err => alert('❌ Gagal: ' + err.message));
     }
 
-    // ============================================================
-    // FUNGSI AKTIVASI ADD-ON SELECTED
-    // ============================================================
     function activateAddonSelected() {
       const userId = getUserId();
       const code = getAddonCode();
+      if (!userId || !code) { alert('Masukkan User ID dan Kode Unik!'); return; }
 
-      if (!userId || !code) {
-        alert('Masukkan User ID dan Kode Unik!');
-        return;
-      }
-
-      // Validasi kode unik
       const category = getCategoryFromCode(code);
-      if (!category) {
-        alert('❌ Kode unik tidak valid!');
-        return;
-      }
+      if (!category) { alert('❌ Kode unik tidak valid!'); return; }
 
-      // Kategori lama (addon)
-      const ref = database.ref('usersPremium/' + userId + '/addon/' + category);
-      ref.set(true).then(() => {
-        alert('✅ Add-on Selected kategori "' + category + '" berhasil diaktifkan untuk User: ' + userId);
+      database.ref('usersPremium/' + userId + '/addon/' + category).set(true).then(() => {
+        alert('✅ Add-on Selected berhasil diaktifkan!');
         checkUserStatus();
-      }).catch(err => {
-        alert('❌ Gagal: ' + err.message);
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
+
+    function activateAddonNewCategory() {
+      const userId = getUserId();
+      const code = getAddonCode();
+      if (!userId || !code) { alert('Masukkan User ID dan Kode Unik!'); return; }
+
+      const category = getCategoryFromCode(code);
+      if (!category) { alert('❌ Kode unik tidak valid!'); return; }
+
+      database.ref('usersPremium/' + userId + '/addon-newcat/' + category).set(true).then(() => {
+        alert('✅ Add-on New Category berhasil diaktifkan!');
+        checkUserStatus();
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
+
+    // ============================================================
+    // MEMBACA ANTRIAN OTOMATIS
+    // ============================================================
+    function loadPendingPayments() {
+      // Antrian Premium
+      database.ref('pendingPremiumPayments').on('value', snapshot => {
+        const container = document.getElementById('pendingPremiumList');
+        if (!snapshot.exists()) {
+          container.innerHTML = '<span class="text-muted">Tidak ada antrian premium.</span>';
+          return;
+        }
+        let html = '<ul class="list-group">';
+        snapshot.forEach(child => {
+          const data = child.val();
+          const uid = child.key;
+          html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>Premium (Lifetime)</strong><br>
+                <small class="text-muted">Status: ${data.status || '-'} | Nominal: Rp ${data.nominal || 100000}</small><br>
+                <small class="text-danger">User ID: ${uid}</small>
+              </div>
+              <div class="text-end">
+                <button class="btn btn-sm btn-primary mb-1" onclick="quickActivatePremium('${uid}')">Aktivasi</button>
+                <button class="btn btn-sm btn-danger" onclick="rejectPayment('pendingPremiumPayments', '${uid}')">Tolak</button>
+              </div>
+            </li>
+          `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      });
+
+      // Antrian Add-on
+      database.ref('pendingAddonPayments').on('value', snapshot => {
+        const container = document.getElementById('pendingAddonList');
+        if (!snapshot.exists()) {
+          container.innerHTML = '<span class="text-muted">Tidak ada antrian add-on.</span>';
+          return;
+        }
+        let html = '<ul class="list-group">';
+        snapshot.forEach(child => {
+          const data = child.val();
+          const uid = child.key;
+          html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>${data.category || 'Tanpa Kategori'}</strong><br>
+                <small class="text-muted">Kode: ${data.kode || '-'} | Status: ${data.status || '-'}</small><br>
+                <small class="text-danger">User ID: ${uid}</small>
+              </div>
+              <div class="text-end">
+                <button class="btn btn-sm btn-primary mb-1" onclick="quickActivate('${uid}', '${data.kode}', 'addon')">Aktivasi</button>
+                <button class="btn btn-sm btn-danger" onclick="rejectPayment('pendingAddonPayments', '${uid}')">Tolak</button>
+              </div>
+            </li>
+          `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
+      });
+
+      // Antrian Newcat
+      database.ref('pendingNewCatPayments').on('value', snapshot => {
+        const container = document.getElementById('pendingNewcatList');
+        if (!snapshot.exists()) {
+          container.innerHTML = '<span class="text-muted">Tidak ada antrian new category.</span>';
+          return;
+        }
+        let html = '<ul class="list-group">';
+        snapshot.forEach(child => {
+          const data = child.val();
+          const uid = child.key;
+          html += `
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+              <div>
+                <strong>${data.category || 'Tanpa Kategori'}</strong><br>
+                <small class="text-muted">Kode: ${data.kode || '-'} | Status: ${data.status || '-'}</small><br>
+                <small class="text-danger">User ID: ${uid}</small>
+              </div>
+              <div class="text-end">
+                <button class="btn btn-sm btn-success mb-1" onclick="quickActivate('${uid}', '${data.kode}', 'newcat')">Aktivasi</button>
+                <button class="btn btn-sm btn-danger" onclick="rejectPayment('pendingNewCatPayments', '${uid}')">Tolak</button>
+              </div>
+            </li>
+          `;
+        });
+        html += '</ul>';
+        container.innerHTML = html;
       });
     }
 
     // ============================================================
-    // FUNGSI AKTIVASI ADD-ON NEW CATEGORY
+    // FUNGSI AKTIVASI CEPAT
     // ============================================================
-    function activateAddonNewCategory() {
-      const userId = getUserId();
-      const code = getAddonCode();
+    function quickActivatePremium(userId) {
+      if (!confirm(`Aktifkan Premium untuk user ${userId}?`)) return;
+      database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
+        return database.ref('pendingPremiumPayments/' + userId).remove();
+      }).then(() => {
+        alert('✅ Premium berhasil diaktifkan!');
+        checkUserStatus();
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
 
-      if (!userId || !code) {
-        alert('Masukkan User ID dan Kode Unik!');
-        return;
-      }
+    function quickActivate(userId, code, type) {
+      if (!confirm(`Aktivasi kode ${code} untuk user ${userId}?`)) return;
 
-      // Validasi kode unik
       const category = getCategoryFromCode(code);
       if (!category) {
-        alert('❌ Kode unik tidak valid!');
+        alert('Kode unik tidak ditemukan di master-data!');
         return;
       }
 
-      // Kategori baru (addon-newcat)
-      const ref = database.ref('usersPremium/' + userId + '/addon-newcat/' + category);
-      ref.set(true).then(() => {
-        alert('✅ Add-on New Category "' + category + '" berhasil diaktifkan untuk User: ' + userId);
+      let path = '';
+      if (type === 'addon') path = 'usersPremium/' + userId + '/addon/' + category;
+      else if (type === 'newcat') path = 'usersPremium/' + userId + '/addon-newcat/' + category;
+
+      database.ref(path).set(true).then(() => {
+        // Hapus antrian sesuai tipe
+        const pendingPath = type === 'addon' ? 'pendingAddonPayments/' : 'pendingNewCatPayments/';
+        return database.ref(pendingPath + userId).remove();
+      }).then(() => {
+        alert('✅ Aktivasi berhasil!');
         checkUserStatus();
-      }).catch(err => {
-        alert('❌ Gagal: ' + err.message);
-      });
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
+
+    function rejectPayment(path, userId) {
+      if (!confirm('Hapus antrian ini?')) return;
+      database.ref(path + '/' + userId).remove().then(() => {
+        alert('Antrian dihapus.');
+      }).catch(err => alert('❌ Gagal: ' + err.message));
     }
   </script>
 </body>
