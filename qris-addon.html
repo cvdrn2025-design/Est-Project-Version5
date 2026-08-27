@@ -79,7 +79,44 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Fungsi getUserID dengan proteksi kehilangan data
+        // ============================================================
+        // FUNGSI UTILITAS UNTUK KODE UNIK
+        // ============================================================
+        const CATEGORY_ABBR_MAP = {
+            "Pekerjaan Persiapan": "PRP",
+            "Pekerjaan Tanah": "TNH",
+            "Pekerjaan Pondasi": "PND",
+            "Pekerjaan Beton": "BTN",
+            "Pekerjaan Atap": "ATP",
+            "Pekerjaan Finishing/Arsitektur": "FIN",
+            "Pekerjaan Mekanikal & Elektrikal": "MEK",
+            "Pekerjaan Plumbing": "PLB",
+            "Pekerjaan Jalan dan Jembatan": "JLN",
+            "Lainnya": "GEN"
+        };
+
+        function getCategoryAbbreviation(category) {
+            return CATEGORY_ABBR_MAP[category] || "GEN";
+        }
+
+        function generateNewCode(category, version) {
+            const abbr = getCategoryAbbreviation(category);
+            const serial = String(version || 1).padStart(3, '0');
+            return `NEWAHS${abbr}N${serial}`;
+        }
+
+        // Fungsi untuk mencari kategori dari kode yang ada (jika bukan kode unik)
+        function getCategoryFromLegacyCode(code) {
+            if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
+                const item = ahsDatabase.find(i => i.code === code || i.kode === code);
+                if (item) return item.category;
+            }
+            return null;
+        }
+
+        // ============================================================
+        // FUNGSI GET USER ID (ANTI LOSS)
+        // ============================================================
         function getUserID() {
             let userID = localStorage.getItem('sicermat_user_id');
             
@@ -97,13 +134,33 @@
             return userID;
         }
 
+        // ============================================================
+        // AMBIL KODE DARI URL & VALIDASI
+        // ============================================================
         const urlParams = new URLSearchParams(window.location.search);
-        const addonCode = urlParams.get('addon') || 'TANPA-KODE';
+        let rawCode = urlParams.get('addon') || 'TANPA-KODE';
+        
+        // Jika kode tidak valid (tidak diawali NEWAHS), cari kategori dan generate kode baru
+        let finalAddonCode = rawCode;
+        if (!rawCode.startsWith('NEWAHS')) {
+            const category = getCategoryFromLegacyCode(rawCode);
+            if (category) {
+                // Cari versi terbaru dari AHS baru di kategori ini
+                const newItems = (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) 
+                    ? ahsDatabase.filter(i => i.category === category && i.isNew === true) 
+                    : [];
+                const latestVersion = newItems.length > 0 ? Math.max(...newItems.map(i => i.version || 1)) : 1;
+                finalAddonCode = generateNewCode(category, latestVersion);
+            } else {
+                // Fallback: gunakan kode asli jika kategori tidak ditemukan
+                finalAddonCode = rawCode;
+            }
+        }
 
         document.addEventListener('DOMContentLoaded', function() {
             const userID = getUserID();
             document.getElementById('userIDDisplay').innerText = userID;
-            document.getElementById('addonCodeDisplay').innerText = 'Kode Add-on: ' + addonCode;
+            document.getElementById('addonCodeDisplay').innerText = 'Kode Add-on: ' + finalAddonCode;
 
             // === KIRIM STATUS PENDING KE FIREBASE (DENGAN CEK DUPLIKASI) ===
             const pendingRef = database.ref('pendingAddonPayments/' + userID);
@@ -114,7 +171,7 @@
                     return pendingRef.set({
                         status: 'menunggu_pembayaran',
                         timestamp: Date.now(),
-                        kode: addonCode,
+                        kode: finalAddonCode, // Kirim kode unik yang VALID
                         nominal: 20000,
                         tipe: 'SELECTED'
                     });
@@ -123,7 +180,7 @@
             // ==============================================================
 
             document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
-                'Halo Admin, berikut bukti pembayaran Add-on saya: ' + userID + '. Mohon segera di aktifkan. Add-on dengan kode: ' + addonCode + '. Terima kasih.'
+                'Halo Admin, berikut bukti pembayaran Add-on saya: ' + userID + '. Mohon segera di aktifkan. Add-on dengan kode: ' + finalAddonCode + '. Terima kasih.'
             );
         });
 
