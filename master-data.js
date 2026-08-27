@@ -1764,4 +1764,49 @@ function loadMasterData() {
   }
 }
 
-document.addEventListener('DOMContentLoaded', loadMasterData);
+// ============================================================
+// MAPPING KATEGORI KE SINGKATAN (UNTUK KODE UNIK ADD-ON)
+// ============================================================
+const CATEGORY_ABBR_MAP = {
+  "Pekerjaan Persiapan": "PRP",
+  "Pekerjaan Tanah": "TNH",
+  "Pekerjaan Pondasi": "PND",
+  "Pekerjaan Beton": "BTN",
+  "Pekerjaan Atap": "ATP",
+  "Pekerjaan Finishing/Arsitektur": "FIN",
+  "Pekerjaan Mekanikal & Elektrikal": "MEK",
+  "Pekerjaan Plumbing": "PLB",
+  "Pekerjaan Jalan dan Jembatan": "JLN",
+  "Lainnya": "GEN"
+};
+
+function getCategoryAbbreviation(category) {
+  return CATEGORY_ABBR_MAP[category] || "GEN";
+}
+
+function generateNewCode(category, version) {
+  const abbr = getCategoryAbbreviation(category);
+  const serial = String(version || 1).padStart(3, '0');
+  return `NEWAHS${abbr}N${serial}`;
+}
+
+// ============================================================
+// SINKRONISASI KE FIREBASE (OPSIONAL)
+// ============================================================
+function syncMasterDataToFirebase() {
+  if (typeof firebase === 'undefined' || typeof database === 'undefined') return;
+  
+  const updates = {};
+  updates['masterData/bahan'] = masterBahan;
+  updates['masterData/alat'] = masterAlat;
+  updates['masterData/upah'] = masterUpah;
+  
+  database.ref().update(updates)
+    .then(() => console.log('✅ Data master berhasil disinkronkan ke Firebase.'))
+    .catch(err => console.error('❌ Gagal sinkron ke Firebase:', err));
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  loadMasterData();
+  syncMasterDataToFirebase();
+});
