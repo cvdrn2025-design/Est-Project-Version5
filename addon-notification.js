@@ -49,17 +49,17 @@ function markAHSAsSeen(ahsCode) {
   }
 }
 
-// 6. Ambil user ID dari localStorage
+// 6. Ambil user ID dari localStorage (Hindari bentrok dengan index.html)
 function getCurrentUserId() {
   let userId = localStorage.getItem('sicermat_user_id');
   if (!userId) {
-    userId = generateUserId();
+    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
     localStorage.setItem('sicermat_user_id', userId);
   }
   return userId;
 }
 
-// 7. Generate user ID baru
+// 7. Generate user ID baru (fallback jika tidak ada)
 function generateUserId() {
   return 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
 }
@@ -132,6 +132,12 @@ function renderLockedCategoriesWithNew() {
   const tbody = document.getElementById('ahsTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
+
+  // Fallback jika ahsDatabase belum dimuat
+  if (typeof ahsDatabase === 'undefined' || ahsDatabase.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">Memuat data AHS...</td></tr>';
+    return;
+  }
 
   const categories = {};
   ahsDatabase.forEach(item => {
