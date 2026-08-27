@@ -128,13 +128,57 @@
         <div id="pendingNewcatList" class="text-muted">Memuat data...</div>
       </div>
     </div>
+
+    <!-- ==== HISTORY AKTIVASI ==== -->
+    <div class="card p-3 mt-4">
+      <h6 class="fw-bold mb-3">📊 Statistik & Riwayat Aktivasi</h6>
+
+      <!-- Statistik Total -->
+      <div class="row g-2 mb-3">
+        <div class="col-md-4">
+          <div class="border rounded p-2 text-center">
+            <div class="text-muted small">Total Premium Aktif</div>
+            <div class="fs-4 fw-bold text-primary" id="totalPremium">0</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded p-2 text-center">
+            <div class="text-muted small">Total Add-on Aktif</div>
+            <div class="fs-4 fw-bold text-warning" id="totalAddon">0</div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="border rounded p-2 text-center">
+            <div class="text-muted small">Total Kategori Baru Aktif</div>
+            <div class="fs-4 fw-bold text-success" id="totalNewCat">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabel Riwayat -->
+      <div class="table-responsive">
+        <table class="table table-sm table-bordered">
+          <thead class="table-light">
+            <tr>
+              <th>Waktu</th>
+              <th>User ID</th>
+              <th>Jenis</th>
+              <th>Kategori</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody">
+            <tr><td colspan="4" class="text-center text-muted">Belum ada riwayat</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </div>
 
   <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <!-- Load master-data.js (Fungsi CATEGORY_ABBR_MAP sudah ada di sini) -->
+  <!-- Load master-data.js -->
   <script src="master-data.js?v=20260912"></script>
 
   <script>
@@ -153,13 +197,15 @@
     const database = firebase.database();
 
     // ============================================================
-    // LOGIN & LOGOUT (DIPERBAIKI: TIDAK BENTROK DENGAN MASTER-DATA)
+    // LOGIN & LOGOUT
     // ============================================================
     function showAdminPanel() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminPanel').style.display = 'block';
       loadAHSVersion();
-      loadPendingPayments(); // Panggil antrian
+      loadPendingPayments();
+      loadHistory();
+      loadStats();
     }
 
     function loginAdmin() {
@@ -181,7 +227,6 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      // Jika sudah login sebelumnya, langsung tampilkan panel
       if (localStorage.getItem('sicermat_admin_logged_in') === 'true') {
         showAdminPanel();
       }
@@ -217,7 +262,7 @@
     }
 
     // ============================================================
-    // FUNGSI MANUAL (DIPERBAIKI: VALIDASI USER ID)
+    // FUNGSI MANUAL
     // ============================================================
     function getUserId() { return document.getElementById('userId').value.trim(); }
     function getAddonCode() { return document.getElementById('addonCode').value.trim(); }
@@ -257,6 +302,19 @@
       });
     }
 
+    // ============================================================
+    // FUNGSI AKTIVASI (MANUAL & OTOMATIS)
+    // ============================================================
+    function saveActivationLog(userId, type, category) {
+      const logRef = database.ref('activationLogs').push();
+      logRef.set({
+        userId: userId,
+        type: type,
+        category: category || '-',
+        timestamp: Date.now()
+      }).catch(err => console.error('Gagal simpan log:', err));
+    }
+
     function activatePremium() {
       const userId = getUserId();
       const errorMsg = validateUserId(userId);
@@ -264,6 +322,7 @@
 
       database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
         alert('✅ Premium berhasil diaktifkan untuk User: ' + userId);
+        saveActivationLog(userId, 'premium', '-');
         checkUserStatus();
       }).catch(err => alert('❌ Gagal: ' + err.message));
     }
@@ -280,6 +339,7 @@
 
       database.ref('usersPremium/' + userId + '/addon/' + category).set(true).then(() => {
         alert('✅ Add-on Selected berhasil diaktifkan!');
+        saveActivationLog(userId, 'addon', category);
         checkUserStatus();
       }).catch(err => alert('❌ Gagal: ' + err.message));
     }
@@ -296,7 +356,49 @@
 
       database.ref('usersPremium/' + userId + '/addon-newcat/' + category).set(true).then(() => {
         alert('✅ Add-on New Category berhasil diaktifkan!');
+        saveActivationLog(userId, 'newcat', category);
         checkUserStatus();
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
+
+    function quickActivatePremium(userId) {
+      if (!confirm(`Aktifkan Premium untuk user ${userId}?`)) return;
+      database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
+        return database.ref('pendingPremiumPayments/' + userId).remove();
+      }).then(() => {
+        alert('✅ Premium berhasil diaktifkan!');
+        saveActivationLog(userId, 'premium', '-');
+        checkUserStatus();
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
+
+    function quickActivate(userId, code, type) {
+      if (!confirm(`Aktivasi kode ${code} untuk user ${userId}?`)) return;
+
+      const category = getCategoryFromCode(code);
+      if (!category) {
+        alert('Kode unik tidak ditemukan di master-data!');
+        return;
+      }
+
+      let path = '';
+      if (type === 'addon') path = 'usersPremium/' + userId + '/addon/' + category;
+      else if (type === 'newcat') path = 'usersPremium/' + userId + '/addon-newcat/' + category;
+
+      database.ref(path).set(true).then(() => {
+        const pendingPath = type === 'addon' ? 'pendingAddonPayments/' : 'pendingNewCatPayments/';
+        return database.ref(pendingPath + userId).remove();
+      }).then(() => {
+        alert('✅ Aktivasi berhasil!');
+        saveActivationLog(userId, type, category);
+        checkUserStatus();
+      }).catch(err => alert('❌ Gagal: ' + err.message));
+    }
+
+    function rejectPayment(path, userId) {
+      if (!confirm('Hapus antrian ini?')) return;
+      database.ref(path + '/' + userId).remove().then(() => {
+        alert('Antrian dihapus.');
       }).catch(err => alert('❌ Gagal: ' + err.message));
     }
 
@@ -393,45 +495,69 @@
     }
 
     // ============================================================
-    // FUNGSI AKTIVASI CEPAT
+    // STATISTIK & HISTORY
     // ============================================================
-    function quickActivatePremium(userId) {
-      if (!confirm(`Aktifkan Premium untuk user ${userId}?`)) return;
-      database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
-        return database.ref('pendingPremiumPayments/' + userId).remove();
-      }).then(() => {
-        alert('✅ Premium berhasil diaktifkan!');
-        checkUserStatus();
-      }).catch(err => alert('❌ Gagal: ' + err.message));
+    function loadHistory() {
+      database.ref('activationLogs').orderByChild('timestamp').limitToLast(20).on('value', snapshot => {
+        const tbody = document.getElementById('historyTableBody');
+        if (!snapshot.exists()) {
+          tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">Belum ada riwayat</td></tr>';
+          return;
+        }
+
+        let html = '';
+        snapshot.forEach(child => {
+          const data = child.val();
+          const date = new Date(data.timestamp);
+          const dateStr = date.toLocaleDateString('id-ID') + ' ' + date.toLocaleTimeString('id-ID');
+          
+          let typeBadge = '';
+          if (data.type === 'premium') typeBadge = '<span class="badge bg-primary">Premium</span>';
+          else if (data.type === 'addon') typeBadge = '<span class="badge bg-warning text-dark">Add-on</span>';
+          else if (data.type === 'newcat') typeBadge = '<span class="badge bg-success">Kategori Baru</span>';
+
+          html += `
+            <tr>
+              <td class="small">${dateStr}</td>
+              <td class="small text-break">${data.userId}</td>
+              <td>${typeBadge}</td>
+              <td class="small">${data.category || '-'}</td>
+            </tr>
+          `;
+        });
+        tbody.innerHTML = html;
+      });
     }
 
-    function quickActivate(userId, code, type) {
-      if (!confirm(`Aktivasi kode ${code} untuk user ${userId}?`)) return;
+    function loadStats() {
+      // Premium
+      database.ref('usersPremium').orderByChild('activated').equalTo(true).on('value', snapshot => {
+        let count = 0;
+        snapshot.forEach(child => {
+          if (child.hasChild('activated')) count++;
+        });
+        document.getElementById('totalPremium').innerText = count;
+      });
 
-      const category = getCategoryFromCode(code);
-      if (!category) {
-        alert('Kode unik tidak ditemukan di master-data!');
-        return;
-      }
+      // Add-on
+      database.ref('usersPremium').orderByChild('addon').on('value', snapshot => {
+        let count = 0;
+        snapshot.forEach(child => {
+          const addonData = child.val().addon;
+          if (addonData && Object.keys(addonData).length > 0) count++;
+        });
+        document.getElementById('totalAddon').innerText = count;
+      });
 
-      let path = '';
-      if (type === 'addon') path = 'usersPremium/' + userId + '/addon/' + category;
-      else if (type === 'newcat') path = 'usersPremium/' + userId + '/addon-newcat/' + category;
-
-      database.ref(path).set(true).then(() => {
-        const pendingPath = type === 'addon' ? 'pendingAddonPayments/' : 'pendingNewCatPayments/';
-        return database.ref(pendingPath + userId).remove();
-      }).then(() => {
-        alert('✅ Aktivasi berhasil!');
-        checkUserStatus();
-      }).catch(err => alert('❌ Gagal: ' + err.message));
-    }
-
-    function rejectPayment(path, userId) {
-      if (!confirm('Hapus antrian ini?')) return;
-      database.ref(path + '/' + userId).remove().then(() => {
-        alert('Antrian dihapus.');
-      }).catch(err => alert('❌ Gagal: ' + err.message));
+      // Kategori Baru
+      database.ref('usersPremium').orderByChild('addon-newcat').on('value', snapshot => {
+        let count = 0;
+        snapshot.forEach(child => {
+          const newCatData = child.val()['addon-newcat'];
+          if (newCatData && Object.keys(newCatData).length > 0) count++;
+        });
+        document.getElementById('totalNewCat').innerText = count;
+      });
     }
   </script>
 </body>
