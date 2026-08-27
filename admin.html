@@ -134,7 +134,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-  <!-- Load master-data.js -->
+  <!-- Load master-data.js (Fungsi CATEGORY_ABBR_MAP sudah ada di sini) -->
   <script src="master-data.js?v=20260912"></script>
 
   <script>
@@ -152,55 +152,21 @@
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
 
-    const CATEGORY_ABBR_MAP = {
-      "Pekerjaan Persiapan": "PRP",
-      "Pekerjaan Tanah": "TNH",
-      "Pekerjaan Pondasi": "PND",
-      "Pekerjaan Beton": "BTN",
-      "Pekerjaan Atap": "ATP",
-      "Pekerjaan Finishing/Arsitektur": "FIN",
-      "Pekerjaan Mekanikal & Elektrikal": "MEK",
-      "Pekerjaan Plumbing": "PLB",
-      "Pekerjaan Jalan dan Jembatan": "JLN",
-      "Lainnya": "GEN"
-    };
-
-    function getCategoryAbbreviation(category) {
-      return CATEGORY_ABBR_MAP[category] || "GEN";
-    }
-
-    function getCategoryMapFromMasterData() {
-      const categoryMap = {};
-      if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
-        ahsDatabase.forEach(item => {
-          const cat = item.category || 'Lainnya';
-          const code = item.code || '';
-          if (item.isNew === true) {
-            const abbr = getCategoryAbbreviation(cat);
-            const serial = String(item.version || 1).padStart(3, '0');
-            categoryMap[`NEWAHS${abbr}N${serial}`] = cat;
-          }
-        });
-      }
-      return categoryMap;
-    }
-
-    function getCategoryFromCode(code) {
-      const categoryMap = getCategoryMapFromMasterData();
-      return categoryMap[code] || null;
-    }
-
     // ============================================================
-    // LOGIN & LOGOUT
+    // LOGIN & LOGOUT (DIPERBAIKI: TIDAK BENTROK DENGAN MASTER-DATA)
     // ============================================================
+    function showAdminPanel() {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('adminPanel').style.display = 'block';
+      loadAHSVersion();
+      loadPendingPayments(); // Panggil antrian
+    }
+
     function loginAdmin() {
       const password = document.getElementById('adminPassword').value;
       if (password === ADMIN_PASSWORD) {
-        document.getElementById('loginScreen').style.display = 'none';
-        document.getElementById('adminPanel').style.display = 'block';
         localStorage.setItem('sicermat_admin_logged_in', 'true');
-        loadAHSVersion();
-        loadPendingPayments(); // Panggil antrian
+        showAdminPanel();
       } else {
         document.getElementById('loginError').style.display = 'block';
       }
@@ -215,8 +181,9 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
+      // Jika sudah login sebelumnya, langsung tampilkan panel
       if (localStorage.getItem('sicermat_admin_logged_in') === 'true') {
-        loginAdmin();
+        showAdminPanel();
       }
     });
 
@@ -250,10 +217,16 @@
     }
 
     // ============================================================
-    // FUNGSI MANUAL
+    // FUNGSI MANUAL (DIPERBAIKI: VALIDASI USER ID)
     // ============================================================
     function getUserId() { return document.getElementById('userId').value.trim(); }
     function getAddonCode() { return document.getElementById('addonCode').value.trim(); }
+
+    function validateUserId(userId) {
+      if (!userId) return 'Masukkan User ID terlebih dahulu!';
+      if (!userId.startsWith('user_')) return '❌ User ID tidak valid! Harus diawali dengan "user_" (contoh: user_1787...)';
+      return null;
+    }
 
     function checkUserStatus() {
       const userId = getUserId();
@@ -286,10 +259,11 @@
 
     function activatePremium() {
       const userId = getUserId();
-      if (!userId) { alert('Masukkan User ID terlebih dahulu!'); return; }
+      const errorMsg = validateUserId(userId);
+      if (errorMsg) { alert(errorMsg); return; }
 
       database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
-        alert('✅ Premium berhasil diaktifkan!');
+        alert('✅ Premium berhasil diaktifkan untuk User: ' + userId);
         checkUserStatus();
       }).catch(err => alert('❌ Gagal: ' + err.message));
     }
@@ -297,7 +271,9 @@
     function activateAddonSelected() {
       const userId = getUserId();
       const code = getAddonCode();
-      if (!userId || !code) { alert('Masukkan User ID dan Kode Unik!'); return; }
+      const errorMsg = validateUserId(userId);
+      if (errorMsg) { alert(errorMsg); return; }
+      if (!code) { alert('Masukkan Kode Unik!'); return; }
 
       const category = getCategoryFromCode(code);
       if (!category) { alert('❌ Kode unik tidak valid!'); return; }
@@ -311,7 +287,9 @@
     function activateAddonNewCategory() {
       const userId = getUserId();
       const code = getAddonCode();
-      if (!userId || !code) { alert('Masukkan User ID dan Kode Unik!'); return; }
+      const errorMsg = validateUserId(userId);
+      if (errorMsg) { alert(errorMsg); return; }
+      if (!code) { alert('Masukkan Kode Unik!'); return; }
 
       const category = getCategoryFromCode(code);
       if (!category) { alert('❌ Kode unik tidak valid!'); return; }
@@ -441,7 +419,6 @@
       else if (type === 'newcat') path = 'usersPremium/' + userId + '/addon-newcat/' + category;
 
       database.ref(path).set(true).then(() => {
-        // Hapus antrian sesuai tipe
         const pendingPath = type === 'addon' ? 'pendingAddonPayments/' : 'pendingNewCatPayments/';
         return database.ref(pendingPath + userId).remove();
       }).then(() => {
@@ -458,4 +435,4 @@
     }
   </script>
 </body>
-</html>
+  </html>
