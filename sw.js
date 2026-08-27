@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v11';
+const CACHE_NAME = 'sicermat-cache-v12'; // Ganti versi agar cache lama terhapus
 const urlsToCache = [
   './',
   './index.html',
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v11 dibuka');
+        console.log('Cache SiCerMat v12 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
@@ -47,28 +47,36 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: strategi cache first, tetapi untuk file yang sering berubah gunakan network first
+// Fetch: strategi NETWORK FIRST untuk semua file penting,
+// dengan fallback ke cache jika offline.
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
-  // File yang selalu harus update (jangan di-cache)
-  if (url.pathname.endsWith('master-data.js') || url.pathname.endsWith('ahs-version.json')) {
-    event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match(event.request);
-      })
-    );
-    return;
+  // JANGAN pernah cache request ke Firebase (agar data realtime selalu fresh)
+  if (url.hostname.includes('firebaseio.com') || url.hostname.includes('firebasedatabase.app')) {
+    return; // Biarkan browser request langsung ke Firebase tanpa intervensi cache
   }
 
-  // Untuk semua request lain: cache first, fallback ke network
+  // Strategi Network First:
+  // 1. Coba ambil dari internet (selalu fresh)
+  // 2. Jika gagal (offline), ambil dari cache
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then(response => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).catch(() => {
+        // Jika berhasil diambil dari network, simpan salinan ke cache
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, responseClone);
+        });
+        return response;
+      })
+      .catch(() => {
+        // Jika gagal (offline), coba ambil dari cache
+        return caches.match(event.request).then(cachedResponse => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // Jika halaman navigasi dan tidak ada cache, fallback ke index.html
           if (event.request.mode === 'navigate') {
             return caches.match('./index.html');
           }
