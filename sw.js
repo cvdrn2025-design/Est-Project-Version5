@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v12'; // Ganti versi agar cache lama terhapus
+const CACHE_NAME = 'sicermat-cache-v14'; // Ganti versi agar cache lama terhapus
 const urlsToCache = [
   './',
   './index.html',
@@ -24,7 +24,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v12 dibuka');
+        console.log('Cache SiCerMat v14 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
@@ -47,8 +47,7 @@ self.addEventListener('activate', event => {
   );
 });
 
-// Fetch: strategi NETWORK FIRST untuk semua file penting,
-// dengan fallback ke cache jika offline.
+// Fetch: Strategi NETWORK FIRST untuk semua file penting
 self.addEventListener('fetch', event => {
   const url = new URL(event.request.url);
 
