@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v16'; // Ganti versi agar cache lama terhapus
+const CACHE_NAME = 'sicermat-cache-v17'; // Ganti versi agar cache lama terhapus
 const urlsToCache = [
   './',
   './index.html',
@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v16 dibuka');
+        console.log('Cache SiCerMat v17 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
