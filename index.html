@@ -753,55 +753,87 @@
     }
 
     function selectAHSItem(index, btnElem) {
-      const item = ahsDatabase[index];
-      if (!item) {
+    const item = ahsDatabase[index];
+    if (!item) {
         alert('Data AHS tidak ditemukan.');
         return;
-      }
+    }
 
-      const userId = getCurrentUserId();
-      const premiumRef = database.ref('usersPremium/' + userId + '/activated');
-      const addonRef = database.ref('usersPremium/' + userId + '/addon/' + item.category);
-      const newCatRef = database.ref('usersPremium/' + userId + '/addon-newcat/' + item.category);
+    const userId = getCurrentUserId();
 
-      Promise.all([
+    // Cek akses user
+    const premiumRef = database.ref('usersPremium/' + userId + '/activated');
+    const addonRef = database.ref('usersPremium/' + userId + '/addon/' + item.category);
+    const newCatRef = database.ref('usersPremium/' + userId + '/addon-newcat/' + item.category);
+
+    Promise.all([
         premiumRef.once('value'),
         addonRef.once('value'),
         newCatRef.once('value')
-      ]).then(([premiumSnap, addonSnap, newCatSnap]) => {
+    ]).then(([premiumSnap, addonSnap, newCatSnap]) => {
         const hasPremium = premiumSnap.val() === true;
         const hasAddon = addonSnap.val() === true;
         const hasNewCat = newCatSnap.val() === true;
 
-        // ===== LOGIKA TIER BARU (LEBIH FLEKSIBEL) =====
+        // ===== LOGIKA AKSES SESUAI ALUR =====
+
+        // 1. Jika item adalah AHS BARU (isNew: true)
         if (item.isNew === true) {
-          // AHS BARU: HANYA user yang punya Add-on / Newcat yang boleh akses
-          if (!hasAddon && !hasNewCat) {
-            // CEK APAKAH USER PUNYA AKSES DARI KATEGORI LAIN
-            database.ref('usersPremium/' + userId + '/addon').once('value').then(addonAllSnap => {
-              const allAddons = addonAllSnap.val() || {};
-              const hasAnyAddon = Object.keys(allAddons).length > 0;
-              
-              return database.ref('usersPremium/' + userId + '/addon-newcat').once('value').then(newCatAllSnap => {
-                const allNewCats = newCatAllSnap.val() || {};
-                const hasAnyNewCat = Object.keys(allNewCats).length > 0;
-                
-                if (!hasAnyAddon && !hasAnyNewCat) {
-                  alert('⚠️ PERINGATAN: Anda harus upgrade ke Add-on atau Kategori Baru untuk mengakses AHS baru ini.');
-                  return;
-                }
-                
-                // User punya akses add-on, lanjutkan
-                addItemToRAB(item, index, btnElem);
-              });
-            }).catch(err => {
-              console.error('Gagal cek akses:', err);
-              alert('Gagal cek akses. Silakan coba lagi.');
-            });
-            return;
-          }
+            // AHS BARU: HANYA user yang punya Add-on / Newcat yang boleh akses
+            // Premium TIDAK otomatis dapat akses AHS baru
+            if (!hasAddon && !hasNewCat) {
+                // Cek apakah user punya addon/newcat di kategori LAIN
+                return Promise.all([
+                    database.ref('usersPremium/' + userId + '/addon').once('value'),
+                    database.ref('usersPremium/' + userId + '/addon-newcat').once('value')
+                ]).then(([allAddonSnap, allNewCatSnap]) => {
+                    const allAddons = allAddonSnap.val() || {};
+                    const allNewCats = allNewCatSnap.val() || {};
+                    const hasAnyAddon = Object.keys(allAddons).length > 0;
+                    const hasAnyNewCat = Object.keys(allNewCats).length > 0;
+                    
+                    if (!hasAnyAddon && !hasAnyNewCat) {
+                        alert('⚠️ Anda harus upgrade ke Add-on atau Kategori Baru untuk mengakses AHS baru ini.');
+                        return;
+                    }
+                    // User punya akses add-on, lanjutkan
+                    addItemToRAB(item, index, btnElem);
+                });
+            }
         } 
-        // AHS LAMA: User harus punya minimal Premium ATAU Add-on ATAU Newcat
+        // 2. Jika item adalah AHS LAMA (isNew: false)
+        else {
+            // AHS LAMA: User harus punya Premium ATAU Add-on ATAU Newcat
+            if (!hasPremium && !hasAddon && !hasNewCat) {
+                // Cek apakah user punya addon/newcat di kategori LAIN
+                return Promise.all([
+                    database.ref('usersPremium/' + userId + '/addon').once('value'),
+                    database.ref('usersPremium/' + userId + '/addon-newcat').once('value')
+                ]).then(([allAddonSnap, allNewCatSnap]) => {
+                    const allAddons = allAddonSnap.val() || {};
+                    const allNewCats = allNewCatSnap.val() || {};
+                    const hasAnyAddon = Object.keys(allAddons).length > 0;
+                    const hasAnyNewCat = Object.keys(allNewCats).length > 0;
+                    
+                    if (!hasPremium && !hasAnyAddon && !hasAnyNewCat) {
+                        alert('Anda harus upgrade ke Premium untuk mengakses AHS ini.');
+                        return;
+                    }
+                    addItemToRAB(item, index, btnElem);
+                });
+            }
+        }
+
+        // Tambahkan ke RAB
+        addItemToRAB(item, index, btnElem);
+
+    }).catch(err => {
+        console.error('Gagal cek akses:', err);
+        alert('Gagal cek akses. Silakan coba lagi.');
+    });
+    }
+       
+    // AHS LAMA: User harus punya minimal Premium ATAU Add-on ATAU Newcat
         else {
           if (!hasPremium && !hasAddon && !hasNewCat) {
             // Cek semua addon dan newcat
