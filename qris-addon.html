@@ -19,6 +19,7 @@
         .error-msg { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin: 10px 0; }
         .addon-code-box { background: #fef3c7; border: 2px solid #f59e0b; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: bold; color: #92400e; }
         .back-link { display: block; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 14px; }
+        .category-box { background: #f0fdf4; border: 2px solid #16a34a; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: 600; color: #166534; }
     </style>
 </head>
 <body>
@@ -32,6 +33,9 @@
 
         <!-- Kode Add-on yang dipilih -->
         <div class="addon-code-box" id="addonCodeDisplay">Memuat kode add-on...</div>
+
+        <!-- Kategori yang dipilih -->
+        <div class="category-box" id="categoryDisplay">Memuat kategori...</div>
 
         <!-- QRIS Merchant -->
         <div class="qris-box">
@@ -83,9 +87,10 @@
         const database = firebase.database();
 
         // ============================================================
-        // FUNGSI UTILITAS UNTUK KODE UNIK
+        // FUNGSI UTILITAS UNTUK KODE UNIK (LENGKAP + LANDSCAPE)
         // ============================================================
         const CATEGORY_ABBR_MAP = {
+            // Kategori Lama
             "Pekerjaan Persiapan": "PRP",
             "Pekerjaan Tanah": "TNH",
             "Pekerjaan Pondasi": "PND",
@@ -94,25 +99,86 @@
             "Pekerjaan Finishing/Arsitektur": "FIN",
             "Pekerjaan Mekanikal & Elektrikal": "MEK",
             "Pekerjaan Plumbing": "PLB",
+            
+            // Kategori Baru
             "Pekerjaan Jalan dan Jembatan": "JLN",
+            "Pekerjaan Landscape": "LSC",
+            "Pekerjaan Pagar": "PGR",
+            "Pekerjaan Drainase": "DRN",
+            "Pekerjaan Pengaspalan": "ASP",
+            "Pekerjaan Marka Jalan": "MRK",
+            "Pekerjaan Rambu Lalu Lintas": "RBL",
+            "Pekerjaan Struktur Baja": "STB",
+            "Pekerjaan Precast": "PRC",
+            "Pekerjaan Renovasi": "RNV",
+            
+            // Default
             "Lainnya": "GEN"
         };
 
         const ABBR_CATEGORY_MAP = {
+            // Kategori Lama
             "PRP": "Pekerjaan Persiapan",
-            "TNH": "Pekerjaan Tanah", 
+            "TNH": "Pekerjaan Tanah",
             "PND": "Pekerjaan Pondasi",
             "BTN": "Pekerjaan Beton",
             "ATP": "Pekerjaan Atap",
             "FIN": "Pekerjaan Finishing/Arsitektur",
             "MEK": "Pekerjaan Mekanikal & Elektrikal",
             "PLB": "Pekerjaan Plumbing",
+            
+            // Kategori Baru
             "JLN": "Pekerjaan Jalan dan Jembatan",
+            "LSC": "Pekerjaan Landscape",
+            "PGR": "Pekerjaan Pagar",
+            "DRN": "Pekerjaan Drainase",
+            "ASP": "Pekerjaan Pengaspalan",
+            "MRK": "Pekerjaan Marka Jalan",
+            "RBL": "Pekerjaan Rambu Lalu Lintas",
+            "STB": "Pekerjaan Struktur Baja",
+            "PRC": "Pekerjaan Precast",
+            "RNV": "Pekerjaan Renovasi",
+            
+            // Default
             "GEN": "Lainnya"
         };
 
+        // Kategori Lama
+        const OLD_CATEGORIES = [
+            "Pekerjaan Persiapan",
+            "Pekerjaan Tanah",
+            "Pekerjaan Pondasi",
+            "Pekerjaan Beton",
+            "Pekerjaan Atap",
+            "Pekerjaan Finishing/Arsitektur",
+            "Pekerjaan Mekanikal & Elektrikal",
+            "Pekerjaan Plumbing",
+            "Pekerjaan Landscape"
+        ];
+
+        // Kategori Baru
+        const NEW_CATEGORIES = [
+            "Pekerjaan Jalan dan Jembatan",
+            "Pekerjaan Pagar",
+            "Pekerjaan Drainase",
+            "Pekerjaan Pengaspalan",
+            "Pekerjaan Marka Jalan",
+            "Pekerjaan Rambu Lalu Lintas",
+            "Pekerjaan Struktur Baja",
+            "Pekerjaan Precast",
+            "Pekerjaan Renovasi"
+        ];
+
+        function isNewCategory(category) {
+            return NEW_CATEGORIES.includes(category) || !OLD_CATEGORIES.includes(category);
+        }
+
         function getCategoryAbbreviation(category) {
             return CATEGORY_ABBR_MAP[category] || "GEN";
+        }
+
+        function getCategoryFromAbbreviation(abbr) {
+            return ABBR_CATEGORY_MAP[abbr] || "Lainnya";
         }
 
         function generateNewCode(category, version) {
@@ -121,21 +187,38 @@
             return `NEWAHS${abbr}N${serial}`;
         }
 
-        // Fungsi untuk mencari kategori dari kode yang ada
         function getCategoryFromCode(code) {
+            // Cek format NEWAHS[ABBR]N[VERSION]
+            const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
+            if (match) {
+                return getCategoryFromAbbreviation(match[1]);
+            }
+            
+            // Cek di ahsDatabase berdasarkan code langsung
             if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
-                // Cari berdasarkan code langsung
                 const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
                 if (itemByCode) return itemByCode.category || 'Lainnya';
-                
-                // Cek format NEWAHS[ABBR]N[VERSION]
-                const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
-                if (match) {
-                    const abbr = match[1];
-                    return ABBR_CATEGORY_MAP[abbr] || 'Lainnya';
-                }
             }
+            
             return null;
+        }
+
+        function getPaymentDetails(category) {
+            if (isNewCategory(category)) {
+                return {
+                    page: 'qris-newcat.html',
+                    price: 150000,
+                    type: 'NEWCAT',
+                    label: 'Kategori Baru'
+                };
+            } else {
+                return {
+                    page: 'qris-addon.html',
+                    price: 20000,
+                    type: 'SELECTED',
+                    label: 'Add-on Selected'
+                };
+            }
         }
 
         // ============================================================
@@ -192,6 +275,7 @@
             const userID = getUserID();
             document.getElementById('userIDDisplay').innerText = userID;
             document.getElementById('addonCodeDisplay').innerText = 'Kode Add-on: ' + finalAddonCode;
+            document.getElementById('categoryDisplay').innerText = 'Kategori: ' + (categoryFromURL || 'Lainnya');
 
             // === KIRIM STATUS PENDING KE FIREBASE (DENGAN CEK DUPLIKASI) ===
             const pendingRef = database.ref('pendingAddonPayments/' + userID);
@@ -205,14 +289,14 @@
                         kode: finalAddonCode, // Kirim kode unik yang VALID
                         nominal: 20000,
                         tipe: 'SELECTED',
-                        category: categoryFromURL // TAMBAHKAN KATEGORI
+                        category: categoryFromURL || 'Lainnya' // TAMBAHKAN KATEGORI
                     });
                 }
             }).catch(err => console.error('Gagal simpan pending:', err));
             // ==============================================================
 
             document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
-                'Halo Admin, berikut bukti pembayaran Add-on saya: ' + userID + '. Mohon segera di aktifkan. Add-on dengan kode: ' + finalAddonCode + ' untuk kategori: ' + categoryFromURL + '. Terima kasih.'
+                'Halo Admin, berikut bukti pembayaran Add-on saya: ' + userID + '. Mohon segera di aktifkan. Add-on dengan kode: ' + finalAddonCode + ' untuk kategori: ' + (categoryFromURL || 'Lainnya') + '. Terima kasih.'
             );
         });
 
