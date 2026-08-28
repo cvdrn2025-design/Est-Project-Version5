@@ -480,7 +480,7 @@
     }
 
     // ============================================================
-    // MEMBACA ANTRIAN OTOMATIS
+    // MEMBACA ANTRIAN OTOMATIS (DIPERBAIKI)
     // ============================================================
     function loadPendingPayments() {
       // Antrian Premium
@@ -529,12 +529,14 @@
           const data = child.val();
           const uid = child.key;
           const statusClass = data.status === 'menunggu_pembayaran' ? 'status-pending' : 'status-active';
+          // Ambil kategori dari data atau dari kode
+          const category = data.category || getCategoryFromCode(data.kode) || 'Lainnya';
           html += `
             <div class="list-group-item d-flex justify-content-between align-items-center">
               <div class="flex-grow-1 me-3">
                 <div class="d-flex align-items-center gap-2 mb-1">
                   <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
-                  <strong class="text-warning">${getCategoryBadge(data.category || 'Lainnya')}</strong>
+                  <strong class="text-warning">${getCategoryBadge(category)}</strong>
                 </div>
                 <div class="small text-muted">
                   <strong>Kode:</strong> <code>${data.kode || '-'}</code><br>
@@ -564,12 +566,14 @@
           const data = child.val();
           const uid = child.key;
           const statusClass = data.status === 'menunggu_pembayaran' ? 'status-pending' : 'status-active';
+          // Ambil kategori dari data atau dari kode
+          const category = data.category || getCategoryFromCode(data.kode) || 'Lainnya';
           html += `
             <div class="list-group-item d-flex justify-content-between align-items-center">
               <div class="flex-grow-1 me-3">
                 <div class="d-flex align-items-center gap-2 mb-1">
                   <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
-                  <strong class="text-success">${getCategoryBadge(data.category || 'Lainnya')}</strong>
+                  <strong class="text-success">${getCategoryBadge(category)}</strong>
                 </div>
                 <div class="small text-muted">
                   <strong>Kode:</strong> <code>${data.kode || '-'}</code><br>
