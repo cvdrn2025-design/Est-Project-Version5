@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v17'; // Ganti versi agar cache lama terhapus
+const CACHE_NAME = 'sicermat-cache-v18';
 const urlsToCache = [
   './',
   './index.html',
@@ -25,7 +25,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v17 dibuka');
+        console.log('Cache SiCerMat v18 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
@@ -54,7 +54,7 @@ self.addEventListener('fetch', event => {
 
   // JANGAN pernah cache request ke Firebase (agar data realtime selalu fresh)
   if (url.hostname.includes('firebaseio.com') || url.hostname.includes('firebasedatabase.app')) {
-    return; // Biarkan browser request langsung ke Firebase tanpa intervensi cache
+    return;
   }
 
   // JANGAN cache request ke Firebase Auth
@@ -91,7 +91,7 @@ self.addEventListener('fetch', event => {
 });
 
 // ============================================================
-// FITUR TAMBAHAN: NOTIFIKASI & SYNC (Opsional)
+// FITUR TAMBAHAN: NOTIFIKASI & SYNC
 // ============================================================
 
 // Push Notification (untuk notifikasi update)
