@@ -39,6 +39,27 @@
     .status-active { background-color: #d1fae5; color: #065f46; }
     .status-inactive { background-color: #fee2e2; color: #991b1b; }
     .status-pending { background-color: #fef3c7; color: #92400e; }
+    
+    .category-badge {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin: 2px;
+    }
+    
+    .badge-landscape { background-color: #d1fae5; color: #065f46; }
+    .badge-persiapan { background-color: #fef3c7; color: #92400e; }
+    .badge-tanah { background-color: #fce7f3; color: #9d174d; }
+    .badge-pondasi { background-color: #dbeafe; color: #1e40af; }
+    .badge-beton { background-color: #dcfce7; color: #166534; }
+    .badge-atap { background-color: #fef9c3; color: #854d0e; }
+    .badge-finishing { background-color: #f3e8ff; color: #6b21a8; }
+    .badge-mep { background-color: #fee2e2; color: #991b1b; }
+    .badge-plumbing { background-color: #cffafe; color: #155e75; }
+    .badge-jalan { background-color: #ffedd5; color: #9a3412; }
+    .badge-default { background-color: #f1f5f9; color: #334155; }
   </style>
 </head>
 <body>
@@ -214,56 +235,157 @@
     const database = firebase.database();
 
     // ============================================================
-    // FUNGSI GET CATEGORY FROM CODE
+    // MAPPING KATEGORI (LENGKAP + LANDSCAPE)
     // ============================================================
-    function getCategoryFromCode(code) {
-      if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
-        // Cari berdasarkan code langsung
-        const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
-        if (itemByCode) return itemByCode.category || 'Lainnya';
-        
-        // Cek format NEWAHS[ABBR]N[VERSION]
-        const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
-        if (match) {
-          const abbr = match[1];
-          const categoryMap = {
-            "PRP": "Pekerjaan Persiapan",
-            "TNH": "Pekerjaan Tanah", 
-            "PND": "Pekerjaan Pondasi",
-            "BTN": "Pekerjaan Beton",
-            "ATP": "Pekerjaan Atap",
-            "FIN": "Pekerjaan Finishing/Arsitektur",
-            "MEK": "Pekerjaan Mekanikal & Elektrikal",
-            "PLB": "Pekerjaan Plumbing",
-            "JLN": "Pekerjaan Jalan dan Jembatan",
-            "GEN": "Lainnya"
-          };
-          return categoryMap[abbr] || 'Lainnya';
-        }
-      }
-      return null;
+    const CATEGORY_ABBR_MAP = {
+      // Kategori Lama
+      "Pekerjaan Persiapan": "PRP",
+      "Pekerjaan Tanah": "TNH",
+      "Pekerjaan Pondasi": "PND",
+      "Pekerjaan Beton": "BTN",
+      "Pekerjaan Atap": "ATP",
+      "Pekerjaan Finishing/Arsitektur": "FIN",
+      "Pekerjaan Mekanikal & Elektrikal": "MEK",
+      "Pekerjaan Plumbing": "PLB",
+      "Pekerjaan Landscape": "LSC",
+      
+      // Kategori Baru
+      "Pekerjaan Jalan dan Jembatan": "JLN",
+      "Pekerjaan Pagar": "PGR",
+      "Pekerjaan Drainase": "DRN",
+      "Pekerjaan Pengaspalan": "ASP",
+      "Pekerjaan Marka Jalan": "MRK",
+      "Pekerjaan Rambu Lalu Lintas": "RBL",
+      "Pekerjaan Struktur Baja": "STB",
+      "Pekerjaan Precast": "PRC",
+      "Pekerjaan Renovasi": "RNV",
+      
+      // Default
+      "Lainnya": "GEN"
+    };
+
+    const ABBR_CATEGORY_MAP = {
+      // Kategori Lama
+      "PRP": "Pekerjaan Persiapan",
+      "TNH": "Pekerjaan Tanah",
+      "PND": "Pekerjaan Pondasi",
+      "BTN": "Pekerjaan Beton",
+      "ATP": "Pekerjaan Atap",
+      "FIN": "Pekerjaan Finishing/Arsitektur",
+      "MEK": "Pekerjaan Mekanikal & Elektrikal",
+      "PLB": "Pekerjaan Plumbing",
+      "LSC": "Pekerjaan Landscape",
+      
+      // Kategori Baru
+      "JLN": "Pekerjaan Jalan dan Jembatan",
+      "PGR": "Pekerjaan Pagar",
+      "DRN": "Pekerjaan Drainase",
+      "ASP": "Pekerjaan Pengaspalan",
+      "MRK": "Pekerjaan Marka Jalan",
+      "RBL": "Pekerjaan Rambu Lalu Lintas",
+      "STB": "Pekerjaan Struktur Baja",
+      "PRC": "Pekerjaan Precast",
+      "RNV": "Pekerjaan Renovasi",
+      
+      // Default
+      "GEN": "Lainnya"
+    };
+
+    // Kategori Lama
+    const OLD_CATEGORIES = [
+      "Pekerjaan Persiapan",
+      "Pekerjaan Tanah",
+      "Pekerjaan Pondasi",
+      "Pekerjaan Beton",
+      "Pekerjaan Atap",
+      "Pekerjaan Finishing/Arsitektur",
+      "Pekerjaan Mekanikal & Elektrikal",
+      "Pekerjaan Plumbing",
+      "Pekerjaan Landscape"
+    ];
+
+    // Kategori Baru
+    const NEW_CATEGORIES = [
+      "Pekerjaan Jalan dan Jembatan",
+      "Pekerjaan Pagar",
+      "Pekerjaan Drainase",
+      "Pekerjaan Pengaspalan",
+      "Pekerjaan Marka Jalan",
+      "Pekerjaan Rambu Lalu Lintas",
+      "Pekerjaan Struktur Baja",
+      "Pekerjaan Precast",
+      "Pekerjaan Renovasi"
+    ];
+
+    // ============================================================
+    // FUNGSI UTILITAS KATEGORI
+    // ============================================================
+    function isNewCategory(category) {
+      return NEW_CATEGORIES.includes(category) || !OLD_CATEGORIES.includes(category);
     }
 
     function getCategoryAbbreviation(category) {
-      const CATEGORY_ABBR_MAP = {
-        "Pekerjaan Persiapan": "PRP",
-        "Pekerjaan Tanah": "TNH",
-        "Pekerjaan Pondasi": "PND",
-        "Pekerjaan Beton": "BTN",
-        "Pekerjaan Atap": "ATP",
-        "Pekerjaan Finishing/Arsitektur": "FIN",
-        "Pekerjaan Mekanikal & Elektrikal": "MEK",
-        "Pekerjaan Plumbing": "PLB",
-        "Pekerjaan Jalan dan Jembatan": "JLN",
-        "Lainnya": "GEN"
-      };
       return CATEGORY_ABBR_MAP[category] || "GEN";
+    }
+
+    function getCategoryFromAbbreviation(abbr) {
+      return ABBR_CATEGORY_MAP[abbr] || "Lainnya";
     }
 
     function generateNewCode(category, version) {
       const abbr = getCategoryAbbreviation(category);
       const serial = String(version || 1).padStart(3, '0');
       return `NEWAHS${abbr}N${serial}`;
+    }
+
+    function getCategoryFromCode(code) {
+      // Cek format NEWAHS[ABBR]N[VERSION]
+      const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
+      if (match) {
+        return getCategoryFromAbbreviation(match[1]);
+      }
+      
+      // Cek di ahsDatabase berdasarkan code langsung
+      if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
+        const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
+        if (itemByCode) return itemByCode.category || 'Lainnya';
+      }
+      
+      return null;
+    }
+
+    function getPaymentDetails(category) {
+      if (isNewCategory(category)) {
+        return {
+          page: 'qris-newcat.html',
+          price: 150000,
+          type: 'NEWCAT',
+          label: 'Kategori Baru'
+        };
+      } else {
+        return {
+          page: 'qris-addon.html',
+          price: 20000,
+          type: 'SELECTED',
+          label: 'Add-on Selected'
+        };
+      }
+    }
+
+    function getCategoryBadge(category) {
+      const badgeClasses = {
+        "Pekerjaan Persiapan": "badge-persiapan",
+        "Pekerjaan Tanah": "badge-tanah",
+        "Pekerjaan Pondasi": "badge-pondasi",
+        "Pekerjaan Beton": "badge-beton",
+        "Pekerjaan Atap": "badge-atap",
+        "Pekerjaan Finishing/Arsitektur": "badge-finishing",
+        "Pekerjaan Mekanikal & Elektrikal": "badge-mep",
+        "Pekerjaan Plumbing": "badge-plumbing",
+        "Pekerjaan Landscape": "badge-landscape",
+        "Pekerjaan Jalan dan Jembatan": "badge-jalan"
+      };
+      return `<span class="category-badge ${badgeClasses[category] || 'badge-default'}">${category || 'Lainnya'}</span>`;
     }
 
     // ============================================================
@@ -401,8 +523,8 @@
             '<span class="status-badge status-active">✅ Aktif</span>' : 
             '<span class="status-badge status-inactive">❌ Tidak Aktif</span>';
           
-          const addonList = data.addon ? Object.keys(data.addon).join(', ') : '-';
-          const newCatList = data['addon-newcat'] ? Object.keys(data['addon-newcat']).join(', ') : '-';
+          const addonList = data.addon ? Object.keys(data.addon).map(cat => getCategoryBadge(cat)).join(' ') : '-';
+          const newCatList = data['addon-newcat'] ? Object.keys(data['addon-newcat']).map(cat => getCategoryBadge(cat)).join(' ') : '-';
           
           document.getElementById('statusDisplay').innerHTML = `
             <div class="mt-2">
@@ -612,7 +734,7 @@
               <div class="flex-grow-1 me-3">
                 <div class="d-flex align-items-center gap-2 mb-1">
                   <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
-                  <strong class="text-warning">${data.category || 'Tanpa Kategori'}</strong>
+                  <strong class="text-warning">${getCategoryBadge(data.category || 'Lainnya')}</strong>
                 </div>
                 <div class="small text-muted">
                   <strong>Kode:</strong> <code>${data.kode || '-'}</code><br>
@@ -649,7 +771,7 @@
               <div class="flex-grow-1 me-3">
                 <div class="d-flex align-items-center gap-2 mb-1">
                   <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
-                  <strong class="text-success">${data.category || 'Tanpa Kategori'}</strong>
+                  <strong class="text-success">${getCategoryBadge(data.category || 'Lainnya')}</strong>
                 </div>
                 <div class="small text-muted">
                   <strong>Kode:</strong> <code>${data.kode || '-'}</code><br>
@@ -695,7 +817,7 @@
               <td class="small">${dateStr}</td>
               <td class="small text-break"><code>${data.userId}</code></td>
               <td>${typeBadge}</td>
-              <td class="small">${data.category || '-'}</td>
+              <td class="small">${getCategoryBadge(data.category || '-')}</td>
             </tr>
           `;
         });
@@ -779,4 +901,4 @@
     });
   </script>
 </body>
-  </html>
+</html>
