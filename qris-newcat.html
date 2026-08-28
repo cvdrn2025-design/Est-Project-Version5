@@ -64,6 +64,9 @@
     <!-- Firebase -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    
+    <!-- Load master-data.js untuk mendapatkan kategori -->
+    <script src="master-data.js?v=20260912"></script>
 
     <script>
         // Konfigurasi Firebase
@@ -95,6 +98,19 @@
             "Lainnya": "GEN"
         };
 
+        const ABBR_CATEGORY_MAP = {
+            "PRP": "Pekerjaan Persiapan",
+            "TNH": "Pekerjaan Tanah", 
+            "PND": "Pekerjaan Pondasi",
+            "BTN": "Pekerjaan Beton",
+            "ATP": "Pekerjaan Atap",
+            "FIN": "Pekerjaan Finishing/Arsitektur",
+            "MEK": "Pekerjaan Mekanikal & Elektrikal",
+            "PLB": "Pekerjaan Plumbing",
+            "JLN": "Pekerjaan Jalan dan Jembatan",
+            "GEN": "Lainnya"
+        };
+
         function getCategoryAbbreviation(category) {
             return CATEGORY_ABBR_MAP[category] || "GEN";
         }
@@ -105,11 +121,19 @@
             return `NEWAHS${abbr}N${serial}`;
         }
 
-        // Fungsi untuk mencari kategori dari kode yang ada (jika bukan kode unik)
-        function getCategoryFromLegacyCode(code) {
+        // Fungsi untuk mencari kategori dari kode yang ada
+        function getCategoryFromCode(code) {
             if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
-                const item = ahsDatabase.find(i => i.code === code || i.kode === code);
-                if (item) return item.category;
+                // Cari berdasarkan code langsung
+                const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
+                if (itemByCode) return itemByCode.category || 'Lainnya';
+                
+                // Cek format NEWAHS[ABBR]N[VERSION]
+                const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
+                if (match) {
+                    const abbr = match[1];
+                    return ABBR_CATEGORY_MAP[abbr] || 'Lainnya';
+                }
             }
             return null;
         }
@@ -139,11 +163,12 @@
         // ============================================================
         const urlParams = new URLSearchParams(window.location.search);
         let rawCode = urlParams.get('addon') || 'TANPA-KODE';
+        let categoryFromURL = urlParams.get('category') || null;
         
         // Jika kode tidak valid (tidak diawali NEWAHS), cari kategori dan generate kode baru
         let finalAddonCode = rawCode;
         if (!rawCode.startsWith('NEWAHS')) {
-            const category = getCategoryFromLegacyCode(rawCode);
+            const category = getCategoryFromCode(rawCode) || categoryFromURL;
             if (category) {
                 // Cari versi terbaru dari AHS baru di kategori ini
                 const newItems = (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) 
@@ -151,9 +176,15 @@
                     : [];
                 const latestVersion = newItems.length > 0 ? Math.max(...newItems.map(i => i.version || 1)) : 1;
                 finalAddonCode = generateNewCode(category, latestVersion);
+                categoryFromURL = category;
             } else {
                 // Fallback: gunakan kode asli jika kategori tidak ditemukan
                 finalAddonCode = rawCode;
+            }
+        } else {
+            // Kode sudah valid, ambil kategori dari kode
+            if (!categoryFromURL) {
+                categoryFromURL = getCategoryFromCode(finalAddonCode) || 'Lainnya';
             }
         }
 
@@ -173,14 +204,15 @@
                         timestamp: Date.now(),
                         kode: finalAddonCode, // Kirim kode unik yang VALID
                         nominal: 150000,
-                        tipe: 'NEWCAT'
+                        tipe: 'NEWCAT',
+                        category: categoryFromURL // TAMBAHKAN KATEGORI
                     });
                 }
             }).catch(err => console.error('Gagal simpan pending:', err));
             // ==============================================================
 
             document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
-                'Halo Admin, berikut bukti pembayaran tambahan kategori saya: ' + userID + '. Mohon segera di aktifkan. Kategori baru dengan kode: ' + finalAddonCode + '. Terima kasih.'
+                'Halo Admin, berikut bukti pembayaran tambahan kategori saya: ' + userID + '. Mohon segera di aktifkan. Kategori baru dengan kode: ' + finalAddonCode + ' untuk kategori: ' + categoryFromURL + '. Terima kasih.'
             );
         });
 
