@@ -1,25 +1,58 @@
 {
   "name": "SiCerMat - Estimasi RAB & AHS",
   "short_name": "SiCerMat",
-  "description": "Aplikasi Estimasi RAB dan Analisa Harga Satuan Pekerjaan",
-  "start_url": "./",
-  "scope": "./",
+  "description": "Aplikasi Estimasi RAB & Analisa Harga Satuan Pekerjaan",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f8fafc",
   "theme_color": "#0f172a",
   "orientation": "portrait",
+  "lang": "id",
+  "categories": ["construction", "business", "productivity"],
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Buat Proyek Baru",
+      "url": "./index.html?action=new",
+      "description": "Mulai proyek baru"
+    },
+    {
+      "name": "Library AHS",
+      "url": "./index.html?action=ahs",
+      "description": "Buka Library AHS"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshot-desktop.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "form_factor": "wide"
+    },
+    {
+      "src": "screenshot-mobile.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow"
     }
   ]
 }
