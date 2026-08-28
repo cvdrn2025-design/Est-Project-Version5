@@ -18,6 +18,7 @@
         .btn-success:hover { background-color: #157347; }
         .error-msg { color: #dc2626; background: #fee2e2; padding: 10px; border-radius: 8px; display: none; margin: 10px 0; }
         .back-link { display: block; margin-top: 15px; color: #64748b; text-decoration: none; font-size: 14px; }
+        .info-box { background: #eff6ff; border: 2px solid #3b82f6; padding: 10px; border-radius: 8px; margin: 10px 0; font-weight: 600; color: #1e40af; }
     </style>
 </head>
 <body>
@@ -27,6 +28,15 @@
 
         <div id="errorMessage" class="error-msg">
             ⚠️ Gambar QRIS tidak ditemukan. Pastikan file <b>qris.png</b> sudah di-upload.
+        </div>
+
+        <!-- Info Premium -->
+        <div class="info-box" id="premiumInfo">
+            ✅ Akses semua kategori AHS
+            <br>
+            ✅ Akses semua AHS Baru (Add-on)
+            <br>
+            ✅ Lifetime Access
         </div>
 
         <!-- QRIS Merchant -->
@@ -75,7 +85,143 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
 
-        // Fungsi getUserID dengan proteksi kehilangan data
+        // ============================================================
+        // FUNGSI UTILITAS (SINKRON DENGAN FILE LAIN)
+        // ============================================================
+        
+        // Mapping kategori ke singkatan (sinkron dengan master-data.js)
+        const CATEGORY_ABBR_MAP = {
+            "Pekerjaan Persiapan": "PRP",
+            "Pekerjaan Tanah": "TNH",
+            "Pekerjaan Pondasi": "PND",
+            "Pekerjaan Beton": "BTN",
+            "Pekerjaan Atap": "ATP",
+            "Pekerjaan Finishing/Arsitektur": "FIN",
+            "Pekerjaan Mekanikal & Elektrikal": "MEK",
+            "Pekerjaan Plumbing": "PLB",
+            "Pekerjaan Jalan dan Jembatan": "JLN",
+            "Pekerjaan Landscape": "LSC",
+            "Pekerjaan Pagar": "PGR",
+            "Pekerjaan Drainase": "DRN",
+            "Pekerjaan Pengaspalan": "ASP",
+            "Pekerjaan Marka Jalan": "MRK",
+            "Pekerjaan Rambu Lalu Lintas": "RBL",
+            "Pekerjaan Struktur Baja": "STB",
+            "Pekerjaan Precast": "PRC",
+            "Pekerjaan Renovasi": "RNV",
+            "Lainnya": "GEN"
+        };
+
+        // Mapping terbalik (dari singkatan ke kategori)
+        const ABBR_CATEGORY_MAP = {
+            "PRP": "Pekerjaan Persiapan",
+            "TNH": "Pekerjaan Tanah",
+            "PND": "Pekerjaan Pondasi",
+            "BTN": "Pekerjaan Beton",
+            "ATP": "Pekerjaan Atap",
+            "FIN": "Pekerjaan Finishing/Arsitektur",
+            "MEK": "Pekerjaan Mekanikal & Elektrikal",
+            "PLB": "Pekerjaan Plumbing",
+            "JLN": "Pekerjaan Jalan dan Jembatan",
+            "LSC": "Pekerjaan Landscape",
+            "PGR": "Pekerjaan Pagar",
+            "DRN": "Pekerjaan Drainase",
+            "ASP": "Pekerjaan Pengaspalan",
+            "MRK": "Pekerjaan Marka Jalan",
+            "RBL": "Pekerjaan Rambu Lalu Lintas",
+            "STB": "Pekerjaan Struktur Baja",
+            "PRC": "Pekerjaan Precast",
+            "RNV": "Pekerjaan Renovasi",
+            "GEN": "Lainnya"
+        };
+
+        // Kategori Lama
+        const OLD_CATEGORIES = [
+            "Pekerjaan Persiapan",
+            "Pekerjaan Tanah",
+            "Pekerjaan Pondasi",
+            "Pekerjaan Beton",
+            "Pekerjaan Atap",
+            "Pekerjaan Finishing/Arsitektur",
+            "Pekerjaan Mekanikal & Elektrikal",
+            "Pekerjaan Plumbing",
+            "Pekerjaan Landscape"
+        ];
+
+        // Kategori Baru
+        const NEW_CATEGORIES = [
+            "Pekerjaan Jalan dan Jembatan",
+            "Pekerjaan Pagar",
+            "Pekerjaan Drainase",
+            "Pekerjaan Pengaspalan",
+            "Pekerjaan Marka Jalan",
+            "Pekerjaan Rambu Lalu Lintas",
+            "Pekerjaan Struktur Baja",
+            "Pekerjaan Precast",
+            "Pekerjaan Renovasi"
+        ];
+
+        // Fungsi untuk cek apakah kategori baru
+        function isNewCategory(category) {
+            return NEW_CATEGORIES.includes(category) || !OLD_CATEGORIES.includes(category);
+        }
+
+        // Fungsi untuk mendapatkan singkatan kategori
+        function getCategoryAbbreviation(category) {
+            return CATEGORY_ABBR_MAP[category] || "GEN";
+        }
+
+        // Fungsi untuk mendapatkan kategori dari singkatan
+        function getCategoryFromAbbreviation(abbr) {
+            return ABBR_CATEGORY_MAP[abbr] || "Lainnya";
+        }
+
+        // Fungsi generate kode unik
+        function generateNewCode(category, version) {
+            const abbr = getCategoryAbbreviation(category);
+            const serial = String(version || 1).padStart(3, '0');
+            return `NEWAHS${abbr}N${serial}`;
+        }
+
+        // Fungsi untuk mendapatkan kategori dari kode unik
+        function getCategoryFromCode(code) {
+            // Cek format NEWAHS[ABBR]N[VERSION]
+            const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
+            if (match) {
+                return getCategoryFromAbbreviation(match[1]);
+            }
+            
+            // Cek di ahsDatabase berdasarkan code langsung
+            if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
+                const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
+                if (itemByCode) return itemByCode.category || 'Lainnya';
+            }
+            
+            return null;
+        }
+
+        // Fungsi untuk mendapatkan info pembayaran add-on
+        function getPaymentDetails(category) {
+            if (isNewCategory(category)) {
+                return {
+                    page: 'qris-newcat.html',
+                    price: 150000,
+                    type: 'NEWCAT',
+                    label: 'Kategori Baru'
+                };
+            } else {
+                return {
+                    page: 'qris-addon.html',
+                    price: 20000,
+                    type: 'SELECTED',
+                    label: 'Add-on Selected'
+                };
+            }
+        }
+
+        // ============================================================
+        // FUNGSI GET USER ID (ANTI LOSS)
+        // ============================================================
         function getUserID() {
             let userID = localStorage.getItem('sicermat_user_id');
             
@@ -96,10 +242,46 @@
             return userID;
         }
 
+        // ============================================================
+        // CEK STATUS PREMIUM USER (SINKRON DENGAN index.html)
+        // ============================================================
+        function checkPremiumStatus(callback) {
+            const userID = getUserID();
+            
+            // Cek apakah admin
+            if (userID === 'admin_sicermat') {
+                callback(true);
+                return;
+            }
+            
+            // Cek Firebase
+            database.ref('usersPremium/' + userID + '/activated').once('value')
+                .then(snapshot => {
+                    callback(snapshot.val() === true);
+                })
+                .catch(err => {
+                    console.error('Gagal cek status premium:', err);
+                    callback(false);
+                });
+        }
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
         document.addEventListener('DOMContentLoaded', function() {
             const userID = getUserID();
             document.getElementById('userIDDisplay').innerText = userID;
             
+            // Cek status premium
+            checkPremiumStatus((isPremium) => {
+                if (isPremium) {
+                    document.getElementById('premiumInfo').innerHTML = '✅ Anda sudah Premium!';
+                    document.getElementById('premiumInfo').style.background = '#d1fae5';
+                    document.getElementById('premiumInfo').style.borderColor = '#16a34a';
+                    document.getElementById('premiumInfo').style.color = '#166534';
+                }
+            });
+
             // === KIRIM STATUS PENDING KE FIREBASE (DENGAN CEK DUPLIKASI) ===
             const pendingRef = database.ref('pendingPremiumPayments/' + userID);
             
@@ -109,14 +291,16 @@
                     return pendingRef.set({
                         status: 'menunggu_pembayaran',
                         timestamp: Date.now(),
-                        nominal: 100000
+                        nominal: 100000,
+                        tipe: 'PREMIUM'
                     });
                 }
             }).catch(err => console.error('Gagal simpan pending:', err));
             // ==============================================================
 
+            // WhatsApp Link
             document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
-                'Halo Admin, berikut bukti pembayaran top up Premium dan ID aktivasi saya: ' + userID + '. Mohon segera di aktifkan. Terima kasih.'
+                'Halo Admin, berikut bukti pembayaran top up Premium dan ID aktivasi saya: ' + userID + '. Mohon segera diaktifkan. Terima kasih.'
             );
         });
 
