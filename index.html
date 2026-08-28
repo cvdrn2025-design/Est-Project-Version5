@@ -799,16 +799,35 @@
     }
 
     function showAddOnPopup(cat) {
-      // Cari kode add-on untuk kategori ini dari master-data
-      let addonCode = 'TANPA-KODE';
-      if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
-        const item = ahsDatabase.find(i => i.category === cat && i.isNew === true);
-        if (item && item.code) addonCode = item.code;
-        else if (item && item.kode) addonCode = item.kode;
-      }
-      
-      // Redirect ke halaman pembayaran add-on
-      window.location.href = 'qris-addon.html?addon=' + encodeURIComponent(addonCode);
+  // Cari kode unik (NEWAHS...) dari master-data
+  let addonCode = 'TANPA-KODE';
+  if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
+    const newItems = ahsDatabase.filter(i => i.category === cat && i.isNew === true);
+    if (newItems.length > 0) {
+      const latestVersion = Math.max(...newItems.map(i => i.version || 1));
+      addonCode = generateNewCode(cat, latestVersion);
+    }
+  }
+
+  // Tentukan halaman pembayaran berdasarkan kategori (lama vs baru)
+  let paymentPage = 'qris-addon.html';
+  const isNewCategory = ![
+    "Pekerjaan Persiapan",
+    "Pekerjaan Tanah",
+    "Pekerjaan Pondasi",
+    "Pekerjaan Beton",
+    "Pekerjaan Atap",
+    "Pekerjaan Finishing/Arsitektur",
+    "Pekerjaan Mekanikal & Elektrikal",
+    "Pekerjaan Plumbing"
+  ].includes(cat);
+
+  if (isNewCategory) {
+    paymentPage = 'qris-newcat.html';
+  }
+
+  // Redirect ke halaman pembayaran dengan kode unik
+  window.location.href = paymentPage + '?addon=' + encodeURIComponent(addonCode);
     }
 
     function renderLockedCategories() {
