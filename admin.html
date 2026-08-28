@@ -28,6 +28,17 @@
     .list-group-item {
       font-size: 0.9rem;
     }
+    
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+    
+    .status-active { background-color: #d1fae5; color: #065f46; }
+    .status-inactive { background-color: #fee2e2; color: #991b1b; }
+    .status-pending { background-color: #fef3c7; color: #92400e; }
   </style>
 </head>
 <body>
@@ -37,7 +48,7 @@
     <div class="card p-4">
       <div class="lock-screen">
         <div style="font-size: 3rem; margin-bottom: 15px;">🔐</div>
-        <h4 class="fw-bold mb-3">Login Admin</h4>
+        <h4 class="fw-bold mb-3">Login Admin SiCerMat</h4>
         <input type="password" id="adminPassword" class="form-control mb-3" placeholder="Masukkan Password Admin">
         <button class="btn btn-primary w-100 py-2 fw-bold" onclick="loginAdmin()">🔓 Masuk</button>
         <div id="loginError" class="text-danger mt-2 small" style="display: none;">❌ Password salah!</div>
@@ -182,7 +193,13 @@
   <script src="master-data.js?v=20260912"></script>
 
   <script>
+    // ============================================================
+    // KONFIGURASI
+    // ============================================================
     const ADMIN_PASSWORD = 'Admin123!';
+    
+    // Waktu timeout untuk auto-logout (30 menit tidak aktif)
+    const AUTO_LOGOUT_MINUTES = 30;
 
     const firebaseConfig = {
       apiKey: "AIzaSyBLqBuHKh8jOJ1yoDnctadcFgrdOwJ1kqA",
@@ -197,8 +214,63 @@
     const database = firebase.database();
 
     // ============================================================
+    // FUNGSI GET CATEGORY FROM CODE
+    // ============================================================
+    function getCategoryFromCode(code) {
+      if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
+        // Cari berdasarkan code langsung
+        const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
+        if (itemByCode) return itemByCode.category || 'Lainnya';
+        
+        // Cek format NEWAHS[ABBR]N[VERSION]
+        const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
+        if (match) {
+          const abbr = match[1];
+          const categoryMap = {
+            "PRP": "Pekerjaan Persiapan",
+            "TNH": "Pekerjaan Tanah", 
+            "PND": "Pekerjaan Pondasi",
+            "BTN": "Pekerjaan Beton",
+            "ATP": "Pekerjaan Atap",
+            "FIN": "Pekerjaan Finishing/Arsitektur",
+            "MEK": "Pekerjaan Mekanikal & Elektrikal",
+            "PLB": "Pekerjaan Plumbing",
+            "JLN": "Pekerjaan Jalan dan Jembatan",
+            "GEN": "Lainnya"
+          };
+          return categoryMap[abbr] || 'Lainnya';
+        }
+      }
+      return null;
+    }
+
+    function getCategoryAbbreviation(category) {
+      const CATEGORY_ABBR_MAP = {
+        "Pekerjaan Persiapan": "PRP",
+        "Pekerjaan Tanah": "TNH",
+        "Pekerjaan Pondasi": "PND",
+        "Pekerjaan Beton": "BTN",
+        "Pekerjaan Atap": "ATP",
+        "Pekerjaan Finishing/Arsitektur": "FIN",
+        "Pekerjaan Mekanikal & Elektrikal": "MEK",
+        "Pekerjaan Plumbing": "PLB",
+        "Pekerjaan Jalan dan Jembatan": "JLN",
+        "Lainnya": "GEN"
+      };
+      return CATEGORY_ABBR_MAP[category] || "GEN";
+    }
+
+    function generateNewCode(category, version) {
+      const abbr = getCategoryAbbreviation(category);
+      const serial = String(version || 1).padStart(3, '0');
+      return `NEWAHS${abbr}N${serial}`;
+    }
+
+    // ============================================================
     // LOGIN & LOGOUT
     // ============================================================
+    let inactivityTimer = null;
+
     function showAdminPanel() {
       document.getElementById('loginScreen').style.display = 'none';
       document.getElementById('adminPanel').style.display = 'block';
@@ -206,28 +278,65 @@
       loadPendingPayments();
       loadHistory();
       loadStats();
+      startInactivityTimer();
     }
 
     function loginAdmin() {
       const password = document.getElementById('adminPassword').value;
       if (password === ADMIN_PASSWORD) {
         localStorage.setItem('sicermat_admin_logged_in', 'true');
+        localStorage.setItem('sicermat_admin_last_activity', Date.now().toString());
         showAdminPanel();
       } else {
         document.getElementById('loginError').style.display = 'block';
+        setTimeout(() => {
+          document.getElementById('loginError').style.display = 'none';
+        }, 3000);
       }
     }
 
     function logoutAdmin() {
       localStorage.removeItem('sicermat_admin_logged_in');
+      localStorage.removeItem('sicermat_admin_last_activity');
+      clearTimeout(inactivityTimer);
       document.getElementById('adminPanel').style.display = 'none';
       document.getElementById('loginScreen').style.display = 'block';
       document.getElementById('adminPassword').value = '';
       document.getElementById('loginError').style.display = 'none';
     }
 
+    function startInactivityTimer() {
+      clearTimeout(inactivityTimer);
+      inactivityTimer = setTimeout(() => {
+        alert('⚠️ Anda telah tidak aktif selama ' + AUTO_LOGOUT_MINUTES + ' menit. Sistem akan logout otomatis.');
+        logoutAdmin();
+      }, AUTO_LOGOUT_MINUTES * 60 * 1000);
+    }
+
+    // Reset timer saat ada aktivitas
+    document.addEventListener('click', () => {
+      if (document.getElementById('adminPanel').style.display !== 'none') {
+        localStorage.setItem('sicermat_admin_last_activity', Date.now().toString());
+        startInactivityTimer();
+      }
+    });
+
+    document.addEventListener('keydown', () => {
+      if (document.getElementById('adminPanel').style.display !== 'none') {
+        localStorage.setItem('sicermat_admin_last_activity', Date.now().toString());
+        startInactivityTimer();
+      }
+    });
+
     document.addEventListener('DOMContentLoaded', function() {
-      if (localStorage.getItem('sicermat_admin_logged_in') === 'true') {
+      const isLoggedIn = localStorage.getItem('sicermat_admin_logged_in') === 'true';
+      const lastActivity = parseInt(localStorage.getItem('sicermat_admin_last_activity') || '0');
+      const now = Date.now();
+      
+      // Cek apakah sudah melewati batas waktu logout
+      if (isLoggedIn && (now - lastActivity) > AUTO_LOGOUT_MINUTES * 60 * 1000) {
+        logoutAdmin();
+      } else if (isLoggedIn) {
         showAdminPanel();
       }
     });
@@ -244,7 +353,7 @@
           document.getElementById('ahsPrice').value = data.price || '';
           document.getElementById('ahsMessage').value = data.message || '';
         }
-      }).catch(err => console.error(err));
+      }).catch(err => console.error('Error loading AHS version:', err));
     }
 
     function updateAHSVersion() {
@@ -255,10 +364,14 @@
       const ref = database.ref('settings/ahs-version');
       ref.set({
         version: version,
-        price: parseInt(price),
+        price: parseInt(price) || 100000,
         message: message
-      }).then(() => alert('✅ Pengaturan AHS berhasil disimpan!'))
-      .catch(err => alert('❌ Gagal: ' + err.message));
+      }).then(() => {
+        alert('✅ Pengaturan AHS berhasil disimpan!');
+        loadAHSVersion();
+      }).catch(err => {
+        alert('❌ Gagal menyimpan: ' + err.message);
+      });
     }
 
     // ============================================================
@@ -284,18 +397,28 @@
       userRef.once('value').then(snapshot => {
         const data = snapshot.val();
         if (data) {
-          const premium = data.activated === true ? '✅ Aktif' : '❌ Tidak Aktif';
-          const addon = data.addon ? Object.keys(data.addon).join(', ') : '-';
-          const newCat = data['addon-newcat'] ? Object.keys(data['addon-newcat']).join(', ') : '-';
+          const premium = data.activated === true ? 
+            '<span class="status-badge status-active">✅ Aktif</span>' : 
+            '<span class="status-badge status-inactive">❌ Tidak Aktif</span>';
+          
+          const addonList = data.addon ? Object.keys(data.addon).join(', ') : '-';
+          const newCatList = data['addon-newcat'] ? Object.keys(data['addon-newcat']).join(', ') : '-';
           
           document.getElementById('statusDisplay').innerHTML = `
-            <strong>User ID:</strong> ${userId}<br>
-            <strong>Premium:</strong> ${premium}<br>
-            <strong>Add-on:</strong> ${addon}<br>
-            <strong>Kategori Baru:</strong> ${newCat}
+            <div class="mt-2">
+              <strong>User ID:</strong> <code>${userId}</code><br><br>
+              <strong>Premium:</strong> ${premium}<br><br>
+              <strong>Add-on:</strong> <span class="text-warning">${addonList}</span><br><br>
+              <strong>Kategori Baru:</strong> <span class="text-success">${newCatList}</span>
+            </div>
           `;
         } else {
-          document.getElementById('statusDisplay').innerHTML = '❌ User tidak ditemukan di database';
+          document.getElementById('statusDisplay').innerHTML = `
+            <div class="mt-2">
+              <strong>User ID:</strong> <code>${userId}</code><br><br>
+              <span class="status-badge status-inactive">❌ User tidak ditemukan di database</span>
+            </div>
+          `;
         }
       }).catch(err => {
         document.getElementById('statusDisplay').innerHTML = '⚠️ Error: ' + err.message;
@@ -303,7 +426,7 @@
     }
 
     // ============================================================
-    // FUNGSI AKTIVASI (MANUAL & OTOMATIS)
+    // FUNGSI AKTIVASI (MANUAL)
     // ============================================================
     function saveActivationLog(userId, type, category) {
       const logRef = database.ref('activationLogs').push();
@@ -320,6 +443,8 @@
       const errorMsg = validateUserId(userId);
       if (errorMsg) { alert(errorMsg); return; }
 
+      if (!confirm(`Yakin ingin mengaktifkan PREMIUM untuk user ${userId}?`)) return;
+
       database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
         alert('✅ Premium berhasil diaktifkan untuk User: ' + userId);
         saveActivationLog(userId, 'premium', '-');
@@ -335,10 +460,15 @@
       if (!code) { alert('Masukkan Kode Unik!'); return; }
 
       const category = getCategoryFromCode(code);
-      if (!category) { alert('❌ Kode unik tidak valid!'); return; }
+      if (!category) { 
+        alert('❌ Kode unik tidak valid! Contoh format yang benar: NEWAHSPRPN001'); 
+        return; 
+      }
+
+      if (!confirm(`Yakin ingin mengaktifkan ADD-ON SELECTED untuk user ${userId}?\nKategori: ${category}`)) return;
 
       database.ref('usersPremium/' + userId + '/addon/' + category).set(true).then(() => {
-        alert('✅ Add-on Selected berhasil diaktifkan!');
+        alert('✅ Add-on Selected berhasil diaktifkan!\nKategori: ' + category);
         saveActivationLog(userId, 'addon', category);
         checkUserStatus();
       }).catch(err => alert('❌ Gagal: ' + err.message));
@@ -352,24 +482,36 @@
       if (!code) { alert('Masukkan Kode Unik!'); return; }
 
       const category = getCategoryFromCode(code);
-      if (!category) { alert('❌ Kode unik tidak valid!'); return; }
+      if (!category) { 
+        alert('❌ Kode unik tidak valid! Contoh format yang benar: NEWAHSJLNN001'); 
+        return; 
+      }
+
+      if (!confirm(`Yakin ingin mengaktifkan ADD-ON NEWCAT untuk user ${userId}?\nKategori: ${category}`)) return;
 
       database.ref('usersPremium/' + userId + '/addon-newcat/' + category).set(true).then(() => {
-        alert('✅ Add-on New Category berhasil diaktifkan!');
+        alert('✅ Add-on New Category berhasil diaktifkan!\nKategori: ' + category);
         saveActivationLog(userId, 'newcat', category);
         checkUserStatus();
       }).catch(err => alert('❌ Gagal: ' + err.message));
     }
 
+    // ============================================================
+    // FUNGSI AKTIVASI OTOMATIS DARI ANTRIAN
+    // ============================================================
     function quickActivatePremium(userId) {
       if (!confirm(`Aktifkan Premium untuk user ${userId}?`)) return;
-      database.ref('usersPremium/' + userId + '/activated').set(true).then(() => {
-        return database.ref('pendingPremiumPayments/' + userId).remove();
-      }).then(() => {
-        alert('✅ Premium berhasil diaktifkan!');
-        saveActivationLog(userId, 'premium', '-');
-        checkUserStatus();
-      }).catch(err => alert('❌ Gagal: ' + err.message));
+      
+      database.ref('usersPremium/' + userId + '/activated').set(true)
+        .then(() => {
+          return database.ref('pendingPremiumPayments/' + userId).remove();
+        })
+        .then(() => {
+          alert('✅ Premium berhasil diaktifkan!');
+          saveActivationLog(userId, 'premium', '-');
+          checkUserStatus();
+        })
+        .catch(err => alert('❌ Gagal: ' + err.message));
     }
 
     function quickActivate(userId, code, type) {
@@ -382,17 +524,26 @@
       }
 
       let path = '';
-      if (type === 'addon') path = 'usersPremium/' + userId + '/addon/' + category;
-      else if (type === 'newcat') path = 'usersPremium/' + userId + '/addon-newcat/' + category;
+      let logType = '';
+      if (type === 'addon') {
+        path = 'usersPremium/' + userId + '/addon/' + category;
+        logType = 'addon';
+      } else if (type === 'newcat') {
+        path = 'usersPremium/' + userId + '/addon-newcat/' + category;
+        logType = 'newcat';
+      }
 
-      database.ref(path).set(true).then(() => {
-        const pendingPath = type === 'addon' ? 'pendingAddonPayments/' : 'pendingNewCatPayments/';
-        return database.ref(pendingPath + userId).remove();
-      }).then(() => {
-        alert('✅ Aktivasi berhasil!');
-        saveActivationLog(userId, type, category);
-        checkUserStatus();
-      }).catch(err => alert('❌ Gagal: ' + err.message));
+      database.ref(path).set(true)
+        .then(() => {
+          const pendingPath = type === 'addon' ? 'pendingAddonPayments/' : 'pendingNewCatPayments/';
+          return database.ref(pendingPath + userId).remove();
+        })
+        .then(() => {
+          alert('✅ Aktivasi berhasil!');
+          saveActivationLog(userId, logType, category);
+          checkUserStatus();
+        })
+        .catch(err => alert('❌ Gagal: ' + err.message));
     }
 
     function rejectPayment(path, userId) {
@@ -413,25 +564,32 @@
           container.innerHTML = '<span class="text-muted">Tidak ada antrian premium.</span>';
           return;
         }
-        let html = '<ul class="list-group">';
+        
+        let html = '<div class="list-group">';
         snapshot.forEach(child => {
           const data = child.val();
           const uid = child.key;
+          const statusClass = data.status === 'menunggu_pembayaran' ? 'status-pending' : 'status-active';
+          
           html += `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>Premium (Lifetime)</strong><br>
-                <small class="text-muted">Status: ${data.status || '-'} | Nominal: Rp ${data.nominal || 100000}</small><br>
-                <small class="text-danger">User ID: ${uid}</small>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1 me-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
+                  <span class="text-muted small">Nominal: Rp ${(data.nominal || 100000).toLocaleString('id-ID')}</span>
+                </div>
+                <div class="small text-muted">
+                  <strong>User ID:</strong> <code>${uid}</code>
+                </div>
               </div>
               <div class="text-end">
                 <button class="btn btn-sm btn-primary mb-1" onclick="quickActivatePremium('${uid}')">Aktivasi</button>
                 <button class="btn btn-sm btn-danger" onclick="rejectPayment('pendingPremiumPayments', '${uid}')">Tolak</button>
               </div>
-            </li>
+            </div>
           `;
         });
-        html += '</ul>';
+        html += '</div>';
         container.innerHTML = html;
       });
 
@@ -442,25 +600,33 @@
           container.innerHTML = '<span class="text-muted">Tidak ada antrian add-on.</span>';
           return;
         }
-        let html = '<ul class="list-group">';
+        
+        let html = '<div class="list-group">';
         snapshot.forEach(child => {
           const data = child.val();
           const uid = child.key;
+          const statusClass = data.status === 'menunggu_pembayaran' ? 'status-pending' : 'status-active';
+          
           html += `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>${data.category || 'Tanpa Kategori'}</strong><br>
-                <small class="text-muted">Kode: ${data.kode || '-'} | Status: ${data.status || '-'}</small><br>
-                <small class="text-danger">User ID: ${uid}</small>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1 me-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
+                  <strong class="text-warning">${data.category || 'Tanpa Kategori'}</strong>
+                </div>
+                <div class="small text-muted">
+                  <strong>Kode:</strong> <code>${data.kode || '-'}</code><br>
+                  <strong>User ID:</strong> <code>${uid}</code>
+                </div>
               </div>
               <div class="text-end">
                 <button class="btn btn-sm btn-primary mb-1" onclick="quickActivate('${uid}', '${data.kode}', 'addon')">Aktivasi</button>
                 <button class="btn btn-sm btn-danger" onclick="rejectPayment('pendingAddonPayments', '${uid}')">Tolak</button>
               </div>
-            </li>
+            </div>
           `;
         });
-        html += '</ul>';
+        html += '</div>';
         container.innerHTML = html;
       });
 
@@ -471,25 +637,33 @@
           container.innerHTML = '<span class="text-muted">Tidak ada antrian new category.</span>';
           return;
         }
-        let html = '<ul class="list-group">';
+        
+        let html = '<div class="list-group">';
         snapshot.forEach(child => {
           const data = child.val();
           const uid = child.key;
+          const statusClass = data.status === 'menunggu_pembayaran' ? 'status-pending' : 'status-active';
+          
           html += `
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-              <div>
-                <strong>${data.category || 'Tanpa Kategori'}</strong><br>
-                <small class="text-muted">Kode: ${data.kode || '-'} | Status: ${data.status || '-'}</small><br>
-                <small class="text-danger">User ID: ${uid}</small>
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="flex-grow-1 me-3">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <span class="status-badge ${statusClass}">${data.status || 'pending'}</span>
+                  <strong class="text-success">${data.category || 'Tanpa Kategori'}</strong>
+                </div>
+                <div class="small text-muted">
+                  <strong>Kode:</strong> <code>${data.kode || '-'}</code><br>
+                  <strong>User ID:</strong> <code>${uid}</code>
+                </div>
               </div>
               <div class="text-end">
                 <button class="btn btn-sm btn-success mb-1" onclick="quickActivate('${uid}', '${data.kode}', 'newcat')">Aktivasi</button>
                 <button class="btn btn-sm btn-danger" onclick="rejectPayment('pendingNewCatPayments', '${uid}')">Tolak</button>
               </div>
-            </li>
+            </div>
           `;
         });
-        html += '</ul>';
+        html += '</div>';
         container.innerHTML = html;
       });
     }
@@ -519,7 +693,7 @@
           html += `
             <tr>
               <td class="small">${dateStr}</td>
-              <td class="small text-break">${data.userId}</td>
+              <td class="small text-break"><code>${data.userId}</code></td>
               <td>${typeBadge}</td>
               <td class="small">${data.category || '-'}</td>
             </tr>
@@ -559,6 +733,50 @@
         document.getElementById('totalNewCat').innerText = count;
       });
     }
+
+    // ============================================================
+    // FUNGSI TAMBAHAN: BERSIHKAN ANTRIAN KEDALUWARSA
+    // ============================================================
+    function cleanupOldPendingPayments() {
+      const cleanupTime = Date.now() - (7 * 24 * 60 * 60 * 1000); // 7 hari
+    
+      // Premium
+      database.ref('pendingPremiumPayments').once('value', snapshot => {
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.timestamp && data.timestamp < cleanupTime) {
+            database.ref('pendingPremiumPayments/' + child.key).remove();
+          }
+        });
+      });
+
+      // Add-on
+      database.ref('pendingAddonPayments').once('value', snapshot => {
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.timestamp && data.timestamp < cleanupTime) {
+            database.ref('pendingAddonPayments/' + child.key).remove();
+          }
+        });
+      });
+
+      // Newcat
+      database.ref('pendingNewCatPayments').once('value', snapshot => {
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.timestamp && data.timestamp < cleanupTime) {
+            database.ref('pendingNewCatPayments/' + child.key).remove();
+          }
+        });
+      });
+    }
+
+    // Jalankan cleanup saat load
+    document.addEventListener('DOMContentLoaded', function() {
+      if (localStorage.getItem('sicermat_admin_logged_in') === 'true') {
+        cleanupOldPendingPayments();
+      }
+    });
   </script>
 </body>
   </html>
