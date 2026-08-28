@@ -1,108 +1,6 @@
 // ============================================================
-// SISTEM NOTIFIKASI ADD-ON AHS (FIREBASE INTEGRATION) - V2
+// SISTEM NOTIFIKASI ADD-ON AHS (FIREBASE INTEGRATION) - V4
 // ============================================================
-
-// 1. Mapping kategori ke singkatan
-const CATEGORY_ABBR_MAP = {
-  "Pekerjaan Persiapan": "PRP",
-  "Pekerjaan Tanah": "TNH",
-  "Pekerjaan Pondasi": "PND",
-  "Pekerjaan Beton": "BTN",
-  "Pekerjaan Atap": "ATP",
-  "Pekerjaan Finishing/Arsitektur": "FIN",
-  "Pekerjaan Mekanikal & Elektrikal": "MEK",
-  "Pekerjaan Plumbing": "PLB",
-  "Pekerjaan Jalan dan Jembatan": "JLN",
-  "Pekerjaan Landscape": "LSC",  // TAMBAHKAN INI
-  "Lainnya": "GEN"
-};
-
-const ABBR_CATEGORY_MAP = {
-  "PRP": "Pekerjaan Persiapan",
-  "TNH": "Pekerjaan Tanah",
-  "PND": "Pekerjaan Pondasi",
-  "BTN": "Pekerjaan Beton",
-  "ATP": "Pekerjaan Atap",
-  "FIN": "Pekerjaan Finishing/Arsitektur",
-  "MEK": "Pekerjaan Mekanikal & Elektrikal",
-  "PLB": "Pekerjaan Plumbing",
-  "JLN": "Pekerjaan Jalan dan Jembatan",
-  "LSC": "Pekerjaan Landscape",  // TAMBAHKAN INI
-  "GEN": "Lainnya"
-};
-
-// Kategori lama (bukan kategori baru)
-const OLD_CATEGORIES = [
-  "Pekerjaan Persiapan",
-  "Pekerjaan Tanah",
-  "Pekerjaan Pondasi",
-  "Pekerjaan Beton",
-  "Pekerjaan Atap",
-  "Pekerjaan Finishing/Arsitektur",
-  "Pekerjaan Mekanikal & Elektrikal",
-  "Pekerjaan Plumbing",
-  "Pekerjaan Landscape"  // TAMBAHKAN INI
-];
-
-// ============================================================
-// FUNGSI UTILITAS
-// ============================================================
-
-function getCategoryAbbreviation(category) {
-  return CATEGORY_ABBR_MAP[category] || "GEN";
-}
-
-function getCategoryFromAbbreviation(abbr) {
-  return ABBR_CATEGORY_MAP[abbr] || "Lainnya";
-}
-
-function isNewCategory(category) {
-  return !OLD_CATEGORIES.includes(category);
-}
-
-// Generate kode unik: NEWAHS + Singkatan + N + Nomor Seri
-function generateNewCode(category, version) {
-  const abbr = getCategoryAbbreviation(category);
-  const serial = String(version || 1).padStart(3, '0');
-  return `NEWAHS${abbr}N${serial}`;
-}
-
-// Parse kode unik untuk mendapatkan kategori
-function getCategoryFromCode(code) {
-  // Cek format NEWAHS[ABBR]N[VERSION]
-  const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
-  if (match) {
-    return getCategoryFromAbbreviation(match[1]);
-  }
-  return null;
-}
-
-// Tentukan halaman pembayaran dan harga berdasarkan kategori
-function getPaymentDetails(category) {
-  if (isNewCategory(category)) {
-    return {
-      page: 'qris-newcat.html',
-      price: 150000,
-      type: 'NEWCAT'
-    };
-  } else {
-    return {
-      page: 'qris-addon.html',
-      price: 20000,
-      type: 'SELECTED'
-    };
-  }
-}
-
-// Ambil user ID
-function getCurrentUserId() {
-  let userId = localStorage.getItem('sicermat_user_id');
-  if (!userId) {
-    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    localStorage.setItem('sicermat_user_id', userId);
-  }
-  return userId;
-}
 
 // ============================================================
 // FUNGSI CEK AKSES
@@ -157,7 +55,20 @@ function checkAnyAddonAccess(callback) {
 }
 
 // ============================================================
-// FUNGSI POP-UP ADD-ON (DIPERBAIKI)
+// FUNGSI GET USER ID
+// ============================================================
+
+function getCurrentUserId() {
+  let userId = localStorage.getItem('sicermat_user_id');
+  if (!userId) {
+    userId = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    localStorage.setItem('sicermat_user_id', userId);
+  }
+  return userId;
+}
+
+// ============================================================
+// FUNGSI POP-UP ADD-ON
 // ============================================================
 
 function showAddOnPopup(category) {
@@ -325,16 +236,12 @@ document.addEventListener('DOMContentLoaded', function() {
 // ============================================================
 
 // Pastikan fungsi-fungsi ini tersedia secara global
-window.generateNewCode = generateNewCode;
-window.getCategoryFromCode = getCategoryFromCode;
-window.getPaymentDetails = getPaymentDetails;
 window.showAddOnPopup = showAddOnPopup;
+window.closeAddOnModal = closeAddOnModal;
 window.redirectToPayment = redirectToPayment;
-window.isNewCategory = isNewCategory;
-window.getCategoryAbbreviation = getCategoryAbbreviation;
-window.getCategoryFromAbbreviation = getCategoryFromAbbreviation;
+window.getAddonStatus = getAddonStatus;
+window.checkPremiumAccess = checkPremiumAccess;
 window.checkAddonAccess = checkAddonAccess;
 window.checkNewCategoryAccess = checkNewCategoryAccess;
-window.checkPremiumAccess = checkPremiumAccess;
 window.checkAnyAddonAccess = checkAnyAddonAccess;
-window.getAddonStatus = getAddonStatus;
+window.getCurrentUserId = getCurrentUserId;
