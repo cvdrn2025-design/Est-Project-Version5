@@ -1777,6 +1777,7 @@ const CATEGORY_ABBR_MAP = {
   "Pekerjaan Mekanikal & Elektrikal": "MEK",
   "Pekerjaan Plumbing": "PLB",
   "Pekerjaan Jalan dan Jembatan": "JLN",
+  "Pekerjaan Landscape": "LSC",  // TAMBAHKAN INI
   "Lainnya": "GEN"
 };
 
