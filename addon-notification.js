@@ -13,6 +13,7 @@ const CATEGORY_ABBR_MAP = {
   "Pekerjaan Mekanikal & Elektrikal": "MEK",
   "Pekerjaan Plumbing": "PLB",
   "Pekerjaan Jalan dan Jembatan": "JLN",
+  "Pekerjaan Landscape": "LSC",  // TAMBAHKAN INI
   "Lainnya": "GEN"
 };
 
@@ -26,6 +27,7 @@ const ABBR_CATEGORY_MAP = {
   "MEK": "Pekerjaan Mekanikal & Elektrikal",
   "PLB": "Pekerjaan Plumbing",
   "JLN": "Pekerjaan Jalan dan Jembatan",
+  "LSC": "Pekerjaan Landscape",  // TAMBAHKAN INI
   "GEN": "Lainnya"
 };
 
