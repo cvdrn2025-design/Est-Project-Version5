@@ -271,11 +271,16 @@
             }
         }
 
+        // PASTIKAN categoryFromURL SELALU TERISI
+        if (!categoryFromURL) {
+            categoryFromURL = 'Lainnya';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             const userID = getUserID();
             document.getElementById('userIDDisplay').innerText = userID;
             document.getElementById('addonCodeDisplay').innerText = 'Kode Kategori Baru: ' + finalAddonCode;
-            document.getElementById('categoryDisplay').innerText = 'Kategori: ' + (categoryFromURL || 'Lainnya');
+            document.getElementById('categoryDisplay').innerText = 'Kategori: ' + categoryFromURL;
 
             // === KIRIM STATUS PENDING KE FIREBASE (DENGAN CEK DUPLIKASI) ===
             const pendingRef = database.ref('pendingNewCatPayments/' + userID);
@@ -289,14 +294,14 @@
                         kode: finalAddonCode, // Kirim kode unik yang VALID
                         nominal: 150000,
                         tipe: 'NEWCAT',
-                        category: categoryFromURL || 'Lainnya' // TAMBAHKAN KATEGORI
+                        category: categoryFromURL // TAMBAHKAN KATEGORI
                     });
                 }
             }).catch(err => console.error('Gagal simpan pending:', err));
             // ==============================================================
 
             document.getElementById('waLink').href = 'https://wa.me/6282145111853?text=' + encodeURIComponent(
-                'Halo Admin, berikut bukti pembayaran Kategori Baru saya: ' + userID + '. Mohon segera di aktifkan. Kategori dengan kode: ' + finalAddonCode + ' untuk kategori: ' + (categoryFromURL || 'Lainnya') + '. Terima kasih.'
+                'Halo Admin, berikut bukti pembayaran Kategori Baru saya: ' + userID + '. Mohon segera di aktifkan. Kategori dengan kode: ' + finalAddonCode + ' untuk kategori: ' + categoryFromURL + '. Terima kasih.'
             );
         });
 
