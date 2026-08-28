@@ -38,7 +38,8 @@ const OLD_CATEGORIES = [
   "Pekerjaan Atap",
   "Pekerjaan Finishing/Arsitektur",
   "Pekerjaan Mekanikal & Elektrikal",
-  "Pekerjaan Plumbing"
+  "Pekerjaan Plumbing",
+  "Pekerjaan Landscape"  // TAMBAHKAN INI
 ];
 
 // ============================================================
