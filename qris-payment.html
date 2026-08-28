@@ -4,12 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Premium SiCerMat</title>
-<link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0f172a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="SiCerMat">
-<link rel="apple-touch-icon" href="icon-192.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; padding: 20px; background-color: #f8fafc; color: #0f172a; margin: 0; }
@@ -77,7 +71,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
-    <!-- Load master-data.js untuk mendapatkan fungsi kategori -->
+    <!-- Load master-data.js - JANGAN HAPUS INI! -->
     <script src="master-data.js?v=20260912"></script>
 
     <script>
@@ -95,156 +89,19 @@
         const database = firebase.database();
 
         // ============================================================
-        // FUNGSI UTILITAS (SINKRON DENGAN FILE LAIN)
-        // ============================================================
-        
-        // Mapping kategori ke singkatan (sinkron dengan master-data.js)
-        const CATEGORY_ABBR_MAP = {
-            "Pekerjaan Persiapan": "PRP",
-            "Pekerjaan Tanah": "TNH",
-            "Pekerjaan Pondasi": "PND",
-            "Pekerjaan Beton": "BTN",
-            "Pekerjaan Atap": "ATP",
-            "Pekerjaan Finishing/Arsitektur": "FIN",
-            "Pekerjaan Mekanikal & Elektrikal": "MEK",
-            "Pekerjaan Plumbing": "PLB",
-            "Pekerjaan Jalan dan Jembatan": "JLN",
-            "Pekerjaan Landscape": "LSC",
-            "Pekerjaan Pagar": "PGR",
-            "Pekerjaan Drainase": "DRN",
-            "Pekerjaan Pengaspalan": "ASP",
-            "Pekerjaan Marka Jalan": "MRK",
-            "Pekerjaan Rambu Lalu Lintas": "RBL",
-            "Pekerjaan Struktur Baja": "STB",
-            "Pekerjaan Precast": "PRC",
-            "Pekerjaan Renovasi": "RNV",
-            "Lainnya": "GEN"
-        };
-
-        // Mapping terbalik (dari singkatan ke kategori)
-        const ABBR_CATEGORY_MAP = {
-            "PRP": "Pekerjaan Persiapan",
-            "TNH": "Pekerjaan Tanah",
-            "PND": "Pekerjaan Pondasi",
-            "BTN": "Pekerjaan Beton",
-            "ATP": "Pekerjaan Atap",
-            "FIN": "Pekerjaan Finishing/Arsitektur",
-            "MEK": "Pekerjaan Mekanikal & Elektrikal",
-            "PLB": "Pekerjaan Plumbing",
-            "JLN": "Pekerjaan Jalan dan Jembatan",
-            "LSC": "Pekerjaan Landscape",
-            "PGR": "Pekerjaan Pagar",
-            "DRN": "Pekerjaan Drainase",
-            "ASP": "Pekerjaan Pengaspalan",
-            "MRK": "Pekerjaan Marka Jalan",
-            "RBL": "Pekerjaan Rambu Lalu Lintas",
-            "STB": "Pekerjaan Struktur Baja",
-            "PRC": "Pekerjaan Precast",
-            "RNV": "Pekerjaan Renovasi",
-            "GEN": "Lainnya"
-        };
-
-        // Kategori Lama
-        const OLD_CATEGORIES = [
-            "Pekerjaan Persiapan",
-            "Pekerjaan Tanah",
-            "Pekerjaan Pondasi",
-            "Pekerjaan Beton",
-            "Pekerjaan Atap",
-            "Pekerjaan Finishing/Arsitektur",
-            "Pekerjaan Mekanikal & Elektrikal",
-            "Pekerjaan Plumbing",
-            "Pekerjaan Landscape"
-        ];
-
-        // Kategori Baru
-        const NEW_CATEGORIES = [
-            "Pekerjaan Jalan dan Jembatan",
-            "Pekerjaan Pagar",
-            "Pekerjaan Drainase",
-            "Pekerjaan Pengaspalan",
-            "Pekerjaan Marka Jalan",
-            "Pekerjaan Rambu Lalu Lintas",
-            "Pekerjaan Struktur Baja",
-            "Pekerjaan Precast",
-            "Pekerjaan Renovasi"
-        ];
-
-        // Fungsi untuk cek apakah kategori baru
-        function isNewCategory(category) {
-            return NEW_CATEGORIES.includes(category) || !OLD_CATEGORIES.includes(category);
-        }
-
-        // Fungsi untuk mendapatkan singkatan kategori
-        function getCategoryAbbreviation(category) {
-            return CATEGORY_ABBR_MAP[category] || "GEN";
-        }
-
-        // Fungsi untuk mendapatkan kategori dari singkatan
-        function getCategoryFromAbbreviation(abbr) {
-            return ABBR_CATEGORY_MAP[abbr] || "Lainnya";
-        }
-
-        // Fungsi generate kode unik
-        function generateNewCode(category, version) {
-            const abbr = getCategoryAbbreviation(category);
-            const serial = String(version || 1).padStart(3, '0');
-            return `NEWAHS${abbr}N${serial}`;
-        }
-
-        // Fungsi untuk mendapatkan kategori dari kode unik
-        function getCategoryFromCode(code) {
-            // Cek format NEWAHS[ABBR]N[VERSION]
-            const match = code.match(/^NEWAHS([A-Z]{3})N(\d+)$/);
-            if (match) {
-                return getCategoryFromAbbreviation(match[1]);
-            }
-            
-            // Cek di ahsDatabase berdasarkan code langsung
-            if (typeof ahsDatabase !== 'undefined' && Array.isArray(ahsDatabase)) {
-                const itemByCode = ahsDatabase.find(i => i.code === code || i.kode === code);
-                if (itemByCode) return itemByCode.category || 'Lainnya';
-            }
-            
-            return null;
-        }
-
-        // Fungsi untuk mendapatkan info pembayaran add-on
-        function getPaymentDetails(category) {
-            if (isNewCategory(category)) {
-                return {
-                    page: 'qris-newcat.html',
-                    price: 150000,
-                    type: 'NEWCAT',
-                    label: 'Kategori Baru'
-                };
-            } else {
-                return {
-                    page: 'qris-addon.html',
-                    price: 20000,
-                    type: 'SELECTED',
-                    label: 'Add-on Selected'
-                };
-            }
-        }
-
-        // ============================================================
         // FUNGSI GET USER ID (ANTI LOSS)
         // ============================================================
         function getUserID() {
             let userID = localStorage.getItem('sicermat_user_id');
             
             if (!userID) {
-                // Cek URL parameter ?uid=
                 const urlParams = new URLSearchParams(window.location.search);
                 userID = urlParams.get('uid');
                 
                 if (!userID) {
-                    // Buat ID baru jika tidak ada
                     userID = 'user_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 }
                 
-                // Simpan ke localStorage agar tidak berubah setelah refresh
                 localStorage.setItem('sicermat_user_id', userID);
             }
             
