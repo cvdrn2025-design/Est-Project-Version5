@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sicermat-cache-v15'; // Ganti versi agar cache lama terhapus
+const CACHE_NAME = 'sicermat-cache-v16'; // Ganti versi agar cache lama terhapus
 const urlsToCache = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const urlsToCache = [
   './icon.png',
   './icon-192.png',
   './qris.png',
+  // CDN Eksternal
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
   'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
@@ -24,7 +25,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache SiCerMat v15 dibuka');
+        console.log('Cache SiCerMat v16 dibuka');
         return cache.addAll(urlsToCache);
       })
       .then(() => self.skipWaiting())
@@ -56,6 +57,11 @@ self.addEventListener('fetch', event => {
     return; // Biarkan browser request langsung ke Firebase tanpa intervensi cache
   }
 
+  // JANGAN cache request ke Firebase Auth
+  if (url.hostname.includes('googleapis.com')) {
+    return;
+  }
+
   // Strategi Network First:
   // 1. Coba ambil dari internet (selalu fresh)
   // 2. Jika gagal (offline), ambil dari cache
@@ -83,3 +89,100 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
+// ============================================================
+// FITUR TAMBAHAN: NOTIFIKASI & SYNC (Opsional)
+// ============================================================
+
+// Push Notification (untuk notifikasi update)
+self.addEventListener('push', event => {
+  const data = event.data.json();
+  const options = {
+    body: data.body,
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    vibrate: [100, 50, 100],
+    data: {
+      dateOfArrival: Date.now(),
+      primaryKey: '1'
+    },
+    actions: [
+      {
+        action: 'open',
+        title: 'Buka Aplikasi'
+      },
+      {
+        action: 'close',
+        title: 'Tutup'
+      }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, options)
+  );
+});
+
+// Klik Notifikasi
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  if (event.action === 'close') {
+    return;
+  }
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then(clientList => {
+      // Jika sudah ada tab yang terbuka, fokus ke tab tersebut
+      for (const client of clientList) {
+        if (client.url.includes('index.html') && 'focus' in client) {
+          return client.focus();
+        }
+      }
+      // Jika belum ada, buka tab baru
+      if (clients.openWindow) {
+        return clients.openWindow('./index.html');
+      }
+    })
+  );
+});
+
+// Message Handler untuk update dari aplikasi
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
+// Background Sync (untuk pending data saat offline)
+self.addEventListener('sync', event => {
+  if (event.tag === 'sync-pending-payments') {
+    event.waitUntil(syncPendingPayments());
+  }
+});
+
+// Fungsi sync pending payments
+async function syncPendingPayments() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const pendingData = await cache.match('pending-payments');
+    
+    if (pendingData) {
+      const data = await pendingData.json();
+      // Kirim data ke server
+      const response = await fetch('https://sicermat-db-default-rtdb.asia-southeast1.firebasedatabase.app/pendingPayments.json', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+      
+      if (response.ok) {
+        await cache.delete('pending-payments');
+      }
+    }
+  } catch (error) {
+    console.error('Gagal sync pending payments:', error);
+  }
+}
