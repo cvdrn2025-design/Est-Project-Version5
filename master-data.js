@@ -1723,6 +1723,114 @@ const ahsDatabase = [
       { name: "Mandor Proyek", coeff: 0.020, unit: "OH", price: 180000 }
     ]
   },
+  {
+  code: "AHS-DRN-19",
+  category: "Pekerjaan Drainase",
+  title: "Pekerjaan U-ditch Ukuran 60x60x100",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "U-ditch Beton Precast 60x60x100", coeff: 1.000, unit: "bh", price: 850000 },
+    { name: "Semen Portland (50kg)", coeff: 0.100, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.020, unit: "m3", price: 220000 },
+    { name: "Sewa Excavator", coeff: 0.020, unit: "jam", price: 250000 },
+    { name: "Pekerja", coeff: 0.400, unit: "OH", price: 110000 },
+    { name: "Tukang Drainase", coeff: 0.200, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-DRN-20",
+  category: "Pekerjaan Drainase",
+  title: "Pekerjaan U-ditch Ukuran 60x60x120",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "U-ditch Beton Precast 60x60x120", coeff: 0.833, unit: "bh", price: 950000 },
+    { name: "Semen Portland (50kg)", coeff: 0.100, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.020, unit: "m3", price: 220000 },
+    { name: "Sewa Excavator", coeff: 0.020, unit: "jam", price: 250000 },
+    { name: "Pekerja", coeff: 0.400, unit: "OH", price: 110000 },
+    { name: "Tukang Drainase", coeff: 0.200, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.020, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.010, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-DRN-21",
+  category: "Pekerjaan Drainase",
+  title: "Pekerjaan U-ditch Ukuran 80x80x100",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "U-ditch Beton Precast 80x80x100", coeff: 1.000, unit: "bh", price: 1250000 },
+    { name: "Semen Portland (50kg)", coeff: 0.120, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.025, unit: "m3", price: 220000 },
+    { name: "Sewa Excavator", coeff: 0.025, unit: "jam", price: 250000 },
+    { name: "Pekerja", coeff: 0.500, unit: "OH", price: 110000 },
+    { name: "Tukang Drainase", coeff: 0.250, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-DRN-22",
+  category: "Pekerjaan Drainase",
+  title: "Pekerjaan U-ditch Ukuran 80x80x120",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "U-ditch Beton Precast 80x80x120", coeff: 0.833, unit: "bh", price: 1450000 },
+    { name: "Semen Portland (50kg)", coeff: 0.120, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.025, unit: "m3", price: 220000 },
+    { name: "Sewa Excavator", coeff: 0.025, unit: "jam", price: 250000 },
+    { name: "Pekerja", coeff: 0.500, unit: "OH", price: 110000 },
+    { name: "Tukang Drainase", coeff: 0.250, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.025, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.013, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-DRN-23",
+  category: "Pekerjaan Drainase",
+  title: "Pekerjaan U-ditch Ukuran 100x100x100",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "U-ditch Beton Precast 100x100x100", coeff: 1.000, unit: "bh", price: 1850000 },
+    { name: "Semen Portland (50kg)", coeff: 0.150, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.030, unit: "m3", price: 220000 },
+    { name: "Sewa Excavator", coeff: 0.030, unit: "jam", price: 250000 },
+    { name: "Pekerja", coeff: 0.600, unit: "OH", price: 110000 },
+    { name: "Tukang Drainase", coeff: 0.300, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.030, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.015, unit: "OH", price: 180000 }
+  ]
+},
+{
+  code: "AHS-DRN-24",
+  category: "Pekerjaan Drainase",
+  title: "Pekerjaan U-ditch Ukuran 120x120x100",
+  unit: "m'",
+  isNew: true,
+  version: 1,
+  details: [
+    { name: "U-ditch Beton Precast 120x120x100", coeff: 1.000, unit: "bh", price: 2450000 },
+    { name: "Semen Portland (50kg)", coeff: 0.180, unit: "sak", price: 75000 },
+    { name: "Pasir Pasang / Pasir Beton", coeff: 0.035, unit: "m3", price: 220000 },
+    { name: "Sewa Excavator", coeff: 0.035, unit: "jam", price: 250000 },
+    { name: "Pekerja", coeff: 0.700, unit: "OH", price: 110000 },
+    { name: "Tukang Drainase", coeff: 0.350, unit: "OH", price: 140000 },
+    { name: "Kepala Tukang", coeff: 0.035, unit: "OH", price: 160000 },
+    { name: "Mandor Proyek", coeff: 0.018, unit: "OH", price: 180000 }
+  ]
+},
 
   // ==================== PEKERJAAN MEBEULAIR (BARU) ====================
   {
